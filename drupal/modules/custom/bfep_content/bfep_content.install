@@ -1,0 +1,106 @@
+<?php
+
+declare(strict_types=1);
+
+use Drupal\Component\Utility\Html;
+use Drupal\bfep\Controller\TrustController;
+
+/**
+ * Converts the currently published structured policy content to safe HTML.
+ */
+function bfep_content_sections_to_html(array $sections): string {
+  $html = '';
+  foreach ($sections as $section) {
+    if (!is_array($section)) {
+      continue;
+    }
+    $heading = trim((string) ($section['heading'] ?? ''));
+    if ($heading !== '') {
+      $html .= '<h2>' . Html::escape($heading) . '</h2>';
+    }
+    foreach (($section['paragraphs'] ?? []) as $paragraph) {
+      $html .= '<p>' . Html::escape((string) $paragraph) . '</p>';
+    }
+    $items = $section['items'] ?? [];
+    if (is_array($items) && $items !== []) {
+      $html .= '<ul>';
+      foreach ($items as $item) {
+        $html .= '<li>' . Html::escape((string) $item) . '</li>';
+      }
+      $html .= '</ul>';
+    }
+  }
+  return $html;
+}
+
+/**
+ * Implements hook_install().
+ */
+function bfep_content_install(): void {
+  $configFactory = \Drupal::configFactory();
+  $config = $configFactory->getEditable('bfep_content.settings');
+
+  $instagramDefaults = [
+    'url' => 'https://www.instagram.com/butterflyeffect.project/',
+    'handle' => '@butterflyeffect.project',
+    'message' => 'Instagram is our main official channel for communication, project updates, and campaign amplification.',
+  ];
+  foreach ($instagramDefaults as $key => $value) {
+    if ($config->get('instagram.' . $key) === NULL) {
+      $config->set('instagram.' . $key, $value);
+    }
+  }
+
+  // Capture the live BFEP controller output before this companion module takes
+  // over presentation. This preserves site-specific wording already deployed.
+  $controller = TrustController::create(\Drupal::getContainer());
+  foreach (bfep_content_policy_pages() as $pageId => $label) {
+    if ($config->get('policies.' . $pageId) !== NULL) {
+      continue;
+    }
+    $build = $controller->page($pageId);
+    $config->set('policies.' . $pageId, [
+      'intro' => trim((string) ($build['#intro'] ?? '')),
+      'body' => [
+        'value' => bfep_content_sections_to_html((array) ($build['#sections'] ?? [])),
+        'format' => 'basic_html',
+      ],
+    ]);
+  }
+  // Add the official profile to Organization.sameAs metadata without
+  // overwriting any other configured social profiles.
+  $bfep = $configFactory->getEditable('bfep.settings');
+  $links = array_values(array_filter(array_map(
+    'trim',
+    preg_split('/\R/u', (string) $bfep->get('social_links')) ?: [],
+  )));
+  $instagramUrl = trim((string) $config->get('instagram.url'));
+  if (!in_array($instagramUrl, $links, TRUE)) {
+    $links[] = $instagramUrl;
+    $bfep->set('social_links', implode("\n", $links))->save(TRUE);
+    $config->set('instagram.managed_same_as', $instagramUrl);
+  }
+  elseif ($config->get('instagram.managed_same_as') === NULL) {
+    // An existing link belongs to the site's prior configuration, not us.
+    $config->set('instagram.managed_same_as', '');
+  }
+  $config->save(TRUE);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function bfep_content_uninstall(): void {
+  $configFactory = \Drupal::configFactory();
+  $instagramUrl = trim((string) $configFactory->get('bfep_content.settings')->get('instagram.managed_same_as'));
+  $configFactory->getEditable('bfep_content.settings')->delete();
+
+  if ($instagramUrl !== '') {
+    $bfep = $configFactory->getEditable('bfep.settings');
+    $links = array_values(array_filter(array_map(
+      'trim',
+      preg_split('/\R/u', (string) $bfep->get('social_links')) ?: [],
+    ), static fn(string $url): bool => $url !== $instagramUrl));
+    $bfep->set('social_links', implode("\n", $links))->save(TRUE);
+  }
+}

@@ -1,0 +1,71 @@
+.bfep-page { width: 100%; min-width: 0; }
+.bfep-intro,.bfep-lead { max-width: 52rem; font-size: clamp(1.05rem,2vw,1.25rem); line-height: 1.65; }
+.bfep-hero { padding-block: clamp(1rem,4vw,3rem); }
+.bfep-hero-card { padding: clamp(1.4rem,5vw,4rem); }
+.bfep-eyebrow { margin: 0 0 .75rem; font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.bfep-hero h1 { max-width: 18ch; margin: 0; font-size: clamp(2.25rem,6vw,5rem); line-height: 1.02; }
+.bfep-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-top: 1.5rem; }
+.bfep-stats-row { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; margin-block: 2rem 3rem; }
+.bfep-stat-card { display: flex; flex-direction: column; min-width: 0; padding: 1.25rem; }
+.bfep-stat-number { font-size: clamp(2rem,5vw,3.25rem); line-height: 1; }
+.bfep-stat-label { margin-top: .5rem; }
+.bfep-home-grid > h2 { margin-bottom: 1rem; }
+.bfep-trust-callout { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(15rem,1fr); gap: 1.5rem; align-items: center; margin-block: 3rem 1rem; padding: clamp(1.25rem,4vw,2.25rem); }
+
+.bfep-campaign-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,19rem),1fr)); gap: 1.2rem; width: 100%; margin-top: 1.5rem; }
+.bfep-campaign-card { display: flex; flex-direction: column; min-width: 0; padding: 1.35rem; }
+.bfep-campaign-card h2,.bfep-campaign-card h3 { margin: 0; font-size: clamp(1.15rem,2vw,1.4rem); line-height: 1.25; }
+.bfep-campaign-title { overflow-wrap: anywhere; text-decoration-thickness: .08em; text-underline-offset: .15em; }
+.bfep-card-heading { display: flex; flex-direction: column; gap: .35rem; }
+.bfep-line,.bfep-updated,.bfep-muted { font-size: .9rem; opacity: .76; }
+.bfep-card-description { line-height: 1.55; }
+.bfep-card-actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-top: auto; padding-top: 1rem; }
+.bfep-badges,.bfep-tags,.bfep-country-counts { display: flex; flex-wrap: wrap; gap: .45rem; margin: .8rem 0; padding: 0; list-style: none; }
+.bfep-badges li,.bfep-tag { padding: .25rem .6rem; border-radius: 100vmax; font-size: .78rem; font-weight: 750; line-height: 1.25; }
+.bfep-country-counts { gap: .8rem; }
+.bfep-country-counts li { font-size: .92rem; }
+.bfep-amounts,.bfep-detail-meta { display: grid; gap: .6rem; margin: 1rem 0; }
+.bfep-amounts { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.bfep-amounts div,.bfep-detail-meta div { min-width: 0; }
+.bfep-amounts dt,.bfep-detail-meta dt { font-size: .76rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .75; }
+.bfep-amounts dd,.bfep-detail-meta dd { margin: .15rem 0 0; overflow-wrap: anywhere; font-weight: 700; }
+.bfep-detail { max-width: 70rem; }
+.bfep-detail-meta { grid-template-columns: repeat(auto-fit,minmax(11rem,1fr)); padding: 1.25rem; }
+.bfep-description { margin-top: 2rem; line-height: 1.75; }
+.bfep-description p { white-space: pre-line; }
+.bfep-disclaimer,.bfep-form-notice { padding: 1rem 1.1rem; border-inline-start: .25rem solid currentColor; font-size: .94rem; }
+.bfep-empty { margin-block: 1.5rem; padding: 1.5rem; }
+
+.bfep-filter-form { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; align-items: end; margin: 1.5rem 0; padding: clamp(1rem,3vw,1.5rem); }
+.bfep-filter-field { min-width: 0; }
+.bfep-filter-field--wide { grid-column: span 2; }
+.bfep-filter-field label { display: block; margin-bottom: .35rem; font-size: .84rem; font-weight: 750; }
+.bfep-filter-field input,.bfep-filter-field select { box-sizing: border-box; width: 100%; min-height: 2.9rem; }
+.bfep-filter-checks { display: flex; flex-wrap: wrap; gap: .75rem 1.2rem; grid-column: span 2; min-height: 2.9rem; align-items: center; }
+.bfep-filter-checks label { display: inline-flex; gap: .45rem; align-items: center; font-weight: 650; }
+.bfep-filter-checks input { width: 1.2rem; height: 1.2rem; margin: 0; }
+.bfep-filter-actions { display: flex; flex-wrap: wrap; gap: .75rem; grid-column: 1/-1; }
+.bfep-results-bar { display: flex; justify-content: space-between; align-items: center; min-height: 2.5rem; }
+.bfep-results-bar p { margin: 0; font-weight: 700; }
+.bfep-pager { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; margin-block: 2rem; }
+.bfep-pager > :last-child { text-align: end; }
+
+.bfep-trust-page { max-width: 70rem; }
+.bfep-policy-section { max-width: 58rem; margin-block: 2rem; }
+.bfep-policy-section li { margin-block: .45rem; }
+.bfep-contact-email { overflow-wrap: anywhere; }
+.bfep-public-form { max-width: 58rem; }
+
+@media (max-width: 62rem) {
+  .bfep-stats-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .bfep-filter-form { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .bfep-trust-callout { grid-template-columns: 1fr; }
+}
+@media (max-width: 38rem) {
+  .bfep-stats-row,.bfep-filter-form,.bfep-amounts { grid-template-columns: 1fr; }
+  .bfep-filter-field--wide,.bfep-filter-checks { grid-column: auto; }
+  .bfep-pager { grid-template-columns: 1fr 1fr; }
+  .bfep-pager > :nth-child(2) { grid-column: 1/-1; grid-row: 1; text-align: center; }
+  .bfep-pager > :last-child { text-align: end; }
+  .bfep-actions .button,.bfep-card-actions .button { flex: 1 1 100%; justify-content: center; }
+}

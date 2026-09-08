@@ -1,0 +1,275 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Editable BFEP policy content and official-channel presentation.
+ */
+
+/**
+ * Returns the supported policy page IDs and labels.
+ */
+function bfep_content_policy_pages(): array {
+  return [
+    'transparency' => 'Transparency',
+    'how-we-verify' => 'How We Verify Fundraisers',
+    'team' => 'Our Team',
+    'editorial-policy' => 'Editorial Policy',
+    'privacy' => 'Privacy Notice',
+    'safeguarding' => 'Safeguarding',
+    'contact-us' => 'Contact',
+  ];
+}
+
+/**
+ * Returns validated official Instagram settings with safe defaults.
+ */
+function bfep_content_instagram(): array {
+  $config = \Drupal::config('bfep_content.settings');
+  $url = trim((string) $config->get('instagram.url'));
+  $parts = parse_url($url);
+  $validHosts = ['instagram.com', 'www.instagram.com'];
+  if (!is_array($parts)
+    || strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
+    || !in_array(strtolower((string) ($parts['host'] ?? '')), $validHosts, TRUE)) {
+    $url = 'https://www.instagram.com/butterflyeffect.project/';
+  }
+
+  $handle = trim((string) $config->get('instagram.handle'));
+  if (!preg_match('/^@[A-Za-z0-9._]+$/', $handle)) {
+    $handle = '@butterflyeffect.project';
+  }
+
+  $message = trim((string) $config->get('instagram.message'));
+  if ($message === '') {
+    $message = 'Instagram is our main official channel for communication, project updates, and campaign amplification.';
+  }
+
+  return ['url' => $url, 'handle' => $handle, 'message' => $message];
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function bfep_content_theme_registry_alter(array &$theme_registry): void {
+  $path = \Drupal::service('extension.list.module')->getPath('bfep_content') . '/templates';
+  foreach (['bfep_home' => 'bfep-home', 'bfep_trust_page' => 'bfep-trust-page'] as $hook => $template) {
+    if (isset($theme_registry[$hook])) {
+      $theme_registry[$hook]['path'] = $path;
+      $theme_registry[$hook]['template'] = $template;
+    }
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function bfep_content_page_attachments(array &$attachments): void {
+  $route = \Drupal::routeMatch()->getRouteObject();
+  if ($route?->getOption('_admin_route')) {
+    return;
+  }
+  $attachments['#attached']['library'][] = 'bfep_content/public';
+  $attachments['#cache']['tags'][] = 'config:bfep_content.settings';
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for bfep_home.html.twig.
+ */
+function bfep_content_preprocess_bfep_home(array &$variables): void {
+  $variables['official_channel'] = bfep_content_instagram();
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for bfep_trust_page.html.twig.
+ */
+function bfep_content_preprocess_bfep_trust_page(array &$variables): void {
+  $route = \Drupal::routeMatch()->getRouteObject();
+  $pageId = (string) ($route?->getDefault('page') ?? '');
+  if (!array_key_exists($pageId, bfep_content_policy_pages())) {
+    return;
+  }
+
+  $page = \Drupal::config('bfep_content.settings')->get('policies.' . $pageId);
+  if (!is_array($page)) {
+    return;
+  }
+
+  if (array_key_exists('intro', $page)) {
+    $variables['intro'] = trim((string) $page['intro']);
+  }
+  $body = $page['body'] ?? [];
+  if (is_array($body) && trim((string) ($body['value'] ?? '')) !== '') {
+    $variables['body'] = [
+      '#type' => 'processed_text',
+      '#text' => (string) $body['value'],
+      '#format' => (string) ($body['format'] ?? 'basic_html'),
+    ];
+    $variables['sections'] = [];
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page.html.twig.
+ */
+function bfep_content_preprocess_page(array &$variables): void {
+  $route = \Drupal::routeMatch()->getRouteObject();
+  if ($route?->getOption('_admin_route')) {
+    return;
+  }
+
+  bfep_content_add_section_navigation($variables);
+
+  $instagram = bfep_content_instagram();
+  $message = \Drupal\Component\Utility\Html::escape($instagram['message']);
+
+  $variables['page']['footer_bottom']['bfep_content_official_channel'] = [
+    '#type' => 'container',
+    '#attributes' => ['class' => ['bfep-official-channel', 'bfep-official-channel--footer']],
+    '#weight' => 1000,
+    'copy' => [
+      '#markup' => '<div><p class="bfep-eyebrow">Official communication channel</p><h2>Follow us on Instagram</h2><p>' . $message . '</p></div>',
+    ],
+    'link' => [
+      '#type' => 'link',
+      '#title' => 'Follow ' . $instagram['handle'],
+      '#url' => \Drupal\Core\Url::fromUri($instagram['url']),
+      '#attributes' => [
+        'class' => ['bfep-instagram-link'],
+        'target' => '_blank',
+        'rel' => 'me noopener noreferrer',
+        'aria-label' => 'Follow ' . $instagram['handle'] . ' on Instagram (opens in a new tab)',
+      ],
+    ],
+    '#cache' => ['tags' => ['config:bfep_content.settings']],
+  ];
+}
+
+
+/**
+ * Replaces the flat BFEP menu links with complete grouped navigation.
+ */
+function bfep_content_menu_links_discovered_alter(array &$links): void {
+  foreach ([
+    'bfep.main_campaigns',
+    'bfep.main_countries',
+    'bfep.main_about',
+    'bfep.main_transparency',
+    'bfep.main_volunteer',
+  ] as $pluginId) {
+    unset($links[$pluginId]);
+  }
+}
+
+/**
+ * Returns public route groups used by the header and in-page navigation.
+ */
+function bfep_content_public_sections(): array {
+  return [
+    'discover' => [
+      'title' => 'Discover ways to help',
+      'description' => 'Browse the directory by fundraiser, country, or ground initiative.',
+      'routes' => [
+        'bfep.campaigns',
+        'bfep.campaign_detail',
+        'bfep.countries',
+        'bfep.country_detail',
+        'bfep.initiatives',
+      ],
+      'links' => [
+        ['label' => 'Campaigns', 'route' => 'bfep.campaigns'],
+        ['label' => 'Countries', 'route' => 'bfep.countries'],
+        ['label' => 'Ground initiatives', 'route' => 'bfep.initiatives'],
+      ],
+    ],
+    'action' => [
+      'title' => 'Take action',
+      'description' => 'Refer a fundraiser, volunteer with BFEP, or request an information update.',
+      'routes' => ['bfep.refer', 'bfep.volunteer', 'bfep.change_request'],
+      'links' => [
+        ['label' => 'Submit a referral', 'route' => 'bfep.refer'],
+        ['label' => 'Volunteer with us', 'route' => 'bfep.volunteer'],
+        ['label' => 'Request an update', 'route' => 'bfep.change_request'],
+      ],
+    ],
+    'trust' => [
+      'title' => 'About, trust, and policy',
+      'description' => 'Understand the project, its verification standard, and its public policies.',
+      'routes' => [
+        'bfep.about',
+        'bfep.trust_transparency',
+        'bfep.trust_how_we_verify',
+        'bfep.trust_team',
+        'bfep.trust_editorial_policy',
+        'bfep.trust_privacy',
+        'bfep.trust_safeguarding',
+        'bfep.trust_contact_us',
+      ],
+      'links' => [
+        ['label' => 'About the project', 'route' => 'bfep.about'],
+        ['label' => 'Transparency', 'route' => 'bfep.trust_transparency'],
+        ['label' => 'How we verify', 'route' => 'bfep.trust_how_we_verify'],
+        ['label' => 'Our team', 'route' => 'bfep.trust_team'],
+        ['label' => 'Editorial policy', 'route' => 'bfep.trust_editorial_policy'],
+        ['label' => 'Privacy notice', 'route' => 'bfep.trust_privacy'],
+        ['label' => 'Safeguarding', 'route' => 'bfep.trust_safeguarding'],
+        ['label' => 'Contact', 'route' => 'bfep.trust_contact_us'],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Adds a complete, keyboard-accessible set of section links to public pages.
+ */
+function bfep_content_add_section_navigation(array &$variables): void {
+  $routeName = (string) \Drupal::routeMatch()->getRouteName();
+  foreach (bfep_content_public_sections() as $sectionId => $section) {
+    if (!in_array($routeName, $section['routes'], TRUE)) {
+      continue;
+    }
+
+    $headingId = 'bfep-section-navigation-' . $sectionId;
+    $navigation = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['bfep-section-nav'],
+        'role' => 'navigation',
+        'aria-labelledby' => $headingId,
+      ],
+      '#weight' => 900,
+      'eyebrow' => [
+        '#markup' => '<p class="bfep-eyebrow">Explore this section</p>',
+      ],
+      'heading' => [
+        '#markup' => '<h2 id="' . $headingId . '">' . \Drupal\Component\Utility\Html::escape($section['title']) . '</h2>',
+      ],
+      'description' => [
+        '#markup' => '<p class="bfep-section-nav__description">' . \Drupal\Component\Utility\Html::escape($section['description']) . '</p>',
+      ],
+      'links' => [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['bfep-section-nav__links']],
+      ],
+      '#cache' => ['contexts' => ['url.path']],
+    ];
+
+    foreach ($section['links'] as $index => $link) {
+      $attributes = ['class' => ['bfep-section-nav__link']];
+      if ($routeName === $link['route']) {
+        $attributes['class'][] = 'is-active';
+        $attributes['aria-current'] = 'page';
+      }
+      $navigation['links']['link_' . $index] = [
+        '#type' => 'link',
+        '#title' => $link['label'],
+        '#url' => \Drupal\Core\Url::fromRoute($link['route']),
+        '#attributes' => $attributes,
+      ];
+    }
+
+    $variables['page']['content']['bfep_content_section_navigation'] = $navigation;
+    return;
+  }
+}

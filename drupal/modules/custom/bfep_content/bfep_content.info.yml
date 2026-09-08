@@ -1,0 +1,11 @@
+name: 'BFEP Content & Channels'
+type: module
+description: 'Editable BFEP trust-page content and official communication-channel presentation.'
+package: Custom
+core_version_requirement: ^11
+configure: bfep_content.settings
+dependencies:
+  - bfep:bfep
+  - drupal:ckeditor5
+  - drupal:editor
+  - drupal:filter

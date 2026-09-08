@@ -1,0 +1,5 @@
+bfep.admin_campaign_add_action:
+  route_name: bfep.admin_campaign_add
+  title: 'Add campaign'
+  appears_on:
+    - bfep.admin_campaigns

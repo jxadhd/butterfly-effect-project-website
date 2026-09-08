@@ -1,0 +1,67 @@
+bfep.admin:
+  title: 'BFEP Admin'
+  description: 'Manage Butterfly Effect Project records'
+  route_name: bfep.admin
+  parent: system.admin
+  weight: -10
+
+bfep.admin_campaigns:
+  title: 'Campaigns'
+  route_name: bfep.admin_campaigns
+  parent: bfep.admin
+  weight: 0
+
+bfep.admin_referrals:
+  title: 'Referrals'
+  route_name: bfep.admin_referrals
+  parent: bfep.admin
+  weight: 1
+
+bfep.admin_volunteers:
+  title: 'Volunteers'
+  route_name: bfep.admin_volunteers
+  parent: bfep.admin
+  weight: 2
+
+bfep.admin_changes:
+  title: 'Change requests'
+  route_name: bfep.admin_changes
+  parent: bfep.admin
+  weight: 3
+
+bfep.settings:
+  title: 'Settings'
+  description: 'Configure BFEP titles, contact details, indexing, caching, and rate limits'
+  route_name: bfep.settings
+  parent: bfep.admin
+  weight: 10
+
+bfep.main_campaigns:
+  title: 'Campaigns'
+  route_name: bfep.campaigns
+  menu_name: main
+  weight: -40
+
+bfep.main_countries:
+  title: 'Countries'
+  route_name: bfep.countries
+  menu_name: main
+  weight: -30
+
+bfep.main_about:
+  title: 'About'
+  route_name: bfep.about
+  menu_name: main
+  weight: -20
+
+bfep.main_transparency:
+  title: 'Transparency'
+  route_name: bfep.trust_transparency
+  menu_name: main
+  weight: -10
+
+bfep.main_volunteer:
+  title: 'Volunteer'
+  route_name: bfep.volunteer
+  menu_name: main
+  weight: 0

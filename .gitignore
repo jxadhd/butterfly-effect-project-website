@@ -1,0 +1,44 @@
+# IDE and operating-system files
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets and environment configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Live Drupal configuration and user files
+drupal/sites/*/settings.php
+drupal/sites/*/settings.local.php
+drupal/sites/*/services.yml
+drupal/sites/*/files/
+private/
+
+# Dependencies and generated Drupal code
+vendor/
+web/core/
+web/modules/contrib/
+web/themes/contrib/
+
+# Databases, archives and backups
+*.sql
+*.sql.gz
+*.dump
+*.backup
+*.tar
+*.tar.gz
+*.zip
+*.bak
+*.bak-*
+backups/
+
+# Logs, caches and test output
+*.log
+.phpunit.result.cache
+coverage/
+tmp/

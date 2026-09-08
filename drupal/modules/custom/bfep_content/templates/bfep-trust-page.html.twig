@@ -1,0 +1,17 @@
+<article class="bfep-page bfep-trust-page">
+  {% if intro %}<p class="bfep-lead">{{ intro }}</p>{% endif %}
+  {% if body %}
+    <div class="bfep-policy-body">{{ body }}</div>
+  {% else %}
+    {% for section in sections %}
+      <section class="bfep-policy-section">
+        <h2>{{ section.heading }}</h2>
+        {% for paragraph in section.paragraphs|default([]) %}<p>{{ paragraph }}</p>{% endfor %}
+        {% if section.items|default([]) %}<ul>{% for item in section.items %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+      </section>
+    {% endfor %}
+  {% endif %}
+  {% if contact_email %}<p class="bfep-contact-email"><strong>{% trans %}Email:{% endtrans %}</strong> <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
+  {% if updated %}<p class="bfep-updated">{% trans %}Last updated {{ updated }}.{% endtrans %}</p>{% endif %}
+  {% if actions %}<div class="bfep-actions">{% for action in actions %}<a class="button{% if action.primary|default(false) %} button--primary{% endif %}" href="{{ action.url }}">{{ action.label }}</a>{% endfor %}</div>{% endif %}
+</article>

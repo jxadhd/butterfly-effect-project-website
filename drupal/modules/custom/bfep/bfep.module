@@ -1,0 +1,257 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Public presentation, metadata, cache, sitemap, and form integrations.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
+
+/**
+ * Implements hook_theme().
+ */
+function bfep_theme($existing, $type, $theme, $path): array {
+  return [
+    'bfep_home' => [
+      'variables' => ['organization' => '', 'tagline' => '', 'stats' => [], 'links' => []],
+    ],
+    'bfep_campaign_list' => [
+      'variables' => [
+        'campaigns' => [], 'filters' => [], 'options' => [], 'fixed_country' => NULL,
+        'action_url' => '', 'clear_url' => '', 'total' => 0, 'total_pages' => 1,
+        'previous_url' => NULL, 'next_url' => NULL, 'active_filters' => FALSE,
+      ],
+    ],
+    'bfep_campaign_detail' => [
+      'variables' => [
+        'campaign' => [], 'change_url' => '', 'campaigns_url' => '',
+        'verification_url' => '',
+      ],
+    ],
+    'bfep_country_list' => [
+      'variables' => ['countries' => []],
+    ],
+    'bfep_initiative_list' => [
+      'variables' => ['initiatives' => []],
+    ],
+    'bfep_trust_page' => [
+      'variables' => [
+        'intro' => '', 'sections' => [], 'actions' => [], 'updated' => '',
+        'contact_email' => '',
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_metatags_alter().
+ */
+function bfep_metatags_alter(array &$metatags, array &$context): void {
+  $seo = \Drupal::service('bfep.seo_manager')->context();
+  if ($seo === NULL) {
+    return;
+  }
+
+  /** @var \Drupal\bfep\Service\BfepSettings $settings */
+  $settings = \Drupal::service('bfep.settings');
+  $metatags['title'] = $seo['title'] . $settings->titleSuffix();
+  $metatags['description'] = $seo['description'];
+  $metatags['canonical_url'] = $seo['canonical'];
+  $metatags['robots'] = $seo['robots'];
+  $metatags['og_site_name'] = $settings->organizationName();
+  $metatags['og_locale'] = 'en_NZ';
+  $metatags['og_type'] = $seo['og_type'];
+  $metatags['og_title'] = $seo['title'];
+  $metatags['og_description'] = $seo['description'];
+  $metatags['og_url'] = $seo['canonical'];
+  $metatags['twitter_cards_type'] = 'summary_large_image';
+  $metatags['twitter_cards_title'] = $seo['title'];
+  $metatags['twitter_cards_description'] = $seo['description'];
+  if ($image = $settings->shareImageUrl()) {
+    $metatags['og_image'] = $image;
+    $metatags['twitter_cards_image'] = $image;
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function bfep_page_attachments(array &$attachments): void {
+  $seo = \Drupal::service('bfep.seo_manager')->context();
+  if ($seo === NULL) {
+    return;
+  }
+
+  /** @var \Drupal\bfep\Service\BfepSettings $settings */
+  $settings = \Drupal::service('bfep.settings');
+  $attachments['#attached']['library'][] = 'bfep/public';
+  $attachments['#cache']['contexts'] = array_values(array_unique([
+    ...($attachments['#cache']['contexts'] ?? []),
+    'url.path',
+    'url.query_args',
+  ]));
+  $attachments['#cache']['tags'] = array_values(array_unique([
+    ...($attachments['#cache']['tags'] ?? []),
+    ...$seo['cache_tags'],
+  ]));
+
+  foreach ($seo['json_ld'] as $index => $data) {
+    $json = json_encode(
+      $data,
+      JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+    );
+    if ($json !== FALSE) {
+      $attachments['#attached']['html_head'][] = [[
+        '#type' => 'html_tag',
+        '#tag' => 'script',
+        '#attributes' => ['type' => 'application/ld+json'],
+        '#value' => Markup::create($json),
+      ], 'bfep_json_ld_' . $index];
+    }
+  }
+
+  if (\Drupal::routeMatch()->getRouteName() === 'bfep.home') {
+    $organization = [
+      '@context' => 'https://schema.org',
+      '@type' => 'Organization',
+      '@id' => $settings->absoluteUrl('/#organization'),
+      'name' => $settings->organizationName(),
+      'url' => $settings->absoluteUrl('/'),
+      'description' => $seo['description'],
+    ];
+    if ($sameAs = $settings->socialLinks()) {
+      $organization['sameAs'] = $sameAs;
+    }
+    $json = json_encode($organization, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    if ($json !== FALSE) {
+      $attachments['#attached']['html_head'][] = [[
+        '#type' => 'html_tag',
+        '#tag' => 'script',
+        '#attributes' => ['type' => 'application/ld+json'],
+        '#value' => Markup::create($json),
+      ], 'bfep_organization_json_ld'];
+    }
+  }
+
+  foreach ([
+    'google-site-verification' => $settings->string('google_site_verification'),
+    'msvalidate.01' => $settings->string('bing_site_verification'),
+  ] as $name => $content) {
+    if ($content !== '') {
+      $attachments['#attached']['html_head'][] = [[
+        '#tag' => 'meta',
+        '#attributes' => ['name' => $name, 'content' => $content],
+      ], 'bfep_' . str_replace(['-', '.'], '_', $name)];
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page_title.html.twig.
+ */
+function bfep_preprocess_page_title(array &$variables): void {
+  $route = (string) \Drupal::routeMatch()->getRouteName();
+  if ($route === 'bfep.home') {
+    // The homepage template supplies the one visible H1 inside its hero.
+    $variables['title'] = '';
+    return;
+  }
+  $seo = \Drupal::service('bfep.seo_manager')->context();
+  if ($seo !== NULL) {
+    $variables['title'] = $seo['heading'];
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function bfep_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (in_array($form_id, [
+    'bfep_referral_form',
+    'bfep_volunteer_form',
+    'bfep_change_request_form',
+  ], TRUE)) {
+    if (\Drupal::hasService('honeypot')) {
+      \Drupal::service('honeypot')->addFormProtection($form, $form_state, ['honeypot', 'time_restriction']);
+    }
+    $form['#attached']['library'][] = 'bfep/public';
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function bfep_cron(): void {
+  // External bfdb changes can happen outside Drupal, so cron is the backstop.
+  \Drupal::service('bfep.cache_invalidator')->invalidatePublic();
+}
+
+/**
+ * Implements hook_simple_sitemap_arbitrary_links_alter().
+ */
+function bfep_simple_sitemap_arbitrary_links_alter(array &$arbitrary_links, $sitemap): void {
+  if ($sitemap->id() !== 'default') {
+    return;
+  }
+
+  /** @var \Drupal\bfep\Service\BfepSettings $settings */
+  $settings = \Drupal::service('bfep.settings');
+  $paths = ['/', '/about', '/campaigns', '/countries'];
+  if ($settings->boolean('index_referral_page')) {
+    $paths[] = '/refer';
+  }
+  if ($settings->boolean('index_volunteer_page')) {
+    $paths[] = '/volunteer';
+  }
+  if ($settings->boolean('index_initiatives_page')) {
+    $paths[] = '/initiatives';
+  }
+  if ($settings->boolean('index_transparency_pages')) {
+    $paths = [...$paths, '/transparency', '/how-we-verify', '/team', '/editorial-policy', '/privacy', '/safeguarding', '/contact-us'];
+  }
+  foreach ($paths as $path) {
+    $arbitrary_links[] = ['url' => $settings->absoluteUrl($path)];
+  }
+
+  try {
+    /** @var \Drupal\bfep\Repository\CampaignRepository $campaigns */
+    $campaigns = \Drupal::service('bfep.campaign_repository');
+    foreach ($campaigns->sitemapCampaigns() as $campaign) {
+      $link = ['url' => $settings->absoluteUrl('/campaigns/' . (int) $campaign->id)];
+      if ($lastmod = _bfep_sitemap_lastmod($campaign->lastmod ?? NULL)) {
+        $link['lastmod'] = $lastmod;
+      }
+      $arbitrary_links[] = $link;
+    }
+    foreach ($campaigns->sitemapCountries() as $country) {
+      $link = ['url' => $settings->absoluteUrl('/countries/' . rawurlencode((string) $country->country))];
+      if ($lastmod = _bfep_sitemap_lastmod($country->lastmod ?? NULL)) {
+        $link['lastmod'] = $lastmod;
+      }
+      $arbitrary_links[] = $link;
+    }
+  }
+  catch (\Throwable $exception) {
+    \Drupal::logger('bfep')->error('Could not add BFEP records to the XML sitemap: @message', [
+      '@message' => $exception->getMessage(),
+    ]);
+  }
+}
+
+/**
+ * Converts an external database timestamp to an ISO 8601 sitemap value.
+ */
+function _bfep_sitemap_lastmod(mixed $value): ?string {
+  if ($value === NULL || trim((string) $value) === '') {
+    return NULL;
+  }
+  try {
+    return (new DateTimeImmutable((string) $value))->format(DATE_ATOM);
+  }
+  catch (\Throwable) {
+    return NULL;
+  }
+}

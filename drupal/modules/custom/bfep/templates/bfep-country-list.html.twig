@@ -1,0 +1,21 @@
+<div class="bfep-page bfep-country-list">
+  <p class="bfep-intro">{% trans %}Choose a country to browse its public campaign records.{% endtrans %}</p>
+  {% if countries %}
+    <div class="bfep-campaign-grid">
+      {% for country in countries %}
+        <article class="bfep-campaign-card bfep-country-card">
+          <h2><a class="bfep-campaign-title" href="{{ country.url }}">{{ country.name }}</a></h2>
+          {% if country.region %}<p class="bfep-status">{{ country.region }}</p>{% endif %}
+          <ul class="bfep-country-counts">
+            <li><strong>{{ country.campaign_count }}</strong> {% if country.campaign_count == 1 %}{% trans %}campaign{% endtrans %}{% else %}{% trans %}campaigns{% endtrans %}{% endif %}</li>
+            <li><strong>{{ country.featured_count }}</strong> {% trans %}featured{% endtrans %}</li>
+            <li><strong>{{ country.urgent_count }}</strong> {% trans %}urgent{% endtrans %}</li>
+          </ul>
+          <p class="bfep-card-actions"><a class="button" href="{{ country.url }}">{% trans %}Browse campaigns{% endtrans %}</a></p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bfep-empty"><p>{% trans %}No countries are currently available.{% endtrans %}</p></div>
+  {% endif %}
+</div>

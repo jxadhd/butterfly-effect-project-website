@@ -1,0 +1,36 @@
+bfep.settings:
+  type: config_object
+  label: 'Butterfly Effect Project settings'
+  mapping:
+    base_url: { type: uri, label: 'Canonical base URL' }
+    organization_name: { type: label, label: 'Organisation name' }
+    title_suffix: { type: label, label: 'Browser-title suffix' }
+    tagline: { type: text, label: 'Homepage tagline' }
+    operator_name: { type: label, label: 'Project operator' }
+    operator_location: { type: label, label: 'Operator location' }
+    technical_operator: { type: label, label: 'Technical operator' }
+    policy_last_updated: { type: label, label: 'Policy last-updated date' }
+    public_contact_email: { type: string, label: 'Public contact email' }
+    privacy_contact_email: { type: string, label: 'Privacy contact email' }
+    default_share_image: { type: string, label: 'Default social-share image' }
+    social_links: { type: text, label: 'Social profile URLs' }
+    google_site_verification: { type: string, label: 'Google verification token' }
+    bing_site_verification: { type: string, label: 'Bing verification token' }
+    home_title: { type: label, label: 'Homepage browser title' }
+    home_description: { type: text, label: 'Homepage description' }
+    campaign_title_pattern: { type: label, label: 'Campaign title pattern' }
+    country_title_pattern: { type: label, label: 'Country title pattern' }
+    public_cache_max_age: { type: integer, label: 'Public cache maximum age' }
+    listing_cache_max_age: { type: integer, label: 'Listing cache maximum age' }
+    search_cache_max_age: { type: integer, label: 'Search cache maximum age' }
+    submission_limit: { type: integer, label: 'Submission limit per client' }
+    submission_window: { type: integer, label: 'Submission rate-limit window' }
+    index_referral_page: { type: boolean, label: 'Index referral page' }
+    index_volunteer_page: { type: boolean, label: 'Index volunteer page' }
+    index_initiatives_page: { type: boolean, label: 'Index initiatives page' }
+    index_transparency_pages: { type: boolean, label: 'Index accountability pages' }
+
+search.plugin.bfep_database:
+  type: mapping
+  label: 'BFEP database search configuration'
+  mapping: { }

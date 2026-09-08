@@ -1,0 +1,9 @@
+bfep_content.settings:
+  path: '/admin/bfep/content'
+  defaults:
+    _form: '\Drupal\bfep_content\Form\ContentSettingsForm'
+    _title: 'BFEP content and channels'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE

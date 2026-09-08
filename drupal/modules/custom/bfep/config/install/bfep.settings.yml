@@ -1,0 +1,27 @@
+base_url: 'https://butterfly.joshcross.co.nz'
+organization_name: 'The Butterfly Effect Project'
+title_suffix: '| The Butterfly Effect Project'
+tagline: 'Helping those in need be seen, shared, and supported.'
+operator_name: 'The Butterfly Effect Project volunteer team'
+operator_location: 'Aotearoa New Zealand'
+technical_operator: 'Josh Cross Creative'
+policy_last_updated: '3 September 2026'
+public_contact_email: ''
+privacy_contact_email: ''
+default_share_image: ''
+social_links: ''
+google_site_verification: ''
+bing_site_verification: ''
+home_title: 'Humanitarian Aid'
+home_description: 'Browse humanitarian fundraising campaigns, discover urgent cases by country, submit referrals, and help keep campaign information current.'
+campaign_title_pattern: '[campaign:name] – [campaign:country]'
+country_title_pattern: 'Humanitarian Fundraisers in [country:name]'
+public_cache_max_age: 900
+listing_cache_max_age: 300
+search_cache_max_age: 300
+submission_limit: 5
+submission_window: 3600
+index_referral_page: true
+index_volunteer_page: true
+index_initiatives_page: false
+index_transparency_pages: true

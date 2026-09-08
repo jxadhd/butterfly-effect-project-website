@@ -1,0 +1,16 @@
+<div class="bfep-page bfep-initiative-list">
+  <p class="bfep-intro">{% trans %}Featured community and humanitarian initiatives maintained in the BFEP directory.{% endtrans %}</p>
+  {% if initiatives %}
+    <div class="bfep-campaign-grid">
+      {% for initiative in initiatives %}
+        <article class="bfep-campaign-card" id="initiative-{{ initiative.id }}">
+          <h2>{{ initiative.name }}</h2>
+          {% if initiative.country or initiative.type %}<ul class="bfep-badges">{% if initiative.country %}<li>{{ initiative.country }}</li>{% endif %}{% if initiative.type %}<li>{{ initiative.type }}</li>{% endif %}</ul>{% endif %}
+          {% if initiative.description %}<p>{{ initiative.description }}</p>{% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bfep-empty"><p>{% trans %}No featured ground initiatives are currently listed.{% endtrans %}</p></div>
+  {% endif %}
+</div>

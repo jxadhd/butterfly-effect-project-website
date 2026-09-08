@@ -1,0 +1,116 @@
+/*
+ * BFEP September 2026 release overrides.
+ * Kept separate from the legacy stylesheet so future cleanup is predictable.
+ */
+
+/* Olivero constrains a main block to its central grid columns. BFEP pages and
+ * forms need the full content region at every public route, including /home. */
+body:not(.path-admin) .region--content .block-system-main-block,
+body:not(.path-admin) .region--content .block-system-main-block > .block__content {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin-inline: 0 !important;
+}
+
+body:not(.path-admin) .bfep-page,
+body:not(.path-admin) form.bfep-public-form {
+  color: #f7f3ff;
+}
+
+body:not(.path-admin) .bfep-hero-card,
+body:not(.path-admin) .bfep-stat-card,
+body:not(.path-admin) .bfep-campaign-card,
+body:not(.path-admin) .bfep-filter-form,
+body:not(.path-admin) .bfep-detail-meta,
+body:not(.path-admin) .bfep-empty,
+body:not(.path-admin) .bfep-trust-callout,
+body:not(.path-admin) form.bfep-public-form {
+  border: 1px solid rgba(203, 180, 255, .16) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(145deg,rgba(25,19,34,.94),rgba(12,9,18,.96)) !important;
+  box-shadow: 0 16px 42px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+body:not(.path-admin) .bfep-campaign-card {
+  transition: border-color .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+body:not(.path-admin) .bfep-campaign-card:hover,
+body:not(.path-admin) .bfep-campaign-card:focus-within {
+  border-color: rgba(187,154,255,.38) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 20px 48px rgba(0,0,0,.34),0 0 0 1px rgba(139,92,246,.08) !important;
+}
+
+body:not(.path-admin) .bfep-eyebrow,
+body:not(.path-admin) .bfep-stat-number,
+body:not(.path-admin) .bfep-campaign-title,
+body:not(.path-admin) .bfep-page h2 a,
+body:not(.path-admin) .bfep-page h3 a {
+  color: #d9c7ff !important;
+}
+body:not(.path-admin) .bfep-campaign-title:hover,
+body:not(.path-admin) .bfep-campaign-title:focus {
+  color: #fff !important;
+}
+
+body:not(.path-admin) .bfep-badges li,
+body:not(.path-admin) .bfep-tag {
+  border: 1px solid rgba(196,167,255,.18);
+  background: rgba(124,58,237,.15);
+  color: #eadfff;
+}
+body:not(.path-admin) .bfep-disclaimer,
+body:not(.path-admin) .bfep-form-notice {
+  border-color: #a78bfa;
+  border-radius: 0 12px 12px 0;
+  background: rgba(124,58,237,.10);
+}
+
+body:not(.path-admin) .bfep-filter-form input[type="search"],
+body:not(.path-admin) .bfep-filter-form select {
+  padding-inline: .8rem !important;
+  border: 1px solid rgba(214,197,255,.23) !important;
+  border-radius: 10px !important;
+  background: #0d0a12 !important;
+  color: #fff !important;
+  font: inherit !important;
+}
+body:not(.path-admin) .bfep-filter-form input:focus,
+body:not(.path-admin) .bfep-filter-form select:focus,
+body:not(.path-admin) form.bfep-public-form input:focus,
+body:not(.path-admin) form.bfep-public-form select:focus,
+body:not(.path-admin) form.bfep-public-form textarea:focus {
+  outline: 3px solid rgba(167,139,250,.30) !important;
+  outline-offset: 2px !important;
+  border-color: #a78bfa !important;
+}
+
+body:not(.path-admin) form.bfep-public-form {
+  padding: clamp(1rem,4vw,2rem) !important;
+}
+body:not(.path-admin) form.bfep-public-form details,
+body:not(.path-admin) form.bfep-public-form fieldset {
+  border-color: rgba(214,197,255,.18) !important;
+}
+
+@media (min-width: 75rem) {
+  body:not(.path-admin) .bfep-campaign-grid {
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 74.99rem) and (min-width: 45rem) {
+  body:not(.path-admin) .bfep-campaign-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 44.99rem) {
+  body:not(.path-admin) .bfep-campaign-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not(.path-admin) .bfep-campaign-card { transition: none; }
+  body:not(.path-admin) .bfep-campaign-card:hover { transform: none; }
+}

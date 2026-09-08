@@ -1,0 +1,226 @@
+<?php
+
+/**
+ * @file
+ * Install and update hooks for the Butterfly Effect Project module.
+ */
+
+/**
+ * Adds the BFEP external-database search page and makes it the site default.
+ */
+function bfep_update_11001(): string {
+  if (!\Drupal::moduleHandler()->moduleExists('search')) {
+    return 'Drupal Search is not enabled; BFEP database search was not configured.';
+  }
+
+  $storage = \Drupal::entityTypeManager()->getStorage('search_page');
+  $page = $storage->load('bfep_database');
+
+  if (!$page) {
+    $page = $storage->create([
+      'id' => 'bfep_database',
+      'label' => 'Butterfly database',
+      'path' => 'database',
+      'weight' => -20,
+      'status' => TRUE,
+      'plugin' => 'bfep_database',
+      'configuration' => [],
+    ]);
+  }
+  else {
+    $page->set('label', 'Butterfly database');
+    $page->set('path', 'database');
+    $page->set('weight', -20);
+    $page->set('plugin', 'bfep_database');
+    $page->set('configuration', []);
+    $page->enable();
+  }
+
+  $page->save();
+
+  // Make /search and search blocks that follow the default page use BFEP.
+  \Drupal::service('search.search_page_repository')->setDefaultSearchPage($page);
+
+  // Existing Search blocks may be pinned to the old Content search page rather
+  // than following the default. Point those blocks at the BFEP database page so
+  // the site's main search immediately becomes database-wide.
+  if (\Drupal::moduleHandler()->moduleExists('block')) {
+    $block_storage = \Drupal::entityTypeManager()->getStorage('block');
+    foreach ($block_storage->loadMultiple() as $block) {
+      if ($block->getPluginId() !== 'search_form_block') {
+        continue;
+      }
+      $settings = $block->get('settings');
+      $settings['page_id'] = 'bfep_database';
+      $block->set('settings', $settings);
+      $block->save();
+    }
+  }
+
+  // Search page routes are generated dynamically from search_page entities.
+  \Drupal::service('router.builder')->rebuild();
+
+  return 'Configured Butterfly database as the default site search and repointed Search blocks to it.';
+}
+
+/**
+ * Adds BFEP settings and applies the public cache policy site-wide.
+ */
+function bfep_update_11002(): string {
+  $defaults = [
+    'base_url' => 'https://butterfly.joshcross.co.nz',
+    'organization_name' => 'The Butterfly Effect Project',
+    'title_suffix' => '| The Butterfly Effect Project',
+    'tagline' => 'Helping those in need be seen, shared, and supported.',
+    'operator_name' => 'The Butterfly Effect Project volunteer team',
+    'operator_location' => 'Aotearoa New Zealand',
+    'technical_operator' => 'Josh Cross Creative',
+    'policy_last_updated' => '3 September 2026',
+    'public_contact_email' => '',
+    'privacy_contact_email' => '',
+    'default_share_image' => '',
+    'social_links' => '',
+    'google_site_verification' => '',
+    'bing_site_verification' => '',
+    'home_title' => 'Humanitarian Aid',
+    'home_description' => 'Browse humanitarian fundraising campaigns, discover urgent cases by country, submit referrals, and help keep campaign information current.',
+    'campaign_title_pattern' => '[campaign:name] – [campaign:country]',
+    'country_title_pattern' => 'Humanitarian Fundraisers in [country:name]',
+    'public_cache_max_age' => 900,
+    'listing_cache_max_age' => 300,
+    'search_cache_max_age' => 300,
+    'submission_limit' => 5,
+    'submission_window' => 3600,
+    'index_referral_page' => TRUE,
+    'index_volunteer_page' => TRUE,
+    'index_initiatives_page' => FALSE,
+    'index_transparency_pages' => TRUE,
+  ];
+
+  $config = \Drupal::configFactory()->getEditable('bfep.settings');
+  foreach ($defaults as $key => $value) {
+    if ($config->get($key) === NULL) {
+      $config->set($key, $value);
+    }
+  }
+  $config->save(TRUE);
+
+  // Page Cache applies to every anonymous public route, including the homepage,
+  // trust pages, listings, details, search, and form landing pages.
+  $performance = \Drupal::configFactory()->getEditable('system.performance');
+  $performance->set('cache.page.max_age', 900)->save(TRUE);
+
+  // Hourly cron is the invalidation backstop for bfdb writes made outside Drupal.
+  $cron = \Drupal::configFactory()->getEditable('automated_cron.settings');
+  $cron->set('interval', 3600)->save(TRUE);
+
+  if (\Drupal::configFactory()->get('simple_sitemap.settings')->get('base_url') !== NULL) {
+    \Drupal::configFactory()->getEditable('simple_sitemap.settings')
+      ->set('base_url', $defaults['base_url'])
+      ->save(TRUE);
+  }
+
+  return 'Added BFEP settings; set the global anonymous page-cache lifetime to 15 minutes and automated cron to hourly.';
+}
+
+/**
+ * Excludes soft-deleted campaigns from the public read view.
+ */
+function bfep_update_11003(): string {
+  $database = \Drupal\Core\Database\Database::getConnection('default', 'bfdb');
+  $ownsView = (int) $database->query(<<<'SQL'
+    SELECT CASE WHEN pg_get_userbyid(c.relowner) = current_user THEN 1 ELSE 0 END
+    FROM pg_class c
+    WHERE c.oid = to_regclass('public.v_campaigns')
+    SQL)->fetchField();
+  $canCreate = (int) $database->query(
+    "SELECT CASE WHEN has_schema_privilege(current_user, 'public', 'CREATE') THEN 1 ELSE 0 END",
+  )->fetchField();
+  if (!$ownsView || !$canCreate) {
+    // The repository and search plugin independently join campaigns and filter
+    // deleted_at, so public behavior is safe even under a least-privilege app
+    // role. An owner can apply database-hardening.sql after deployment.
+    return 'The bfdb application role cannot replace/create views. Public queries still exclude soft-deleted records in code; database-hardening.sql can be applied later by the schema owner.';
+  }
+  $transaction = $database->startTransaction();
+  try {
+    $database->query(<<<'SQL'
+    CREATE OR REPLACE VIEW public.v_campaigns AS
+    SELECT
+      c.id,
+      c.line_number,
+      c.contact_name,
+      co.name AS country,
+      co.global_region,
+      c.description,
+      c.featured_by_bfep,
+      c.urgent_medical_needs,
+      c.career,
+      c.internal_notes,
+      cf.url AS fundraiser_url,
+      fp.name AS platform,
+      cf.currency_code,
+      cf.goal_amount,
+      cf.donated_amount,
+      cf.pct_goal_achieved * 100::numeric AS pct_goal_achieved,
+      COALESCE(
+        array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL),
+        '{}'::text[]
+      ) AS tags,
+      c.created_at,
+      c.updated_at
+    FROM public.campaigns c
+    LEFT JOIN public.countries co ON co.id = c.country_id
+    LEFT JOIN public.campaign_fundraisers cf
+      ON cf.campaign_id = c.id AND cf.is_active
+    LEFT JOIN public.fundraising_platforms fp ON fp.id = cf.platform_id
+    LEFT JOIN public.campaign_tags ct ON ct.campaign_id = c.id
+    LEFT JOIN public.tags t ON t.id = ct.tag_id
+    WHERE c.deleted_at IS NULL
+    GROUP BY
+      c.id,
+      co.name,
+      co.global_region,
+      cf.url,
+      fp.name,
+      cf.currency_code,
+      cf.goal_amount,
+      cf.donated_amount,
+      cf.pct_goal_achieved
+    SQL);
+
+  // Public application code uses a least-privilege projection. Keeping the
+  // legacy view intact avoids breaking staff tooling while making it impossible
+  // for a broad SELECT in a public controller to retrieve internal notes.
+    $database->query(<<<'SQL'
+    CREATE OR REPLACE VIEW public.v_campaigns_public AS
+    SELECT
+      id,
+      line_number,
+      contact_name,
+      country,
+      global_region,
+      description,
+      featured_by_bfep,
+      urgent_medical_needs,
+      career,
+      fundraiser_url,
+      platform,
+      currency_code,
+      goal_amount,
+      donated_amount,
+      pct_goal_achieved,
+      tags,
+      created_at,
+      updated_at
+    FROM public.v_campaigns
+    SQL);
+  }
+  catch (\Throwable $exception) {
+    $transaction->rollBack();
+    throw $exception;
+  }
+  unset($transaction);
+
+  return 'Excluded soft-deleted records and created v_campaigns_public without internal notes for public pages, search, counts, and the sitemap.';
+}

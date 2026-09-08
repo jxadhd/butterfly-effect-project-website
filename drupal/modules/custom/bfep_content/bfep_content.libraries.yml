@@ -1,0 +1,4 @@
+public:
+  css:
+    theme:
+      css/public.css: {}

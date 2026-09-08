@@ -1,0 +1,21 @@
+name: Butterfly
+type: theme
+description: 'Butterfly Effect Project theme.'
+base theme: olivero
+core_version_requirement: ^11
+
+libraries:
+  - butterfly/global-styling
+
+regions:
+  header: Header
+  primary_menu: 'Primary menu'
+  secondary_menu: 'Secondary menu'
+  hero: Hero
+  highlighted: Highlighted
+  breadcrumb: Breadcrumb
+  content_above: 'Content Above'
+  content: Content
+  sidebar: Sidebar
+  footer_top: 'Footer Top'
+  footer_bottom: 'Footer Bottom'

@@ -1,0 +1,102 @@
+<div class="bfep-page bfep-list-page">
+  {% if fixed_country %}
+    <p class="bfep-intro">{% trans %}Browse public campaigns in {{ fixed_country }}.{% endtrans %}</p>
+  {% else %}
+    <p class="bfep-intro">{% trans %}Browse public humanitarian fundraiser records maintained by The Butterfly Effect Project.{% endtrans %}</p>
+  {% endif %}
+
+  <form class="bfep-filter-form" action="{{ action_url }}" method="get" role="search" aria-label="{% trans %}Filter campaigns{% endtrans %}">
+    <div class="bfep-filter-field bfep-filter-field--wide">
+      <label for="bfep-filter-q">{% trans %}Search{% endtrans %}</label>
+      <input id="bfep-filter-q" type="search" name="q" maxlength="120" value="{{ filters.q }}" placeholder="{% trans %}Name, description, or place{% endtrans %}">
+    </div>
+    {% if not fixed_country %}
+      <div class="bfep-filter-field">
+        <label for="bfep-filter-country">{% trans %}Country{% endtrans %}</label>
+        <select id="bfep-filter-country" name="country">
+          <option value="">{% trans %}All countries{% endtrans %}</option>
+          {% for value in options.countries %}<option value="{{ value }}"{% if filters.country == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+        </select>
+      </div>
+    {% endif %}
+    <div class="bfep-filter-field">
+      <label for="bfep-filter-region">{% trans %}Region{% endtrans %}</label>
+      <select id="bfep-filter-region" name="region">
+        <option value="">{% trans %}All regions{% endtrans %}</option>
+        {% for value in options.regions %}<option value="{{ value }}"{% if filters.region == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="bfep-filter-field">
+      <label for="bfep-filter-platform">{% trans %}Platform{% endtrans %}</label>
+      <select id="bfep-filter-platform" name="platform">
+        <option value="">{% trans %}All platforms{% endtrans %}</option>
+        {% for value in options.platforms %}<option value="{{ value }}"{% if filters.platform == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="bfep-filter-field">
+      <label for="bfep-filter-tag">{% trans %}Tag{% endtrans %}</label>
+      <select id="bfep-filter-tag" name="tag">
+        <option value="">{% trans %}All tags{% endtrans %}</option>
+        {% for value in options.tags %}<option value="{{ value }}"{% if filters.tag == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="bfep-filter-field">
+      <label for="bfep-filter-sort">{% trans %}Sort{% endtrans %}</label>
+      <select id="bfep-filter-sort" name="sort">
+        {% for value, label in options.sorts %}<option value="{{ value }}"{% if filters.sort == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="bfep-filter-field">
+      <label for="bfep-filter-per-page">{% trans %}Per page{% endtrans %}</label>
+      <select id="bfep-filter-per-page" name="per_page">
+        {% for value, label in options.per_page %}<option value="{{ value }}"{% if filters.per_page == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="bfep-filter-checks">
+      <label><input type="checkbox" name="featured" value="1"{% if filters.featured %} checked{% endif %}> {% trans %}Featured only{% endtrans %}</label>
+      <label><input type="checkbox" name="urgent" value="1"{% if filters.urgent %} checked{% endif %}> {% trans %}Urgent only{% endtrans %}</label>
+    </div>
+    <div class="bfep-filter-actions">
+      <button class="button button--primary" type="submit">{% trans %}Apply filters{% endtrans %}</button>
+      {% if active_filters %}<a class="button" href="{{ clear_url }}">{% trans %}Clear filters{% endtrans %}</a>{% endif %}
+    </div>
+  </form>
+
+  <div class="bfep-results-bar">
+    <p role="status">
+      {% if total == 1 %}{% trans %}1 campaign{% endtrans %}{% else %}{{ total }} {% trans %}campaigns{% endtrans %}{% endif %}
+      {% if total_pages > 1 %} · {% trans %}Page {{ filters.page }} of {{ total_pages }}{% endtrans %}{% endif %}
+    </p>
+  </div>
+
+  {% if campaigns %}
+    <div class="bfep-campaign-grid">
+      {% for campaign in campaigns %}
+        <article class="bfep-campaign-card">
+          <div class="bfep-card-heading">
+            <h2><a class="bfep-campaign-title" href="{{ campaign.detail_url }}">{{ campaign.name }}</a></h2>
+            {% if campaign.line_number %}<span class="bfep-line">{% trans %}Line #{{ campaign.line_number }}{% endtrans %}</span>{% endif %}
+          </div>
+          {% if campaign.badges %}<ul class="bfep-badges" aria-label="{% trans %}Campaign details{% endtrans %}">{% for badge in campaign.badges %}<li>{{ badge }}</li>{% endfor %}</ul>{% endif %}
+          {% if campaign.description %}<p class="bfep-card-description">{{ campaign.description }}</p>{% else %}<p class="bfep-card-description bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
+          {% if campaign.amounts %}<dl class="bfep-amounts">{% for amount in campaign.amounts %}<div><dt>{{ amount.label }}</dt><dd>{{ amount.value }}</dd></div>{% endfor %}</dl>{% endif %}
+          {% if campaign.tags %}<ul class="bfep-tags" aria-label="{% trans %}Tags{% endtrans %}">{% for tag in campaign.tags %}<li class="bfep-tag">{{ tag }}</li>{% endfor %}</ul>{% endif %}
+          <div class="bfep-card-actions">
+            <a class="button" href="{{ campaign.detail_url }}">{% trans %}View details{% endtrans %}</a>
+            {% if campaign.fundraiser_url %}<a class="button button--primary bfep-donate-button" href="{{ campaign.fundraiser_url }}" target="_blank" rel="ugc nofollow noopener noreferrer">{% trans %}Open fundraiser{% endtrans %}<span class="visually-hidden"> {% trans %}(opens in a new tab){% endtrans %}</span></a>{% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bfep-empty"><h2>{% trans %}No matching campaigns{% endtrans %}</h2><p>{% trans %}Try removing a filter or using a broader search.{% endtrans %}</p></div>
+  {% endif %}
+
+  {% if previous_url or next_url %}
+    <nav class="bfep-pager" aria-label="{% trans %}Campaign pages{% endtrans %}">
+      <span>{% if previous_url %}<a class="button" rel="prev" href="{{ previous_url }}">{% trans %}Previous{% endtrans %}</a>{% endif %}</span>
+      <span>{% trans %}Page {{ filters.page }} of {{ total_pages }}{% endtrans %}</span>
+      <span>{% if next_url %}<a class="button" rel="next" href="{{ next_url }}">{% trans %}Next{% endtrans %}</a>{% endif %}</span>
+    </nav>
+  {% endif %}
+</div>

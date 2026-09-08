@@ -1,0 +1,19 @@
+.bfep-admin-lead { font-size: 1.05rem; max-width: 760px; }
+.bfep-admin-stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 1rem; margin: 1.5rem 0 2rem; }
+.bfep-admin-stat-card { display: flex; flex-direction: column; gap: .45rem; padding: 1.25rem; border: 1px solid #ded8e4; border-radius: 12px; background: #fff; text-decoration: none !important; color: inherit !important; box-shadow: 0 4px 16px rgba(0,0,0,.04); }
+.bfep-admin-stat-card:hover { border-color: #7d4a91; box-shadow: 0 6px 22px rgba(0,0,0,.08); }
+.bfep-admin-stat-number { font-size: 2rem; font-weight: 800; line-height: 1; }
+.bfep-admin-stat-label { font-weight: 700; }
+.bfep-admin-queue-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 1rem; margin: 1rem 0 2rem; }
+.bfep-admin-queue-card { padding: 1.25rem; border: 1px solid #ded8e4; border-radius: 12px; background: #fff; }
+.bfep-admin-queue-card h3 { margin-top: 0; }
+.bfep-admin-queue-meta { font-weight: 700; color: #5f326e; }
+.bfep-admin-health,.bfep-admin-notice { padding: .85rem 1rem; border-left: 4px solid #7d4a91; background: #f7f2fa; margin: 1rem 0; }
+.bfep-admin-filter { display: grid; grid-template-columns: minmax(240px,2fr) repeat(3,minmax(130px,1fr)); gap: .75rem; align-items: end; padding: 1rem; margin: 1rem 0; background: #fff; border: 1px solid #ded8e4; border-radius: 10px; }
+.bfep-admin-filter .form-item { margin: 0; }
+.bfep-admin-filter .form-actions { display: flex; gap: .5rem; margin: 0; align-items: center; }
+.bfep-admin-pager { display: flex; gap: 1rem; justify-content: space-between; align-items: center; margin: 1rem 0; }
+.bfep-admin-table { background: #fff; }
+.bfep-admin-edit-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; margin-bottom: 1rem; background: #f7f2fa; border-radius: 10px; }
+@media (max-width: 900px) { .bfep-admin-filter { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .bfep-admin-filter { grid-template-columns: 1fr; } .bfep-admin-pager,.bfep-admin-edit-summary { align-items: stretch; flex-direction: column; } }

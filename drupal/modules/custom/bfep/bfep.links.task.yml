@@ -1,0 +1,29 @@
+bfep.admin_tab:
+  route_name: bfep.admin
+  title: 'Dashboard'
+  base_route: bfep.admin
+  weight: -10
+
+bfep.admin_campaigns_tab:
+  route_name: bfep.admin_campaigns
+  title: 'Campaigns'
+  base_route: bfep.admin
+  weight: 0
+
+bfep.admin_referrals_tab:
+  route_name: bfep.admin_referrals
+  title: 'Referrals'
+  base_route: bfep.admin
+  weight: 1
+
+bfep.admin_volunteers_tab:
+  route_name: bfep.admin_volunteers
+  title: 'Volunteers'
+  base_route: bfep.admin
+  weight: 2
+
+bfep.admin_changes_tab:
+  route_name: bfep.admin_changes
+  title: 'Change requests'
+  base_route: bfep.admin
+  weight: 3

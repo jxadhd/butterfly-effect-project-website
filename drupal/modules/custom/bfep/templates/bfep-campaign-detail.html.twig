@@ -1,0 +1,27 @@
+<article class="bfep-page bfep-detail">
+  {% if campaign.metadata %}
+    <dl class="bfep-detail-meta">
+      {% for item in campaign.metadata %}<div><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></div>{% endfor %}
+    </dl>
+  {% endif %}
+  {% if campaign.amounts %}
+    <dl class="bfep-detail-meta bfep-detail-meta--amounts">
+      {% for amount in campaign.amounts %}<div><dt>{{ amount.label }}</dt><dd>{{ amount.value }}</dd></div>{% endfor %}
+    </dl>
+  {% endif %}
+  {% if campaign.tags %}<ul class="bfep-tags" aria-label="{% trans %}Tags{% endtrans %}">{% for tag in campaign.tags %}<li class="bfep-tag">{{ tag }}</li>{% endfor %}</ul>{% endif %}
+
+  <section class="bfep-description" aria-labelledby="bfep-description-heading">
+    <h2 id="bfep-description-heading">{% trans %}About this campaign{% endtrans %}</h2>
+    {% if campaign.description %}<p>{{ campaign.description }}</p>{% else %}<p class="bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
+  </section>
+
+  {% if campaign.updated %}<p class="bfep-updated">{% trans %}Directory record last updated {{ campaign.updated }}.{% endtrans %}</p>{% endif %}
+  <p class="bfep-disclaimer">{% trans %}BFEP marks a campaign as verified only while it maintains direct contact with the beneficiary and the beneficiary confirms that they are receiving funds from the fundraiser organiser. BFEP does not process donations, and verification is not a financial guarantee.{% endtrans %} <a href="{{ verification_url }}">{% trans %}How verification works{% endtrans %}</a>.</p>
+
+  <div class="bfep-actions">
+    {% if campaign.fundraiser_url %}<a class="button button--primary" href="{{ campaign.fundraiser_url }}" target="_blank" rel="ugc nofollow noopener noreferrer">{% trans %}Open fundraiser{% endtrans %}<span class="visually-hidden"> {% trans %}(opens in a new tab){% endtrans %}</span></a>{% endif %}
+    <a class="button" href="{{ change_url }}">{% trans %}Request an update{% endtrans %}</a>
+    <a class="button" href="{{ campaigns_url }}">{% trans %}Back to campaigns{% endtrans %}</a>
+  </div>
+</article>

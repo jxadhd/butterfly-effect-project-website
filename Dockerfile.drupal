@@ -1,0 +1,29 @@
+FROM drupal@sha256:369ec2a0bb23e1d6b4a378fbe15e36b52def0bb145c1821b8b33e28c3ec1b490
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgmp-dev \
+    && docker-php-ext-configure gmp \
+    && docker-php-ext-install -j"$(nproc)" gmp \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/drupal
+
+RUN composer require \
+      "drupal/honeypot:^2.2" \
+      "drupal/metatag:^2.2" \
+      "drupal/simple_sitemap:^4.2.3" \
+      "drupal/oidc:^2.3.0" \
+      "drush/drush:^13.7.6" \
+      --with-all-dependencies \
+      --no-interaction \
+      --no-progress \
+      --prefer-dist \
+      --update-no-dev \
+      --optimize-autoloader \
+    && composer clear-cache
+
+RUN printf '%s\n' 'ServerName butterfly.joshcross.co.nz' \
+      > /etc/apache2/conf-available/servername.conf \
+    && a2enconf servername
+
+RUN printf '\nSitemap: https://butterfly.joshcross.co.nz/sitemap.xml\n' >> /opt/drupal/web/robots.txt

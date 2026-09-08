@@ -1,0 +1,15 @@
+public:
+  css:
+    theme:
+      css/public.css: {}
+
+admin:
+  css:
+    theme:
+      css/admin.css: {}
+
+# Backwards-compatible alias for older render arrays.
+cards:
+  css:
+    theme:
+      css/public.css: {}

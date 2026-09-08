@@ -1,0 +1,57 @@
+services:
+  logger.channel.bfep:
+    parent: logger.channel_base
+    arguments: ['bfep']
+
+  bfep.database:
+    class: Drupal\Core\Database\Connection
+    factory: ['Drupal\Core\Database\Database', 'getConnection']
+    arguments: ['default', 'bfdb']
+
+  bfep.settings:
+    class: Drupal\bfep\Service\BfepSettings
+    arguments: ['@config.factory']
+
+  bfep.cache_invalidator:
+    class: Drupal\bfep\Service\BfepCacheInvalidator
+    arguments: ['@cache_tags.invalidator']
+
+  bfep.submission_guard:
+    class: Drupal\bfep\Service\SubmissionGuard
+    arguments: ['@flood', '@request_stack', '@bfep.settings', '@string_translation']
+
+  bfep.campaign_repository:
+    class: Drupal\bfep\Repository\CampaignRepository
+    arguments:
+      - '@bfep.database'
+      - '@cache.default'
+      - '@datetime.time'
+      - '@bfep.settings'
+
+  bfep.initiative_repository:
+    class: Drupal\bfep\Repository\InitiativeRepository
+    arguments:
+      - '@bfep.database'
+      - '@cache.default'
+      - '@datetime.time'
+      - '@bfep.settings'
+
+  bfep.campaign_presenter:
+    class: Drupal\bfep\Service\CampaignPresenter
+    arguments: ['@date.formatter']
+
+  bfep.campaign_list_builder:
+    class: Drupal\bfep\Service\CampaignListBuilder
+    arguments:
+      - '@bfep.campaign_repository'
+      - '@bfep.campaign_presenter'
+      - '@bfep.settings'
+
+  bfep.seo_manager:
+    class: Drupal\bfep\Service\SeoManager
+    arguments:
+      - '@current_route_match'
+      - '@request_stack'
+      - '@bfep.campaign_repository'
+      - '@bfep.settings'
+      - '@logger.channel.bfep'

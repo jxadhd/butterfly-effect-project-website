@@ -1,0 +1,313 @@
+/* BFEP official-channel and editable policy presentation. */
+
+body:not(.path-admin) .bfep-official-channel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+  width: min(100%, 64rem);
+  margin: clamp(1.5rem, 4vw, 2.75rem) auto;
+  padding: clamp(1.15rem, 3vw, 1.65rem);
+  border: 1px solid rgba(207, 181, 255, .18);
+  border-radius: var(--bf-polish-radius, 1rem);
+  background:
+    radial-gradient(circle at 12% 0, rgba(168, 85, 247, .22), transparent 42%),
+    linear-gradient(145deg, rgba(24, 15, 37, .96), rgba(7, 5, 11, .98));
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, .38),
+    inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+body:not(.path-admin) .bfep-official-channel .bfep-eyebrow {
+  margin: 0 0 .35rem;
+  color: #c6a8ff;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+body:not(.path-admin) .bfep-official-channel h2 {
+  margin: 0 0 .45rem;
+  color: #fff;
+  font-size: clamp(1.25rem, 2.4vw, 1.65rem);
+  line-height: 1.15;
+}
+
+body:not(.path-admin) .bfep-official-channel p:last-child {
+  max-width: 48rem;
+  margin: 0;
+  color: #cbc4d6;
+  font-size: .95rem;
+  line-height: 1.6;
+}
+
+body:not(.path-admin) .bfep-instagram-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  min-height: 3rem;
+  padding: .7rem 1rem;
+  border: 1px solid rgba(231, 218, 255, .22);
+  border-radius: .8rem;
+  background: linear-gradient(135deg, #7c3aed, #a855f7 58%, #d946ef);
+  box-shadow: 0 10px 28px rgba(124, 58, 237, .3);
+  color: #fff;
+  font-size: .92rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+body:not(.path-admin) .bfep-instagram-link:hover {
+  color: #fff;
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(124, 58, 237, .38);
+}
+
+body:not(.path-admin) .bfep-instagram-link:focus-visible {
+  outline: 3px solid rgba(216, 190, 255, .85);
+  outline-offset: 3px;
+}
+
+body:not(.path-admin) .bfep-official-channel--footer {
+  width: 100%;
+  margin: clamp(1.5rem, 4vw, 2.5rem) 0 0;
+  padding: 1.1rem 1.2rem;
+  border-radius: .9rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+body:not(.path-admin) .bfep-official-channel--footer h2 {
+  font-size: 1.2rem;
+}
+
+body:not(.path-admin) .bfep-policy-body {
+  width: 100%;
+  max-width: 58rem;
+  margin-block: clamp(1.75rem, 3vw, 2.5rem);
+}
+
+body:not(.path-admin) .bfep-policy-body > :first-child {
+  margin-top: 0;
+}
+
+body:not(.path-admin) .bfep-policy-body h2 {
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+body:not(.path-admin) .bfep-policy-body p,
+body:not(.path-admin) .bfep-policy-body li {
+  line-height: 1.72;
+}
+
+body:not(.path-admin) .bfep-policy-body ul,
+body:not(.path-admin) .bfep-policy-body ol {
+  margin-block: .8rem 1.4rem;
+  padding-inline-start: 1.4rem;
+}
+
+@media (max-width: 44rem) {
+  body:not(.path-admin) .bfep-official-channel {
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.path-admin) .bfep-instagram-link {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not(.path-admin) .bfep-instagram-link {
+    transition: none;
+  }
+}
+
+
+/* BFEP grouped public navigation — direct update. */
+body:not(.path-admin) .bfep-section-nav {
+  width: min(100%, 64rem);
+  margin: clamp(2.5rem, 6vw, 4.5rem) auto 0;
+  padding: clamp(1.15rem, 3vw, 1.6rem);
+  border: 1px solid rgba(207, 181, 255, .16);
+  border-radius: var(--bf-polish-radius, 1rem);
+  background: linear-gradient(145deg, rgba(23, 17, 33, .9), rgba(7, 6, 11, .96));
+  box-shadow: 0 18px 52px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+body:not(.path-admin) .bfep-section-nav .bfep-eyebrow {
+  margin: 0 0 .3rem;
+  color: #c6a8ff;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+body:not(.path-admin) .bfep-section-nav h2 {
+  margin: 0 0 .35rem;
+  font-size: clamp(1.3rem, 2.6vw, 1.75rem);
+}
+
+body:not(.path-admin) .bfep-section-nav__description {
+  max-width: 48rem;
+  margin: 0;
+  color: #cbc4d6;
+  line-height: 1.6;
+}
+
+body:not(.path-admin) .bfep-section-nav__links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: .65rem;
+  margin-top: 1.1rem;
+}
+
+body:not(.path-admin) .bfep-section-nav__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  padding: .65rem .85rem;
+  border: 1px solid rgba(214, 197, 255, .16);
+  border-radius: .75rem;
+  background: rgba(124, 58, 237, .1);
+  color: #eee9f8;
+  font-size: .9rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+}
+
+body:not(.path-admin) .bfep-section-nav__link:hover,
+body:not(.path-admin) .bfep-section-nav__link:focus-visible,
+body:not(.path-admin) .bfep-section-nav__link.is-active {
+  border-color: rgba(214, 190, 255, .4);
+  background: linear-gradient(135deg, rgba(124, 58, 237, .78), rgba(168, 85, 247, .68));
+  color: #fff;
+}
+
+body:not(.path-admin) .header-nav .primary-nav__button-toggle {
+  color: #eee9f8 !important;
+}
+
+body:not(.path-admin) .header-nav .primary-nav__menu--level-2 {
+  padding: .45rem !important;
+  border: 1px solid rgba(214, 197, 255, .14) !important;
+  border-radius: .9rem !important;
+  background: linear-gradient(145deg, rgba(20, 14, 30, .98), rgba(5, 4, 8, .99)) !important;
+  box-shadow: 0 20px 52px rgba(0, 0, 0, .58) !important;
+}
+
+body:not(.path-admin) .header-nav .primary-nav__menu--level-2 .primary-nav__menu-link {
+  width: 100%;
+  min-height: 2.65rem;
+  border-radius: .65rem;
+}
+
+@media (min-width: 75rem) {
+  body:not(.path-admin) .header-nav .primary-nav__menu--level-2 {
+    min-width: 15rem;
+  }
+}
+
+@media (max-width: 74.99rem) {
+  body:not(.path-admin) .header-nav .primary-nav__menu--level-2 {
+    margin: .25rem 0 .75rem .65rem !important;
+    border-radius: .75rem !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 36rem) {
+  body:not(.path-admin) .bfep-section-nav__links {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* BFEP compact desktop dropdown correction. */
+@media (min-width: 75rem) {
+  body:not(.path-admin)
+  .header-nav
+  .primary-nav__menu--level-1
+  > .primary-nav__menu-item--has-children {
+    position: relative !important;
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+
+  body:not(.path-admin)
+  .header-nav
+  .primary-nav__menu-item--has-children
+  > .primary-nav__menu-link {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    padding-right: .25rem !important;
+  }
+
+  body:not(.path-admin)
+  .header-nav
+  .primary-nav__menu-item--has-children
+  > .primary-nav__button-toggle {
+    position: static !important;
+    flex: 0 0 2rem !important;
+    width: 2rem !important;
+    min-width: 2rem !important;
+    height: 2rem !important;
+    margin: 0 0 0 -.1rem !important;
+    padding: 0 !important;
+  }
+
+  body:not(.path-admin)
+  .header-nav
+  .primary-nav__menu--level-2 {
+    position: absolute !important;
+    top: calc(100% + .35rem) !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 0 !important;
+    z-index: 700 !important;
+
+    display: flex !important;
+    flex: none !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+
+    width: 15rem !important;
+    min-width: 15rem !important;
+    max-width: calc(100vw - 2rem) !important;
+
+    margin: 0 !important;
+  }
+
+  body:not(.path-admin)
+  .header-nav
+  .primary-nav__menu--level-2
+  > .primary-nav__menu-item {
+    display: block !important;
+    flex: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  body:not(.path-admin)
+  .header-nav
+  .primary-nav__menu--level-2
+  .primary-nav__menu-link {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 2.6rem !important;
+    padding: .6rem .75rem !important;
+    white-space: normal !important;
+  }
+}

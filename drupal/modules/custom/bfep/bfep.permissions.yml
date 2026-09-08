@@ -1,0 +1,4 @@
+administer bfep external data:
+  title: 'Administer BFEP external database records'
+  description: 'Manage campaigns, referrals, volunteers, change requests, and private workflow fields from bfdb.'
+  restrict access: true

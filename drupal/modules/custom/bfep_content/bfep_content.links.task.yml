@@ -1,0 +1,5 @@
+bfep_content.admin_tab:
+  route_name: bfep_content.settings
+  title: 'Content'
+  base_route: bfep.admin
+  weight: 8

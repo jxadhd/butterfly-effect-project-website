@@ -1,0 +1,126 @@
+bfep_content.settings:
+  title: 'Content and channels'
+  description: 'Edit BFEP policy pages and the official Instagram channel.'
+  route_name: bfep_content.settings
+  parent: bfep.admin
+  weight: 9
+
+
+bfep_content.main_discover:
+  title: 'Discover'
+  route_name: bfep.campaigns
+  menu_name: main
+  expanded: true
+  weight: -40
+
+bfep_content.main_discover_campaigns:
+  title: 'Campaigns'
+  route_name: bfep.campaigns
+  menu_name: main
+  parent: bfep_content.main_discover
+  weight: 0
+
+bfep_content.main_discover_countries:
+  title: 'Countries'
+  route_name: bfep.countries
+  menu_name: main
+  parent: bfep_content.main_discover
+  weight: 1
+
+bfep_content.main_discover_initiatives:
+  title: 'Ground initiatives'
+  route_name: bfep.initiatives
+  menu_name: main
+  parent: bfep_content.main_discover
+  weight: 2
+
+bfep_content.main_action:
+  title: 'Take action'
+  route_name: bfep.refer
+  menu_name: main
+  expanded: true
+  weight: -30
+
+bfep_content.main_action_refer:
+  title: 'Submit a referral'
+  route_name: bfep.refer
+  menu_name: main
+  parent: bfep_content.main_action
+  weight: 0
+
+bfep_content.main_action_volunteer:
+  title: 'Volunteer with us'
+  route_name: bfep.volunteer
+  menu_name: main
+  parent: bfep_content.main_action
+  weight: 1
+
+bfep_content.main_action_update:
+  title: 'Request an update'
+  route_name: bfep.change_request
+  menu_name: main
+  parent: bfep_content.main_action
+  weight: 2
+
+bfep_content.main_trust:
+  title: 'About & trust'
+  route_name: bfep.about
+  menu_name: main
+  expanded: true
+  weight: -20
+
+bfep_content.main_trust_about:
+  title: 'About the project'
+  route_name: bfep.about
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 0
+
+bfep_content.main_trust_transparency:
+  title: 'Transparency'
+  route_name: bfep.trust_transparency
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 1
+
+bfep_content.main_trust_verify:
+  title: 'How we verify'
+  route_name: bfep.trust_how_we_verify
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 2
+
+bfep_content.main_trust_team:
+  title: 'Our team'
+  route_name: bfep.trust_team
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 3
+
+bfep_content.main_trust_editorial:
+  title: 'Editorial policy'
+  route_name: bfep.trust_editorial_policy
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 4
+
+bfep_content.main_trust_privacy:
+  title: 'Privacy notice'
+  route_name: bfep.trust_privacy
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 5
+
+bfep_content.main_trust_safeguarding:
+  title: 'Safeguarding'
+  route_name: bfep.trust_safeguarding
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 6
+
+bfep_content.main_trust_contact:
+  title: 'Contact'
+  route_name: bfep.trust_contact_us
+  menu_name: main
+  parent: bfep_content.main_trust
+  weight: 7

@@ -1,0 +1,257 @@
+bfep.home:
+  path: '/home'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\HomeController::home'
+    _title: ''
+  requirements:
+    _permission: 'access content'
+
+bfep.about:
+  path: '/about'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\HomeController::about'
+    _title: 'About'
+  requirements:
+    _permission: 'access content'
+
+bfep.campaigns:
+  path: '/campaigns'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\CampaignController::campaignList'
+    _title: 'Campaigns'
+  requirements:
+    _permission: 'access content'
+    
+bfep.admin_campaign_add:
+  path: '/admin/bfep/campaign/add'
+  defaults:
+    _form: '\Drupal\bfep\Form\CampaignAddForm'
+    _title: 'Add campaign'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.campaign_detail:
+  path: '/campaigns/{campaign_id}'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\CampaignController::detail'
+    _title: 'Campaign'
+  requirements:
+    _permission: 'access content'
+    campaign_id: '\d+'
+
+bfep.countries:
+  path: '/countries'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\CountryController::list'
+    _title: 'Countries'
+  requirements:
+    _permission: 'access content'
+
+bfep.country_detail:
+  path: '/countries/{country}'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\CountryController::detail'
+    _title: 'Country'
+  requirements:
+    _permission: 'access content'
+
+bfep.initiatives:
+  path: '/initiatives'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\InitiativeController::list'
+    _title: 'Ground initiatives'
+  requirements:
+    _permission: 'access content'
+
+bfep.refer:
+  path: '/refer'
+  defaults:
+    _form: '\Drupal\bfep\Form\ReferralForm'
+    _title: 'Submit a referral'
+  requirements:
+    _permission: 'access content'
+
+bfep.volunteer:
+  path: '/volunteer'
+  defaults:
+    _form: '\Drupal\bfep\Form\VolunteerForm'
+    _title: 'Volunteer with us'
+  requirements:
+    _permission: 'access content'
+
+bfep.change_request:
+  path: '/change-request'
+  defaults:
+    _form: '\Drupal\bfep\Form\ChangeRequestForm'
+    _title: 'Request an information update'
+  requirements:
+    _permission: 'access content'
+
+bfep.trust_transparency:
+  path: '/transparency'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\TrustController::page'
+    _title: 'Transparency'
+    page: 'transparency'
+  requirements:
+    _permission: 'access content'
+
+bfep.trust_how_we_verify:
+  path: '/how-we-verify'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\TrustController::page'
+    _title: 'How We Verify Fundraisers'
+    page: 'how-we-verify'
+  requirements:
+    _permission: 'access content'
+
+bfep.trust_team:
+  path: '/team'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\TrustController::page'
+    _title: 'Our Team'
+    page: 'team'
+  requirements:
+    _permission: 'access content'
+
+bfep.trust_editorial_policy:
+  path: '/editorial-policy'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\TrustController::page'
+    _title: 'Editorial Policy'
+    page: 'editorial-policy'
+  requirements:
+    _permission: 'access content'
+
+bfep.trust_privacy:
+  path: '/privacy'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\TrustController::page'
+    _title: 'Privacy Notice'
+    page: 'privacy'
+  requirements:
+    _permission: 'access content'
+
+bfep.trust_safeguarding:
+  path: '/safeguarding'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\TrustController::page'
+    _title: 'Safeguarding'
+    page: 'safeguarding'
+  requirements:
+    _permission: 'access content'
+
+bfep.trust_contact_us:
+  path: '/contact-us'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\TrustController::page'
+    _title: 'Contact'
+    page: 'contact-us'
+  requirements:
+    _permission: 'access content'
+
+bfep.settings:
+  path: '/admin/config/search/bfep'
+  defaults:
+    _form: '\Drupal\bfep\Form\BfepSettingsForm'
+    _title: 'Butterfly Effect Project settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+bfep.admin:
+  path: '/admin/bfep'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::dashboard'
+    _title: 'BFEP Admin'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_campaigns:
+  path: '/admin/bfep/campaigns'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::campaigns'
+    _title: 'Manage campaigns'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_campaign_edit:
+  path: '/admin/bfep/campaign/{campaign_id}/edit'
+  defaults:
+    _form: '\Drupal\bfep\Form\CampaignEditForm'
+    _title: 'Edit campaign'
+  requirements:
+    _permission: 'administer bfep external data'
+    campaign_id: '\d+'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_referrals:
+  path: '/admin/bfep/referrals'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::referrals'
+    _title: 'Referral submissions'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_referral_review:
+  path: '/admin/bfep/referral/{referral_id}'
+  defaults:
+    _form: '\Drupal\bfep\Form\ReferralReviewForm'
+    _title: 'Review referral'
+  requirements:
+    _permission: 'administer bfep external data'
+    referral_id: '\d+'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_volunteers:
+  path: '/admin/bfep/volunteers'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::volunteers'
+    _title: 'Volunteer applications'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_volunteer_review:
+  path: '/admin/bfep/volunteer/{volunteer_id}'
+  defaults:
+    _form: '\Drupal\bfep\Form\VolunteerReviewForm'
+    _title: 'Review volunteer'
+  requirements:
+    _permission: 'administer bfep external data'
+    volunteer_id: '\d+'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_changes:
+  path: '/admin/bfep/change-requests'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::changes'
+    _title: 'Information change requests'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_change_review:
+  path: '/admin/bfep/change-request/{request_id}'
+  defaults:
+    _form: '\Drupal\bfep\Form\ChangeRequestReviewForm'
+    _title: 'Review change request'
+  requirements:
+    _permission: 'administer bfep external data'
+    request_id: '\d+'
+  options:
+    _admin_route: TRUE

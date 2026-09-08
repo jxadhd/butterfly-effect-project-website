@@ -1,0 +1,49 @@
+bfep_content.policy_page:
+  type: mapping
+  label: 'Editable BFEP policy page'
+  mapping:
+    intro:
+      type: text
+      label: 'Introduction'
+    body:
+      type: text_format
+      label: 'Body'
+
+bfep_content.settings:
+  type: config_object
+  label: 'BFEP content and channel settings'
+  mapping:
+    instagram:
+      type: mapping
+      label: 'Official Instagram channel'
+      mapping:
+        url:
+          type: uri
+          label: 'Profile URL'
+        handle:
+          type: label
+          label: 'Profile handle'
+        message:
+          type: text
+          label: 'Official-channel message'
+        managed_same_as:
+          type: string
+          label: 'Profile metadata URL managed by this module'
+    policies:
+      type: mapping
+      label: 'Trust and policy pages'
+      mapping:
+        transparency:
+          type: bfep_content.policy_page
+        how-we-verify:
+          type: bfep_content.policy_page
+        team:
+          type: bfep_content.policy_page
+        editorial-policy:
+          type: bfep_content.policy_page
+        privacy:
+          type: bfep_content.policy_page
+        safeguarding:
+          type: bfep_content.policy_page
+        contact-us:
+          type: bfep_content.policy_page

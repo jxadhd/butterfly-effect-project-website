@@ -1,0 +1,72 @@
+<div class="bfep-page bfep-home">
+  <section class="bfep-hero" aria-labelledby="bfep-home-title">
+    <div class="bfep-hero-card">
+      <p class="bfep-eyebrow">{{ organization }}</p>
+      <h1 id="bfep-home-title">{{ tagline }}</h1>
+      <p class="bfep-lead">{% trans %}Discover humanitarian fundraisers, check the information available, submit a referral, or help keep the directory current.{% endtrans %}</p>
+      <div class="bfep-actions">
+        <a class="button button--primary" href="{{ links.campaigns }}">{% trans %}View campaigns{% endtrans %}</a>
+        <a class="button" href="{{ links.countries }}">{% trans %}Browse countries{% endtrans %}</a>
+        <a class="button" href="{{ links.refer }}">{% trans %}Submit a referral{% endtrans %}</a>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="bfep-directory-heading">
+    <h2 id="bfep-directory-heading" class="visually-hidden">{% trans %}Directory at a glance{% endtrans %}</h2>
+    <div class="bfep-stats-row">
+      <div class="bfep-stat-card"><strong class="bfep-stat-number">{{ stats.total_campaigns|default(0) }}</strong><span class="bfep-stat-label">{% trans %}Campaigns listed{% endtrans %}</span></div>
+      <div class="bfep-stat-card"><strong class="bfep-stat-number">{{ stats.featured_campaigns|default(0) }}</strong><span class="bfep-stat-label">{% trans %}Featured by BFEP{% endtrans %}</span></div>
+      <div class="bfep-stat-card"><strong class="bfep-stat-number">{{ stats.urgent_campaigns|default(0) }}</strong><span class="bfep-stat-label">{% trans %}Urgent medical cases{% endtrans %}</span></div>
+      <div class="bfep-stat-card"><strong class="bfep-stat-number">{{ stats.countries|default(0) }}</strong><span class="bfep-stat-label">{% trans %}Countries represented{% endtrans %}</span></div>
+    </div>
+  </section>
+
+  {% if official_channel %}
+    <aside class="bfep-official-channel bfep-official-channel--home" aria-labelledby="bfep-instagram-heading">
+      <div>
+        <p class="bfep-eyebrow">{% trans %}Our main official channel{% endtrans %}</p>
+        <h2 id="bfep-instagram-heading">{% trans %}Communication and amplification on Instagram{% endtrans %}</h2>
+        <p>{{ official_channel.message }}</p>
+      </div>
+      <a class="bfep-instagram-link" href="{{ official_channel.url }}" target="_blank" rel="me noopener noreferrer" aria-label="Follow {{ official_channel.handle }} on Instagram (opens in a new tab)">
+        {% trans %}Follow{% endtrans %} {{ official_channel.handle }}
+        <span aria-hidden="true">↗</span>
+      </a>
+    </aside>
+  {% endif %}
+
+  <section class="bfep-home-grid" aria-labelledby="bfep-help-heading">
+    <h2 id="bfep-help-heading">{% trans %}Find a way to help{% endtrans %}</h2>
+    <div class="bfep-campaign-grid">
+      <article class="bfep-campaign-card">
+        <h3><a href="{{ links.campaigns }}">{% trans %}Find campaigns{% endtrans %}</a></h3>
+        <p>{% trans %}Search by name, country, urgency, platform, or tag.{% endtrans %}</p>
+      </article>
+      <article class="bfep-campaign-card">
+        <h3><a href="{{ links.verify }}">{% trans %}Understand verification{% endtrans %}</a></h3>
+        <p>{% trans %}See what the review process checks—and what no remote review can guarantee.{% endtrans %}</p>
+      </article>
+      <article class="bfep-campaign-card">
+        <h3><a href="{{ links.change }}">{% trans %}Correct a record{% endtrans %}</a></h3>
+        <p>{% trans %}Tell the team about changed, inaccurate, unsafe, or private information.{% endtrans %}</p>
+      </article>
+      <article class="bfep-campaign-card">
+        <h3><a href="{{ links.volunteer }}">{% trans %}Volunteer{% endtrans %}</a></h3>
+        <p>{% trans %}Help research, organise, translate, and maintain campaign information.{% endtrans %}</p>
+      </article>
+    </div>
+  </section>
+
+  <aside class="bfep-trust-callout" aria-labelledby="bfep-trust-heading">
+    <div>
+      <p class="bfep-eyebrow">{% trans %}Before you donate{% endtrans %}</p>
+      <h2 id="bfep-trust-heading">{% trans %}A directory reduces friction, not every risk.{% endtrans %}</h2>
+      <p>{% trans %}BFEP does not process donations. Review the current fundraiser and use its platform’s protected payment flow.{% endtrans %}</p>
+    </div>
+    <div class="bfep-actions">
+      <a class="button" href="{{ links.transparency }}">{% trans %}Read our transparency page{% endtrans %}</a>
+      <a class="button" href="{{ links.about }}">{% trans %}About the project{% endtrans %}</a>
+    </div>
+  </aside>
+</div>

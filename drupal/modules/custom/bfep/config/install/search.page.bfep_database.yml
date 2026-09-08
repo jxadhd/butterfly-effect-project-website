@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - bfep
+id: bfep_database
+label: 'Butterfly database'
+path: database
+weight: -20
+plugin: bfep_database
+configuration: {  }

@@ -1,0 +1,8 @@
+name: Butterfly Effect Project
+type: module
+description: Public BFEP campaign pages, submissions, and staff workflows backed by the external bfdb PostgreSQL database.
+package: Custom
+core_version_requirement: ^11
+configure: bfep.settings
+dependencies:
+  - drupal:search

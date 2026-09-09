@@ -4,3 +4,4 @@ global-styling:
       css/butterfly.css: {}
       css/bfep-release.css: {}
       css/bfep-polish.css: {}
+      css/bfep-navigation.css: {}

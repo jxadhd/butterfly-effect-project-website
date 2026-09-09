@@ -1,0 +1,393 @@
+/*
+ * Authoritative BFEP desktop and mobile navigation layer.
+ * Loaded after all legacy and polish styles.
+ */
+
+/* Replace Olivero's overlapping plus icon with a restrained chevron. */
+body:not(.path-admin) .primary-nav__button-toggle {
+    display: inline-grid !important;
+    place-items: center !important;
+    color: #d9d1e8 !important;
+    cursor: pointer;
+}
+
+body:not(.path-admin) .primary-nav__button-toggle .icon--menu-toggle {
+    display: none !important;
+}
+
+body:not(.path-admin) .primary-nav__button-toggle::after {
+    content: "" !important;
+    display: block;
+    width: .48rem;
+    height: .48rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translate(-1px, -1px);
+    transition: transform .18s ease;
+}
+
+body:not(.path-admin)
+.primary-nav__button-toggle[aria-expanded="true"]::after {
+    transform: rotate(225deg);
+}
+
+/* Desktop navigation. */
+@media (min-width: 75rem) {
+    body:not(.path-admin) .primary-nav__menu--level-1 {
+        display: flex !important;
+        align-items: center !important;
+        gap: .25rem !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item {
+        position: relative !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        margin: 0 !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children {
+        display: grid !important;
+        grid-template-columns: minmax(0, auto) 1.9rem;
+        align-items: center;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children
+    > .primary-nav__menu-link {
+        grid-column: 1;
+        min-height: 2.75rem !important;
+        padding: .55rem .3rem .55rem .7rem !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children
+    > .primary-nav__button-toggle {
+        position: static !important;
+        grid-column: 2;
+        width: 1.9rem !important;
+        min-width: 1.9rem !important;
+        height: 2.75rem !important;
+        margin: 0 !important;
+        padding: 0 .65rem 0 .25rem !important;
+        border: 0 !important;
+        border-radius: 0 .75rem .75rem 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children:hover
+    > .primary-nav__menu-link,
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children:focus-within
+    > .primary-nav__menu-link {
+        background: rgba(139, 92, 246, .11) !important;
+    }
+
+    body:not(.path-admin) .primary-nav__menu--level-2 {
+        position: absolute !important;
+        inset: calc(100% + .45rem) auto auto 0 !important;
+        z-index: 600 !important;
+        display: block !important;
+        width: max-content !important;
+        min-width: 14rem !important;
+        max-width: 19rem !important;
+        margin: 0 !important;
+        padding: .5rem !important;
+        overflow: visible !important;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-.35rem);
+        border: 1px solid rgba(214, 197, 255, .15) !important;
+        border-radius: 1rem !important;
+        background:
+                linear-gradient(
+                        145deg,
+                        rgba(23, 17, 33, .98),
+                        rgba(5, 4, 8, .99)
+                ) !important;
+        box-shadow:
+                0 22px 60px rgba(0, 0, 0, .62),
+                inset 0 1px 0 rgba(255, 255, 255, .045) !important;
+        transition:
+                opacity .16s ease,
+                transform .16s ease,
+                visibility .16s ease;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children:nth-child(3)
+    > .primary-nav__menu--level-2 {
+        inset-inline: auto 0 !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-2.is-active-menu-parent,
+    body:not(.path-admin)
+    .primary-nav__button-toggle[aria-expanded="true"]
+    ~ .primary-nav__menu--level-2,
+    body:not(.path-admin)
+    .primary-nav__menu-item--has-children:focus-within
+    > .primary-nav__menu--level-2 {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+        transform: none;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-2
+    > .primary-nav__menu-item {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu-link--level-2 {
+        display: flex !important;
+        width: 100% !important;
+        min-height: 2.65rem !important;
+        padding: .65rem .75rem !important;
+        border-radius: .65rem !important;
+        white-space: normal !important;
+    }
+}
+
+/* Drawer navigation for phones and tablets. */
+@media (max-width: 74.99rem) {
+    body:not(.path-admin):has(.header-nav.is-active) {
+        overflow: hidden !important;
+    }
+
+    body:not(.path-admin) .mobile-buttons {
+        position: relative;
+        z-index: 603 !important;
+    }
+
+    body:not(.path-admin)
+    .mobile-nav-button[aria-expanded="true"] {
+        position: fixed !important;
+        top: .75rem !important;
+        right: .75rem !important;
+        z-index: 603 !important;
+    }
+
+    body:not(.path-admin) .header-nav.is-active {
+        width: min(90vw, 25rem) !important;
+        padding:
+                calc(var(--bf-polish-header) + .75rem)
+                1rem
+                2rem !important;
+        border: 0 !important;
+        border-left: 1px solid rgba(214, 197, 255, .14) !important;
+    }
+
+    body:not(.path-admin) .header-nav .primary-nav {
+        width: 100% !important;
+    }
+
+    body:not(.path-admin) .primary-nav__menu--level-1 {
+        display: grid !important;
+        gap: .45rem !important;
+        width: 100% !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item {
+        width: 100% !important;
+        margin: 0 !important;
+        border: 1px solid rgba(214, 197, 255, .10) !important;
+        border-radius: .85rem !important;
+        background: rgba(255, 255, 255, .025) !important;
+        overflow: hidden;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 3rem;
+        align-items: center;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item
+    > .primary-nav__menu-link {
+        grid-column: 1;
+        display: flex !important;
+        align-items: center;
+        width: 100% !important;
+        min-height: 3rem !important;
+        padding: .7rem .85rem !important;
+        font-size: 1rem !important;
+        font-weight: 750 !important;
+        line-height: 1.3 !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children
+    > .primary-nav__button-toggle {
+        position: static !important;
+        grid-column: 2;
+        width: 3rem !important;
+        min-width: 3rem !important;
+        height: 3rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-left: 1px solid rgba(214, 197, 255, .10) !important;
+        border-radius: 0 !important;
+        background: rgba(139, 92, 246, .06) !important;
+        box-shadow: none !important;
+    }
+
+    body:not(.path-admin) .primary-nav__menu--level-2 {
+        position: static !important;
+        grid-column: 1 / -1;
+        display: none !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: .25rem .5rem .55rem !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        border: 0 !important;
+        border-top: 1px solid rgba(214, 197, 255, .08) !important;
+        background: rgba(0, 0, 0, .12) !important;
+        box-shadow: none !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-2.is-active-menu-parent,
+    body:not(.path-admin)
+    .primary-nav__button-toggle[aria-expanded="true"]
+    ~ .primary-nav__menu--level-2 {
+        display: grid !important;
+        gap: .15rem !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-2
+    > .primary-nav__menu-item {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu-link--level-2 {
+        display: flex !important;
+        align-items: center;
+        width: 100% !important;
+        min-height: 2.75rem !important;
+        padding: .65rem .8rem .65rem 1.15rem !important;
+        border-radius: .65rem !important;
+        color: #cbc3d8 !important;
+        font-size: .93rem !important;
+        font-weight: 650 !important;
+        line-height: 1.35 !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu-link--level-2:hover,
+    body:not(.path-admin)
+    .primary-nav__menu-link--level-2:focus-visible {
+        background: rgba(139, 92, 246, .12) !important;
+        color: #fff !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu-item--has-children:has(
+    > .primary-nav__button-toggle[aria-expanded="true"]
+  ) {
+        border-color: rgba(167, 139, 250, .22) !important;
+        background: rgba(139, 92, 246, .055) !important;
+    }
+
+    body:not(.path-admin) .header-nav .region--secondary-menu {
+        margin-top: 1.25rem !important;
+        padding-top: 1rem !important;
+        border-top: 1px solid rgba(214, 197, 255, .10);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body:not(.path-admin) .primary-nav__menu--level-2,
+    body:not(.path-admin) .primary-nav__button-toggle::after {
+        transition: none !important;
+    }
+}
+
+/* Pointer-driven desktop navigation: no arrow or separate toggle. */
+@media (min-width: 75rem) and (hover: hover) and (pointer: fine) {
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children {
+        display: block !important;
+        position: relative !important;
+        overflow: visible !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children
+    > .primary-nav__button-toggle {
+        display: none !important;
+    }
+
+    body:not(.path-admin)
+    .primary-nav__menu--level-1
+    > .primary-nav__menu-item--has-children
+    > .primary-nav__menu-link {
+        padding: .65rem .8rem !important;
+    }
+
+    /* Remove Olivero's decorative dropdown pointer. */
+    body:not(.path-admin)
+    [data-drupal-selector="primary-nav-menu-🥕"] {
+        display: none !important;
+    }
+
+    body:not(.path-admin)
+    .header-nav .primary-nav__menu--level-2 {
+        /* No gap for the pointer to fall through. */
+        inset-block-start: 100% !important;
+        margin-block-start: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    body:not(.path-admin)
+    .header-nav .primary-nav__menu-item--has-children:hover
+    > .primary-nav__menu--level-2,
+    body:not(.path-admin)
+    .header-nav .primary-nav__menu-item--has-children:focus-within
+    > .primary-nav__menu--level-2 {
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+}

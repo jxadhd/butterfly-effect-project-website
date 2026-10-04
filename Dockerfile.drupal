@@ -1,4 +1,4 @@
-FROM drupal@sha256:369ec2a0bb23e1d6b4a378fbe15e36b52def0bb145c1821b8b33e28c3ec1b490
+FROM drupal@sha256:7a6958c7f2c886da5e3825220fea02fec28c19bd71bea918b925f2fdb4763310
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libgmp-dev \

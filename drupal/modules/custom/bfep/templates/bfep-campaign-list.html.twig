@@ -64,7 +64,7 @@
 
   <div class="bfep-results-bar">
     <p role="status">
-      {% if total == 1 %}{% trans %}1 campaign{% endtrans %}{% else %}{{ total }} {% trans %}campaigns{% endtrans %}{% endif %}
+      {% set shown = campaigns|length %}{% if total == 1 %}{% trans %}Showing 1 of 1 campaign{% endtrans %}{% else %}{% trans %}Showing {{ shown }} of {{ total }} campaigns{% endtrans %}{% endif %}
       {% if total_pages > 1 %} · {% trans %}Page {{ filters.page }} of {{ total_pages }}{% endtrans %}{% endif %}
     </p>
   </div>

@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class CampaignListBuilder {
 
   private const DEFAULT_SORT = 'line_desc';
-  private const DEFAULT_PER_PAGE = 24;
+  private const DEFAULT_PER_PAGE = 20;
   private const PER_PAGE_OPTIONS = [20, 50, 100, 500];
   private const SORT_OPTIONS = [
     'line_desc' => 'Newest line number',

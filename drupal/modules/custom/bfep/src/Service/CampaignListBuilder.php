@@ -178,11 +178,17 @@ final class CampaignListBuilder {
       $query['p'] = (string) $page;
     }
 
+    $current = $input;
+    $canonical = $query;
+    ksort($current);
+    ksort($canonical);
+
     return [
-      'filters' => $filters,
-      'query' => $query,
-      'redirect' => $input !== $query,
+        'filters' => $filters,
+        'query' => $query,
+        'redirect' => $current !== $canonical,
     ];
+
   }
 
 }

@@ -8,7 +8,7 @@
   <form class="bfep-filter-form" action="{{ action_url }}" method="get" role="search" aria-label="{% trans %}Filter campaigns{% endtrans %}">
     <div class="bfep-filter-field bfep-filter-field--wide">
       <label for="bfep-filter-q">{% trans %}Search{% endtrans %}</label>
-      <input id="bfep-filter-q" type="search" name="q" maxlength="120" value="{{ filters.q }}" placeholder="{% trans %}Name, description, or place{% endtrans %}">
+      <input id="bfep-filter-q" type="search" name="q" maxlength="120" value="{{ filters.q }}" placeholder="{% trans %}Line number, name, description, or place{% endtrans %}">
     </div>
     {% if not fixed_country %}
       <div class="bfep-filter-field">

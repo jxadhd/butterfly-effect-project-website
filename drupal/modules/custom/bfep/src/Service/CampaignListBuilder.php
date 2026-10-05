@@ -172,10 +172,10 @@ final class CampaignListBuilder {
       $query['sort'] = $sort;
     }
     if ($perPage !== self::DEFAULT_PER_PAGE) {
-      $query['per_page'] = $perPage;
+      $query['per_page'] = (string) $perPage;
     }
     if ($page > 1) {
-      $query['p'] = $page;
+      $query['p'] = (string) $page;
     }
 
     return [

@@ -1,9 +1,9 @@
 <?php
 
-use Drupal\Core\Url;
-use Drupal\Component\Utility\Html;
-
 declare(strict_types=1);
+
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Url;
 
 /**
  * @file

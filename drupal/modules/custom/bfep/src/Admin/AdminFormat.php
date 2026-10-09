@@ -48,6 +48,18 @@ final class AdminFormat {
   }
 
   /**
+   * Reduces a URL to a comparable key: host and path, lower-cased.
+   *
+   * "https://www.GoFundMe.com/f/abc/?utm=x" and "http://gofundme.com/f/abc"
+   * give the same key. Returns '' for an empty value.
+   */
+  public static function urlMatchKey(mixed $url): string {
+    $url = strtolower(trim((string) ($url ?? '')));
+    $url = (string) preg_replace('~^https?://(www\.)?|[?#].*$~', '', $url);
+    return rtrim($url, '/');
+  }
+
+  /**
    * Validates and clamps listing pagination.
    *
    * @return array{page: int, per_page: int, offset: int, total_pages: int}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\bfep\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -68,6 +69,40 @@ final class ReferralReviewForm extends AdminRecordFormBase {
     if ($link = $this->externalLink($this->referral->fundraiser_url ?? NULL, (string) $this->t('Open fundraiser'))) {
       $form['submission']['fundraiser'] = $link;
     }
+
+    $form['related'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Related records'),
+      '#open' => TRUE,
+    ];
+    $campaignLinks = [];
+    foreach ($this->campaignsWithFundraiserUrl($this->referral->fundraiser_url ?? NULL) as $campaign) {
+      $campaignLinks[] = ['label' => $campaign['label'], 'url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $campaign['id']])];
+    }
+    $form['related']['campaigns'] = $this->relatedList((string) $this->t('Campaigns already using this fundraiser'), $campaignLinks, (string) $this->t('None found'));
+
+    $referralLinks = [];
+    $urlKey = AdminFormat::urlMatchKey($this->referral->fundraiser_url ?? NULL);
+    $email = mb_strtolower(trim((string) ($this->referral->email ?? '')));
+    if ($urlKey !== '' || $email !== '') {
+      $rows = $this->optionalRows("
+        SELECT id, full_name, verification_status, created_at
+        FROM referral_submissions
+        WHERE id <> :id AND (
+          (:key <> '' AND " . $this->urlKeySql('fundraiser_url') . " = :key)
+          OR (:email <> '' AND LOWER(TRIM(email)) = :email)
+        )
+        ORDER BY created_at DESC NULLS LAST, id DESC
+        LIMIT 10
+      ", [':id' => $this->referralId, ':key' => $urlKey, ':email' => $email]);
+      foreach ($rows as $row) {
+        $referralLinks[] = [
+          'label' => trim(($row->full_name ?: 'Referral #' . $row->id) . ' · ' . ($row->verification_status ?: 'pending') . ' · ' . $this->formatDate($row->created_at)),
+          'url' => Url::fromRoute('bfep.admin_referral_review', ['referral_id' => $row->id]),
+        ];
+      }
+    }
+    $form['related']['referrals'] = $this->relatedList((string) $this->t('Other referrals with this fundraiser or email'), $referralLinks, (string) $this->t('None found'));
 
     $form['workflow'] = [
       '#type' => 'details',

@@ -58,6 +58,15 @@ final class ChangeRequestReviewForm extends AdminRecordFormBase {
     if ($link = $this->externalLink($this->changeRequest->fundraiser_url ?? NULL, (string) $this->t('Open submitted fundraiser'))) {
       $form['request']['fundraiser'] = $link;
     }
+    if (empty($this->changeRequest->campaign_id)) {
+      $suggested = [];
+      foreach ($this->campaignsWithFundraiserUrl($this->changeRequest->fundraiser_url ?? NULL) as $campaign) {
+        $suggested[] = ['label' => $campaign['label'], 'url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $campaign['id']])];
+      }
+      if ($suggested) {
+        $form['request']['suggested_campaigns'] = $this->relatedList((string) $this->t('Campaigns using the submitted fundraiser URL'), $suggested, '');
+      }
+    }
     if (!empty($this->changeRequest->campaign_id)) {
       $form['request']['campaign'] = ['#type' => 'link', '#title' => $this->t('Edit linked campaign'), '#url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->changeRequest->campaign_id]), '#attributes' => ['class' => ['button']]];
     }

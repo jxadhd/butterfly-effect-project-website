@@ -138,6 +138,66 @@ abstract class AdminRecordFormBase extends FormBase {
   }
 
   /**
+   * SQL that reduces a URL column to host and path for duplicate matching.
+   *
+   * Drops the scheme, a leading "www.", any query or fragment and trailing
+   * slashes, and lower-cases the rest. Mirrors AdminFormat::urlMatchKey().
+   */
+  protected function urlKeySql(string $column): string {
+    return "regexp_replace(regexp_replace(lower(trim({$column})), '^https?://(www\\.)?|[?#].*$', '', 'g'), '/+$', '')";
+  }
+
+  /**
+   * Lists active campaigns whose current fundraiser URL matches $url.
+   *
+   * @return array<int, array{id: int, label: string}>
+   *   Matching campaigns keyed by ID.
+   */
+  protected function campaignsWithFundraiserUrl(mixed $url): array {
+    $key = AdminFormat::urlMatchKey($url);
+    if ($key === '') {
+      return [];
+    }
+    $rows = $this->optionalRows("
+      SELECT DISTINCT c.id, c.line_number, c.contact_name
+      FROM campaign_fundraisers cf
+      INNER JOIN campaigns c ON c.id = cf.campaign_id AND c.deleted_at IS NULL
+      WHERE cf.is_active AND " . $this->urlKeySql('cf.url') . " = :key
+      ORDER BY c.id
+      LIMIT 10
+    ", [':key' => $key]);
+    $campaigns = [];
+    foreach ($rows as $row) {
+      $label = trim((string) ($row->contact_name ?: 'Campaign #' . $row->id));
+      if (!empty($row->line_number)) {
+        $label .= ' (line ' . $row->line_number . ')';
+      }
+      $campaigns[(int) $row->id] = ['id' => (int) $row->id, 'label' => $label];
+    }
+    return $campaigns;
+  }
+
+  /**
+   * Renders a list of links to related records, or a note when there are none.
+   *
+   * @param string $title
+   *   The list heading.
+   * @param array<int, array{label: string, url: \Drupal\Core\Url}> $links
+   *   The related records.
+   * @param string $empty
+   *   Text shown when $links is empty.
+   */
+  protected function relatedList(string $title, array $links, string $empty): array {
+    $items = [];
+    foreach ($links as $link) {
+      $items[] = ['#type' => 'link', '#title' => $link['label'], '#url' => $link['url']];
+    }
+    return $items
+      ? ['#theme' => 'item_list', '#title' => $title, '#items' => $items]
+      : $this->item($title, $empty);
+  }
+
+  /**
    * Runs a lookup query, returning an empty list if the query fails.
    *
    * Context panels are helpful but optional; a missing column or a slow table

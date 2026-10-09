@@ -36,6 +36,17 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::urlMatchKey
+   */
+  public function testUrlMatchKey(): void {
+    $key = 'gofundme.com/f/abc';
+    $this->assertSame($key, AdminFormat::urlMatchKey('https://www.GoFundMe.com/f/abc/?utm_source=x'));
+    $this->assertSame($key, AdminFormat::urlMatchKey(' http://gofundme.com/f/abc#top '));
+    $this->assertSame($key, AdminFormat::urlMatchKey('gofundme.com/f/abc//'));
+    $this->assertSame('', AdminFormat::urlMatchKey(NULL));
+  }
+
+  /**
    * @covers ::pageWindow
    */
   public function testPageWindowClampsToLastPage(): void {

@@ -13,6 +13,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class AdminController extends ControllerBase {
 
+  /**
+   * Campaign IDs whose auto-synced active fundraiser last failed to sync.
+   *
+   * Statuses are written by the external sync service; anything but "ok"
+   * (including not_found_pending, parse_error and suspicious_drop) needs a look.
+   */
+  private const SYNC_PROBLEM_SQL = "SELECT cf.campaign_id FROM campaign_fundraisers cf WHERE cf.is_active AND cf.auto_sync AND cf.sync_status IS NOT NULL AND cf.sync_status <> 'ok'";
+
   public function __construct(
     protected Connection $database,
     protected DateFormatterInterface $dateFormatter,
@@ -156,6 +164,15 @@ final class AdminController extends ControllerBase {
       ['value' => $changes, 'label' => $this->t('Pending changes'), 'route' => 'bfep.admin_changes', 'query' => ['status' => 'pending']],
     ];
 
+    // Optional: only environments with the sync service have these columns.
+    try {
+      $sync_problems = (int) $db->query("SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL AND id IN (" . self::SYNC_PROBLEM_SQL . ")")->fetchField();
+      $cards[] = ['value' => $sync_problems, 'label' => $this->t('Fundraiser sync problems'), 'route' => 'bfep.admin_campaigns', 'query' => ['sync' => 'problem']];
+    }
+    catch (\Throwable) {
+      // No sync columns; leave the card out.
+    }
+
     $stats = [
       '#type' => 'container',
       '#attributes' => ['class' => ['bfep-admin-stats']],
@@ -244,6 +261,9 @@ final class AdminController extends ControllerBase {
     }
     if ($urgent) {
       $where[] = 'urgent_medical_needs = true';
+    }
+    if ($request->query->get('sync') === 'problem') {
+      $where[] = "id IN (" . self::SYNC_PROBLEM_SQL . ")";
     }
     $where_sql = implode(' AND ', $where);
 

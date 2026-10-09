@@ -34,6 +34,11 @@ final class CampaignEditForm extends FormBase {
    */
   protected array $tagIds = [];
 
+  /**
+   * Sync service columns of the active fundraiser, when the schema has them.
+   */
+  protected ?object $syncState = NULL;
+
   public function __construct(
     protected Connection $database,
     protected BfepCacheInvalidator $cacheInvalidator,
@@ -187,6 +192,29 @@ final class CampaignEditForm extends FormBase {
       '#default_value' => $this->fundraiser->donated_amount ?? '',
     ];
 
+    $this->syncState = $this->loadSyncState();
+    if ($this->syncState !== NULL) {
+      $form['fundraiser']['auto_sync'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Update raised and goal amounts automatically'),
+        '#default_value' => AdminFormat::truthy($this->syncState->auto_sync),
+        '#description' => $this->t('The fundraiser sync service refreshes these figures from the platform. Untick to keep manually entered amounts.'),
+      ];
+      $status = trim((string) ($this->syncState->sync_status ?? ''));
+      $form['fundraiser']['sync_state'] = [
+        '#type' => 'item',
+        '#title' => $this->t('Last sync'),
+        '#markup' => $status === ''
+          ? $this->t('Not checked yet.')
+          : $this->t('@status · checked @checked · last success @success · @failures consecutive failures', [
+            '@status' => $status,
+            '@checked' => $this->syncDate($this->syncState->last_checked_at ?? NULL),
+            '@success' => $this->syncDate($this->syncState->last_success_at ?? NULL),
+            '@failures' => (int) ($this->syncState->consecutive_failures ?? 0),
+          ]),
+      ];
+    }
+
     $form['tags_section'] = ['#type' => 'details', '#title' => $this->t('Tags'), '#open' => FALSE];
     $form['tags_section']['tag_ids'] = [
       '#type' => 'checkboxes',
@@ -302,6 +330,7 @@ final class CampaignEditForm extends FormBase {
     try {
       $this->database->update('campaigns')->fields($fields)->condition('id', $this->campaignId)->execute();
       $changed = [...$changed, ...$this->saveFundraiser($values), ...$this->saveTags($values)];
+      $changed = [...$changed, ...$this->saveAutoSync($values)];
     }
     catch (\Throwable $exception) {
       $transaction->rollBack();
@@ -368,6 +397,48 @@ final class CampaignEditForm extends FormBase {
       ->fields(['campaign_id' => $this->campaignId, 'is_active' => 'true'] + $row)
       ->execute();
     return [$old ? 'fundraiser (replaced)' : 'fundraiser (added)'];
+  }
+
+  /**
+   * Reads the sync columns of the active fundraiser.
+   *
+   * Returns NULL when there is no active fundraiser or the columns do not
+   * exist (an environment without the sync service), so the form still works.
+   */
+  private function loadSyncState(): ?object {
+    try {
+      $row = $this->database->query('
+        SELECT auto_sync, sync_status, last_checked_at, last_success_at, consecutive_failures
+        FROM campaign_fundraisers
+        WHERE campaign_id = :id AND is_active
+        LIMIT 1
+      ', [':id' => $this->campaignId])->fetchObject();
+      return $row ?: NULL;
+    }
+    catch (\Throwable) {
+      return NULL;
+    }
+  }
+
+  private function syncDate(mixed $value): string {
+    $timestamp = !AdminFormat::isBlank($value) ? strtotime((string) $value) : FALSE;
+    return $timestamp ? date('j M Y H:i', $timestamp) : (string) $this->t('never');
+  }
+
+  /**
+   * Saves the auto-sync flag on the (possibly new) active fundraiser.
+   */
+  private function saveAutoSync(array $values): array {
+    if ($this->syncState === NULL || !array_key_exists('auto_sync', $values) || (int) ($values['platform_id'] ?? 0) < 1) {
+      return [];
+    }
+    $wanted = !empty($values['auto_sync']);
+    $this->database->update('campaign_fundraisers')
+      ->fields(['auto_sync' => $wanted ? 'true' : 'false'])
+      ->condition('campaign_id', $this->campaignId)
+      ->condition('is_active', TRUE)
+      ->execute();
+    return AdminFormat::truthy($this->syncState->auto_sync) === $wanted ? [] : ['fundraiser.auto_sync'];
   }
 
   /**

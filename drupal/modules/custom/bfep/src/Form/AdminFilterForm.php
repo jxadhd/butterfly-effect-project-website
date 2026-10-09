@@ -82,6 +82,12 @@ final class AdminFilterForm extends FormBase {
         '#return_value' => '1',
         '#default_value' => $request->query->get('urgent') === '1',
       ];
+      $form['sync'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Sync problems'),
+        '#return_value' => 'problem',
+        '#default_value' => $request->query->get('sync') === 'problem',
+      ];
     }
     elseif ($section === 'referrals') {
       $form['status'] = [
@@ -149,7 +155,7 @@ final class AdminFilterForm extends FormBase {
     $values = $form_state->getValues();
     $query = [];
 
-    foreach (['q', 'status', 'featured', 'urgent', 'per_page'] as $key) {
+    foreach (['q', 'status', 'featured', 'urgent', 'sync', 'per_page'] as $key) {
       if (!array_key_exists($key, $values)) {
         continue;
       }

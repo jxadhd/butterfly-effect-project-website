@@ -69,3 +69,5 @@
   .bfep-pager > :last-child { text-align: end; }
   .bfep-actions .button,.bfep-card-actions .button { flex: 1 1 100%; justify-content: center; }
 }
+/* Keep single line breaks from plain-text campaign descriptions. */
+.bfep-description p { white-space: pre-line; }

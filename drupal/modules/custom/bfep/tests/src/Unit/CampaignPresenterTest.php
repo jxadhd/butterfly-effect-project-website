@@ -56,6 +56,19 @@ final class CampaignPresenterTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::paragraphs
+   */
+  public function testSplitsDescriptionsIntoParagraphs(): void {
+    $presenter = $this->presenter();
+    $this->assertSame([], $presenter->paragraphs("  \n "));
+    $this->assertSame(['One line.'], $presenter->paragraphs('One line.'));
+    $this->assertSame(
+      ["First paragraph,\nsecond line.", 'Second paragraph.'],
+      $presenter->paragraphs("First paragraph,  \r\nsecond line.\r\n\r\n \n\nSecond paragraph.\n"),
+    );
+  }
+
+  /**
    * @covers ::card
    */
   public function testRejectsNonHttpSchemes(): void {

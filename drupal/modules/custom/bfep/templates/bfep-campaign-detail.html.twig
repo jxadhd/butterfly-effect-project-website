@@ -13,7 +13,7 @@
 
   <section class="bfep-description" aria-labelledby="bfep-description-heading">
     <h2 id="bfep-description-heading">{% trans %}About this campaign{% endtrans %}</h2>
-    {% if campaign.description %}<p>{{ campaign.description }}</p>{% else %}<p class="bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
+    {% if campaign.paragraphs %}{% for paragraph in campaign.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}{% else %}<p class="bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
   </section>
 
   {% if campaign.updated %}<p class="bfep-updated">{% trans %}Directory record last updated {{ campaign.updated }}.{% endtrans %}</p>{% endif %}

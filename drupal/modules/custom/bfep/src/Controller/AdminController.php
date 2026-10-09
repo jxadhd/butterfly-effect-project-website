@@ -162,7 +162,7 @@ final class AdminController extends ControllerBase {
 
   public function campaigns(Request $request): array {
     $db = $this->bfdb();
-    [$page, $per_page, $offset] = $this->pageSettings($request);
+    [, $per_page, $offset] = $this->pageSettings($request);
     $q = trim((string) $request->query->get('q', ''));
     $featured = $request->query->get('featured') === '1';
     $urgent = $request->query->get('urgent') === '1';
@@ -226,7 +226,7 @@ final class AdminController extends ControllerBase {
 
   public function referrals(Request $request): array {
     $db = $this->bfdb();
-    [$page, $per_page, $offset] = $this->pageSettings($request);
+    [, $per_page, $offset] = $this->pageSettings($request);
     $q = trim((string) $request->query->get('q', ''));
     $status = trim((string) $request->query->get('status', ''));
     $where = ['id IS NOT NULL'];
@@ -283,7 +283,7 @@ final class AdminController extends ControllerBase {
 
   public function volunteers(Request $request): array {
     $db = $this->bfdb();
-    [$page, $per_page, $offset] = $this->pageSettings($request);
+    [, $per_page, $offset] = $this->pageSettings($request);
     $q = trim((string) $request->query->get('q', ''));
     $status = trim((string) $request->query->get('status', ''));
     $where = ['id IS NOT NULL'];
@@ -346,7 +346,7 @@ final class AdminController extends ControllerBase {
 
   public function changes(Request $request): array {
     $db = $this->bfdb();
-    [$page, $per_page, $offset] = $this->pageSettings($request);
+    [, $per_page, $offset] = $this->pageSettings($request);
     $q = trim((string) $request->query->get('q', ''));
     $status = trim((string) $request->query->get('status', ''));
     $where = ['id IS NOT NULL'];

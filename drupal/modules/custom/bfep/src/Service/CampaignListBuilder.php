@@ -26,6 +26,8 @@ final class CampaignListBuilder {
     'created_desc' => 'Recently added',
     'name_asc' => 'Name A–Z',
     'country_asc' => 'Country A–Z',
+    'funded_asc' => 'Least funded first',
+    'funded_desc' => 'Closest to goal',
   ];
 
   public function __construct(

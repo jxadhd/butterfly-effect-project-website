@@ -16,7 +16,7 @@ use Drupal\Core\Render\Markup;
 function bfep_theme($existing, $type, $theme, $path): array {
   return [
     'bfep_home' => [
-      'variables' => ['organization' => '', 'tagline' => '', 'stats' => [], 'links' => []],
+      'variables' => ['organization' => '', 'tagline' => '', 'stats' => [], 'links' => [], 'spotlight' => []],
     ],
     'bfep_campaign_list' => [
       'variables' => [
@@ -39,6 +39,9 @@ function bfep_theme($existing, $type, $theme, $path): array {
         'change_url' => '',
         'campaigns_url' => '',
         'verification_url' => '',
+        'related' => [],
+        'country_url' => '',
+        'share' => [],
       ],
     ],
     'bfep_country_list' => [
@@ -113,6 +116,15 @@ function bfep_page_attachments(array &$attachments): void {
     ...($attachments['#cache']['tags'] ?? []),
     ...$seo['cache_tags'],
   ]));
+
+  // Lets feed readers and browsers discover the new-campaigns feed.
+  $attachments['#attached']['html_head_link'][] = [[
+    'rel' => 'alternate',
+    'type' => 'application/rss+xml',
+    'title' => 'New campaigns',
+    'href' => $settings->absoluteUrl('/campaigns/feed'),
+  ], FALSE,
+  ];
 
   foreach ($seo['json_ld'] as $index => $data) {
     $json = json_encode(

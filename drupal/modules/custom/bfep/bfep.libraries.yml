@@ -3,6 +3,13 @@ public:
     theme:
       css/public.css: {}
 
+share:
+  js:
+    js/share.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
 admin:
   css:
     theme:

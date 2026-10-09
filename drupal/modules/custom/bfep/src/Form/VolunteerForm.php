@@ -21,32 +21,50 @@ final class VolunteerForm extends ProtectedExternalFormBase {
       $options[(int) $row->id] = (string) $row->name;
     }
     $form['full_name'] = [
-      '#type' => 'textfield', '#title' => $this->t('Full name'), '#required' => TRUE,
-      '#maxlength' => 255, '#autocomplete' => 'name',
+      '#type' => 'textfield',
+      '#title' => $this->t('Full name'),
+      '#required' => TRUE,
+      '#maxlength' => 255,
+      '#autocomplete' => 'name',
     ];
     $form['email'] = [
-      '#type' => 'email', '#title' => $this->t('Email'), '#required' => TRUE,
-      '#maxlength' => 254, '#autocomplete' => 'email',
+      '#type' => 'email',
+      '#title' => $this->t('Email'),
+      '#required' => TRUE,
+      '#maxlength' => 254,
+      '#autocomplete' => 'email',
     ];
     $form['hours_per_week'] = [
-      '#type' => 'textfield', '#title' => $this->t('How many hours per week could you help?'), '#maxlength' => 100,
+      '#type' => 'textfield',
+      '#title' => $this->t('How many hours per week could you help?'),
+      '#maxlength' => 100,
     ];
     $form['interests'] = [
-      '#type' => 'checkboxes', '#title' => $this->t('Which areas interest you?'),
-      '#description' => $this->t('Select all that apply.'), '#options' => $options, '#required' => TRUE,
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Which areas interest you?'),
+      '#description' => $this->t('Select all that apply.'),
+      '#options' => $options,
+      '#required' => TRUE,
     ];
     $form['skills_experience'] = [
-      '#type' => 'textarea', '#title' => $this->t('Skills and experience'), '#required' => TRUE,
-      '#maxlength' => 5000, '#rows' => 8,
+      '#type' => 'textarea',
+      '#title' => $this->t('Skills and experience'),
+      '#required' => TRUE,
+      '#maxlength' => 5000,
+      '#rows' => 8,
       '#description' => $this->t('Tell us about relevant skills and how you hope to help. Do not include identity documents.'),
     ];
     $form['vouched_for_by'] = [
-      '#type' => 'textfield', '#title' => $this->t('Can anyone vouch for you?'), '#maxlength' => 500,
+      '#type' => 'textfield',
+      '#title' => $this->t('Can anyone vouch for you?'),
+      '#maxlength' => 500,
       '#description' => $this->t('Optional. Name a person, group, or community connection only with their permission.'),
     ];
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
-      '#type' => 'submit', '#value' => $this->t('Submit volunteer application'), '#button_type' => 'primary',
+      '#type' => 'submit',
+      '#value' => $this->t('Submit volunteer application'),
+      '#button_type' => 'primary',
     ];
     $this->prepareForm($form);
     return $form;

@@ -184,9 +184,9 @@ final class CampaignListBuilder {
     ksort($canonical);
 
     return [
-        'filters' => $filters,
-        'query' => $query,
-        'redirect' => $current !== $canonical,
+      'filters' => $filters,
+      'query' => $query,
+      'redirect' => $current !== $canonical,
     ];
 
   }

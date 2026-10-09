@@ -5,6 +5,8 @@
  * Install and update hooks for the Butterfly Effect Project module.
  */
 
+use Drupal\Core\Database\Database;
+
 /**
  * Adds the BFEP external-database search page and makes it the site default.
  */
@@ -127,7 +129,7 @@ function bfep_update_11002(): string {
  * Excludes soft-deleted campaigns from the public read view.
  */
 function bfep_update_11003(): string {
-  $database = \Drupal\Core\Database\Database::getConnection('default', 'bfdb');
+  $database = Database::getConnection('default', 'bfdb');
   $ownsView = (int) $database->query(<<<'SQL'
     SELECT CASE WHEN pg_get_userbyid(c.relowner) = current_user THEN 1 ELSE 0 END
     FROM pg_class c
@@ -189,9 +191,9 @@ function bfep_update_11003(): string {
       cf.pct_goal_achieved
     SQL);
 
-  // Public application code uses a least-privilege projection. Keeping the
-  // legacy view intact avoids breaking staff tooling while making it impossible
-  // for a broad SELECT in a public controller to retrieve internal notes.
+    // Public application code uses a least-privilege projection. Keeping the
+    // legacy view intact avoids breaking staff tooling while making it impossible
+    // for a broad SELECT in a public controller to retrieve internal notes.
     $database->query(<<<'SQL'
     CREATE OR REPLACE VIEW public.v_campaigns_public AS
     SELECT

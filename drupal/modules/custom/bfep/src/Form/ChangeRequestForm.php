@@ -23,7 +23,9 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
     }
     $campaignId = $request->query->getInt('campaign_id');
     $form['request_kind'] = [
-      '#type' => 'select', '#title' => $this->t('What kind of request is this?'), '#required' => TRUE,
+      '#type' => 'select',
+      '#title' => $this->t('What kind of request is this?'),
+      '#required' => TRUE,
       '#options' => [
         'campaign_update' => $this->t('Correct or update a campaign'),
         'remove_information' => $this->t('Remove public information'),
@@ -34,14 +36,22 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
       ],
     ];
     $form['submitter_email'] = [
-      '#type' => 'email', '#title' => $this->t('Your email'), '#required' => TRUE,
-      '#maxlength' => 254, '#autocomplete' => 'email',
+      '#type' => 'email',
+      '#title' => $this->t('Your email'),
+      '#required' => TRUE,
+      '#maxlength' => 254,
+      '#autocomplete' => 'email',
     ];
     $form['submitter_name'] = [
-      '#type' => 'textfield', '#title' => $this->t('Your name'), '#maxlength' => 255, '#autocomplete' => 'name',
+      '#type' => 'textfield',
+      '#title' => $this->t('Your name'),
+      '#maxlength' => 255,
+      '#autocomplete' => 'name',
     ];
     $form['submitter_type'] = [
-      '#type' => 'select', '#title' => $this->t('Your relationship to the record'), '#required' => TRUE,
+      '#type' => 'select',
+      '#title' => $this->t('Your relationship to the record'),
+      '#required' => TRUE,
       '#options' => [
         'family_member' => $this->t('Family member'),
         'family_friend' => $this->t('Family friend'),
@@ -51,38 +61,57 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
       ],
     ];
     $form['campaign_id'] = [
-      '#type' => 'number', '#title' => $this->t('Directory campaign ID, if known'),
-      '#default_value' => $campaignId > 0 ? $campaignId : NULL, '#min' => 1, '#step' => 1,
+      '#type' => 'number',
+      '#title' => $this->t('Directory campaign ID, if known'),
+      '#default_value' => $campaignId > 0 ? $campaignId : NULL,
+      '#min' => 1,
+      '#step' => 1,
     ];
     $form['family_line_number_raw'] = [
-      '#type' => 'textfield', '#title' => $this->t('Family/campaign line number, if known'), '#maxlength' => 100,
+      '#type' => 'textfield',
+      '#title' => $this->t('Family/campaign line number, if known'),
+      '#maxlength' => 100,
     ];
     $form['fundraiser_url'] = [
-      '#type' => 'url', '#title' => $this->t('Fundraiser URL, if relevant'), '#maxlength' => 2048,
+      '#type' => 'url',
+      '#title' => $this->t('Fundraiser URL, if relevant'),
+      '#maxlength' => 2048,
     ];
     $form['fields_to_change'] = [
-      '#type' => 'textfield', '#title' => $this->t('What information or issue does this concern?'),
+      '#type' => 'textfield',
+      '#title' => $this->t('What information or issue does this concern?'),
       '#description' => $this->t('For example: fundraiser link, country, description, name, removal, privacy access, or safety.'),
-      '#required' => TRUE, '#maxlength' => 450,
+      '#required' => TRUE,
+      '#maxlength' => 450,
     ];
     $form['change_description'] = [
-      '#type' => 'textarea', '#title' => $this->t('Describe the request'), '#required' => TRUE,
-      '#maxlength' => 5000, '#rows' => 8,
+      '#type' => 'textarea',
+      '#title' => $this->t('Describe the request'),
+      '#required' => TRUE,
+      '#maxlength' => 5000,
+      '#rows' => 8,
       '#description' => $this->t('Include enough detail to identify and assess the request, but do not send passwords, payment details, or identity documents.'),
     ];
     $form['confirmed_existing_family'] = [
-      '#type' => 'checkbox', '#title' => $this->t('This request concerns a family/campaign already listed.'),
+      '#type' => 'checkbox',
+      '#title' => $this->t('This request concerns a family/campaign already listed.'),
     ];
     $form['new_email'] = [
-      '#type' => 'email', '#title' => $this->t('Corrected contact email, if relevant'), '#maxlength' => 254,
+      '#type' => 'email',
+      '#title' => $this->t('Corrected contact email, if relevant'),
+      '#maxlength' => 254,
     ];
     $form['new_social_media'] = [
-      '#type' => 'textarea', '#title' => $this->t('Corrected public social-media details, if relevant'),
-      '#maxlength' => 2000, '#rows' => 4,
+      '#type' => 'textarea',
+      '#title' => $this->t('Corrected public social-media details, if relevant'),
+      '#maxlength' => 2000,
+      '#rows' => 4,
     ];
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
-      '#type' => 'submit', '#value' => $this->t('Submit request'), '#button_type' => 'primary',
+      '#type' => 'submit',
+      '#value' => $this->t('Submit request'),
+      '#button_type' => 'primary',
     ];
     $this->prepareForm($form);
     return $form;
@@ -106,9 +135,12 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $values = $form_state->getValues();
     $kindLabels = [
-      'campaign_update' => 'Campaign update', 'remove_information' => 'Remove information',
-      'privacy_access' => 'Privacy access', 'privacy_correction' => 'Privacy correction',
-      'safety_concern' => 'Safety concern', 'other' => 'Other',
+      'campaign_update' => 'Campaign update',
+      'remove_information' => 'Remove information',
+      'privacy_access' => 'Privacy access',
+      'privacy_correction' => 'Privacy correction',
+      'safety_concern' => 'Safety concern',
+      'other' => 'Other',
     ];
     $fields = '[' . ($kindLabels[$values['request_kind']] ?? 'Other') . '] ' . $this->clean($values['fields_to_change']);
     $campaignId = (int) ($values['campaign_id'] ?? 0);

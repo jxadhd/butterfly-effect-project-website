@@ -72,11 +72,11 @@ final class CampaignRepository {
           $params[':q'] = '%' . $this->database->escapeLike($filters['q']) . '%';
 
           // A bare number (optionally "#142") also matches that exact line.
-          if (preg_match('/^#?([0-9]{1,9})$/', $filters['q'], $matches)) {
-              $lineNumber = (int)$matches[1];
-              $textSql .= ' OR line_number = :line_number';
-              $params[':line_number'] = $lineNumber;
-          }
+        if (preg_match('/^#?([0-9]{1,9})$/', $filters['q'], $matches)) {
+            $lineNumber = (int) $matches[1];
+            $textSql .= ' OR line_number = :line_number';
+            $params[':line_number'] = $lineNumber;
+        }
           $where[] = '(' . $textSql . ')';
       }
 

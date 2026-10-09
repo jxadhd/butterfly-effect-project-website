@@ -13,6 +13,12 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
   rate limiting on public submission forms.
 - Soft-deleted campaigns excluded from pages, search, counts, and sitemaps.
 - Public campaign descriptions separated from staff-only working notes.
+- An "already listed?" question on the referral form. When the fundraiser link
+  matches the active fundraiser of a listed campaign (compared the same way as
+  the admin's related records), the form links to that campaign in a new tab
+  and asks "Is this the fundraiser you are referring?". Yes opens the update
+  request form for that campaign without saving a referral; No saves the
+  referral as usual.
 
 ## Discovery and sharing
 
@@ -51,7 +57,9 @@ form requires Drupal's `administer site configuration` permission.
 - **Dashboard.** Counts come from one query. A database error shows a notice
   instead of breaking the page. Each queue shows how many items are pending and
   the age of the oldest one. A "Fundraiser sync problems" card appears when the
-  sync columns exist.
+  sync columns exist. The bfdb line at the bottom says when the sync last
+  checked a fundraiser, and a warning appears at the top when that was over
+  48 hours ago.
 - **Data checks** (`/admin/bfep/checks`) count campaigns with no active
   fundraiser, a fundraiser URL shared with another campaign, a line number used
   twice, no line number, no country, no public description, no goal, amounts
@@ -103,6 +111,13 @@ form requires Drupal's `administer site configuration` permission.
 - **Audit log.** Every staff create or update writes a notice to the `bfep` log
   channel (Reports > Recent log messages) with the user, record and the names
   of the fields changed. Values are not logged.
+- **Status report.** Reports › Status report has two BFEP entries. "BFEP
+  database (bfdb)" shows the PostgreSQL version, and is an error when bfdb
+  cannot be reached or the `v_campaigns` view is missing. "BFEP fundraiser
+  sync" says when the sync last checked a fundraiser and how many have a sync
+  problem, and warns when none has been checked for 48 hours
+  (`HealthCheck::SYNC_STALE_HOURS`). Dry runs write nothing, so only
+  `--apply` runs count.
 
 ### Search shortcuts
 

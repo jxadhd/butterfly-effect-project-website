@@ -20,6 +20,10 @@ services:
     class: Drupal\bfep\Service\AuditLogger
     arguments: ['@logger.channel.bfep', '@current_user']
 
+  bfep.health_check:
+    class: Drupal\bfep\Service\HealthCheck
+    arguments: ['@>bfep.database', '@date.formatter', '@datetime.time', '@logger.channel.bfep', '@string_translation']
+
   bfep.submission_guard:
     class: Drupal\bfep\Service\SubmissionGuard
     arguments: ['@flood', '@request_stack', '@bfep.settings', '@string_translation']

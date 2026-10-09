@@ -235,7 +235,7 @@ final class SeoManager {
       $value = $query[$key] ?? NULL;
       if (is_scalar($value) && trim((string) $value) !== ''
         && !($key === 'sort' && $value === 'line_desc')
-        && !($key === 'per_page' && (string) $value === '24')) {
+        && !($key === 'per_page' && (string) $value === '20')) {
         return TRUE;
       }
     }

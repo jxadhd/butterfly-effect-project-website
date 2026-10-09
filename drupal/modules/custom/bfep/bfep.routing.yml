@@ -21,7 +21,7 @@ bfep.campaigns:
     _title: 'Campaigns'
   requirements:
     _permission: 'access content'
-    
+
 bfep.admin_campaign_add:
   path: '/admin/bfep/campaign/add'
   defaults:

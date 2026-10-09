@@ -58,7 +58,7 @@ final class CampaignRepository {
 
       $lineNumber = NULL;
       if ($filters['q'] !== '') {
-          $textSql = <<<'SQL'
+        $textSql = <<<'SQL'
           contact_name ILIKE :q
           OR description ILIKE :q
           OR country ILIKE :q
@@ -69,15 +69,15 @@ final class CampaignRepository {
             WHERE t ILIKE :q
           )
           SQL;
-          $params[':q'] = '%' . $this->database->escapeLike($filters['q']) . '%';
+        $params[':q'] = '%' . $this->database->escapeLike($filters['q']) . '%';
 
-          // A bare number (optionally "#142") also matches that exact line.
+        // A bare number (optionally "#142") also matches that exact line.
         if (preg_match('/^#?([0-9]{1,9})$/', $filters['q'], $matches)) {
-            $lineNumber = (int) $matches[1];
-            $textSql .= ' OR line_number = :line_number';
-            $params[':line_number'] = $lineNumber;
+          $lineNumber = (int) $matches[1];
+          $textSql .= ' OR line_number = :line_number';
+          $params[':line_number'] = $lineNumber;
         }
-          $where[] = '(' . $textSql . ')';
+        $where[] = '(' . $textSql . ')';
       }
 
       foreach ([
@@ -110,8 +110,8 @@ final class CampaignRepository {
         default => 'line_number DESC NULLS LAST, id DESC',
       };
       if ($lineNumber !== NULL) {
-          // Put the exact line match first, whatever the chosen sort.
-          $sortSql = 'COALESCE(line_number = :line_number, FALSE) DESC, ' . $sortSql;
+        // Put the exact line match first, whatever the chosen sort.
+        $sortSql = 'COALESCE(line_number = :line_number, FALSE) DESC, ' . $sortSql;
       }
       $whereSql = implode(' AND ', $where);
       $limit = (int) $filters['per_page'];

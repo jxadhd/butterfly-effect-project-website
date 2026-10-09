@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\bfep\EventSubscriber;
 
+use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\BfdbError;
 use Psr\Log\LoggerInterface;
@@ -59,6 +60,15 @@ final class BfdbExceptionSubscriber implements EventSubscriberInterface {
     }
 
     $staff = str_starts_with($route, 'bfep.admin') || $route === 'bfep.settings';
+    if ($staff) {
+      // Staff can act on a GRANT that names the real user. A username is not
+      // a secret, but it is still only shown on staff pages.
+      $user = (string) (Database::getConnectionInfo('bfdb')['default']['username'] ?? '');
+      if ($user !== '') {
+        $explanation['action'] = str_replace("<the site's database user>", $user, $explanation['action']);
+        $explanation['message'] = str_replace('The database user this site connects as', 'The database user this site connects as (' . $user . ')', $explanation['message']);
+      }
+    }
     $target = $staff ? 'bfep.admin_error' : 'bfep.unavailable';
     $sub = Request::create(Url::fromRoute($target)->toString(), 'GET', [], $request->cookies->all(), [], $request->server->all());
     if ($request->hasSession()) {

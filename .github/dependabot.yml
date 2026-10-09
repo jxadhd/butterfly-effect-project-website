@@ -9,3 +9,15 @@ updates:
       time: "09:00"
       timezone: "Pacific/Auckland"
     open-pull-requests-limit: 5
+
+  # Keeps the actions used by the CI workflows (checkout, setup-php, cache)
+  # on supported versions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      timezone: "Pacific/Auckland"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]

@@ -44,3 +44,6 @@ jobs:
       - name: Run unit tests
         working-directory: ${{ runner.temp }}/drupal
         run: vendor/bin/phpunit -c web/core/phpunit.xml.dist web/modules/custom
+
+      - name: Twig template syntax
+        run: php .github/scripts/twig-lint.php "$RUNNER_TEMP/drupal/web" drupal/modules/custom drupal/themes/custom

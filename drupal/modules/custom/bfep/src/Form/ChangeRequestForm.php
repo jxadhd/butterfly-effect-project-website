@@ -144,7 +144,7 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
     ];
     $fields = '[' . ($kindLabels[$values['request_kind']] ?? 'Other') . '] ' . $this->clean($values['fields_to_change']);
     $campaignId = (int) ($values['campaign_id'] ?? 0);
-    $this->database->insert('info_change_requests')->fields([
+    $saved = $this->saveSubmission($form_state, fn() => $this->database->insert('info_change_requests')->fields([
       'submitted_at' => date('c'),
       'submitter_email' => $this->clean($values['submitter_email']),
       'submitter_type' => $values['submitter_type'],
@@ -158,7 +158,10 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
       'new_email' => $this->clean($values['new_email']),
       'new_social_media' => $this->clean($values['new_social_media']),
       'processed' => FALSE,
-    ])->execute();
+    ])->execute());
+    if (!$saved) {
+      return;
+    }
     $this->registerSubmission();
     $this->messenger()->addStatus($this->t('Thank you. Your request has been submitted for review.'));
     $form_state->setRedirect('bfep.change_request');

@@ -79,29 +79,34 @@ final class VolunteerForm extends ProtectedExternalFormBase {
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $values = $form_state->getValues();
-    $transaction = $this->database->startTransaction();
-    try {
-      $volunteerId = (int) $this->database->insert('volunteers')->fields([
-        'submitted_at' => date('c'),
-        'email' => $this->clean($values['email']),
-        'full_name' => $this->clean($values['full_name']),
-        'hours_per_week' => $this->clean($values['hours_per_week']),
-        'skills_experience' => $this->clean($values['skills_experience']),
-        'vouched_for_by' => $this->clean($values['vouched_for_by']),
-        'contacted' => FALSE,
-      ])->execute();
-      foreach (array_filter($values['interests'] ?: []) as $interestId) {
-        $this->database->insert('volunteer_interests')->fields([
-          'volunteer_id' => $volunteerId,
-          'interest_area_id' => (int) $interestId,
+    $saved = $this->saveSubmission($form_state, function () use ($values): void {
+      $transaction = $this->database->startTransaction();
+      try {
+        $volunteerId = (int) $this->database->insert('volunteers')->fields([
+          'submitted_at' => date('c'),
+          'email' => $this->clean($values['email']),
+          'full_name' => $this->clean($values['full_name']),
+          'hours_per_week' => $this->clean($values['hours_per_week']),
+          'skills_experience' => $this->clean($values['skills_experience']),
+          'vouched_for_by' => $this->clean($values['vouched_for_by']),
+          'contacted' => FALSE,
         ])->execute();
+        foreach (array_filter($values['interests'] ?: []) as $interestId) {
+          $this->database->insert('volunteer_interests')->fields([
+            'volunteer_id' => $volunteerId,
+            'interest_area_id' => (int) $interestId,
+          ])->execute();
+        }
       }
+      catch (\Throwable $exception) {
+        $transaction->rollBack();
+        throw $exception;
+      }
+      unset($transaction);
+    });
+    if (!$saved) {
+      return;
     }
-    catch (\Throwable $exception) {
-      $transaction->rollBack();
-      throw $exception;
-    }
-    unset($transaction);
     $this->registerSubmission();
     $this->messenger()->addStatus($this->t('Thank you. Your volunteer application has been submitted.'));
     $form_state->setRedirect('bfep.volunteer');

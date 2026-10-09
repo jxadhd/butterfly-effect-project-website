@@ -55,6 +55,39 @@ abstract class ProtectedExternalFormBase extends FormBase {
     }
   }
 
+  /**
+   * Runs a submission's database writes, keeping the form if they fail.
+   *
+   * On failure the visitor sees an error above their answers instead of an
+   * error page, and the failure is logged without any submitted values.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state, rebuilt on failure so the answers are kept.
+   * @param callable $write
+   *   Performs the inserts.
+   *
+   * @return bool
+   *   TRUE when the submission was saved.
+   */
+  protected function saveSubmission(FormStateInterface $form_state, callable $write): bool {
+    try {
+      $write();
+      return TRUE;
+    }
+    catch (\Throwable $exception) {
+      // Database exception messages can include the submitted values, so
+      // only the exception type and code are logged.
+      $this->getLogger('bfep')->error('Could not save a @form submission: @class (code @code).', [
+        '@form' => $this->getFormId(),
+        '@class' => get_class($exception),
+        '@code' => (string) ($exception->getPrevious()?->getCode() ?: $exception->getCode()),
+      ]);
+      $this->messenger()->addError($this->t('Sorry, your submission could not be saved just now. Your answers are still below. Please try again in a few minutes.'));
+      $form_state->setRebuild();
+      return FALSE;
+    }
+  }
+
   protected function registerSubmission(): void {
     $this->submissionGuard->register($this->getFormId());
   }

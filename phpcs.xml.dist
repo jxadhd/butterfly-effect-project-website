@@ -24,4 +24,10 @@
   <rule ref="Drupal.Commenting.FileComment.Missing"><severity>0</severity></rule>
   <rule ref="Drupal.Arrays.Array.LongLineDeclaration"><severity>0</severity></rule>
   <rule ref="Drupal.Files.LineLength"><severity>0</severity></rule>
+
+  <!--
+    Admin form labels are passed to t() from arrays of literal strings. The
+    site is English-only, so translation extraction does not matter here.
+  -->
+  <rule ref="Drupal.Semantics.FunctionT.NotLiteralString"><severity>0</severity></rule>
 </ruleset>

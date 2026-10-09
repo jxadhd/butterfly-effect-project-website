@@ -160,6 +160,22 @@ final class AdminFormat {
   }
 
   /**
+   * The badge colour for a referral status.
+   *
+   * @return string
+   *   One of pending, info, success, danger or neutral (unknown values).
+   */
+  public static function referralStatusTone(?string $value): string {
+    return match (strtolower(trim((string) $value))) {
+      '', 'pending' => 'pending',
+      'needs_information' => 'info',
+      'verified' => 'success',
+      'rejected' => 'danger',
+      default => 'neutral',
+    };
+  }
+
+  /**
    * Turns a machine value such as "needs_information" into a label.
    */
   public static function humanize(string $value): string {

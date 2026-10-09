@@ -152,4 +152,16 @@ final class AdminFormatTest extends UnitTestCase {
     $this->assertSame('On hold awaiting docs', AdminFormat::referralStatusLabel('on_hold-awaiting docs'));
   }
 
+  /**
+   * @covers ::referralStatusTone
+   */
+  public function testReferralStatusTone(): void {
+    $this->assertSame('pending', AdminFormat::referralStatusTone(NULL));
+    $this->assertSame('pending', AdminFormat::referralStatusTone(' Pending '));
+    $this->assertSame('info', AdminFormat::referralStatusTone('needs_information'));
+    $this->assertSame('success', AdminFormat::referralStatusTone('VERIFIED'));
+    $this->assertSame('danger', AdminFormat::referralStatusTone('rejected'));
+    $this->assertSame('neutral', AdminFormat::referralStatusTone('on hold'));
+  }
+
 }

@@ -42,6 +42,10 @@ form requires Drupal's `administer site configuration` permission.
 - **Referral status** is a fixed list: pending, needs information, verified and
   rejected. Older free-text values are matched case-insensitively and kept as
   an extra option, so nothing is lost on save.
+- **Status badges.** Referral, volunteer and change-request lists show each
+  status as a coloured badge with its text label (pending amber, needs
+  information blue, verified or accepted green, rejected red), so colour is
+  never the only cue.
 - **Related records.** A referral lists campaigns and other referrals with the
   same fundraiser URL or email. A change request with no campaign suggests
   campaigns that use its URL. URLs are compared without scheme, `www.`, query

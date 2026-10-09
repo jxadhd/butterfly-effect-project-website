@@ -223,6 +223,22 @@ final class AdminController extends ControllerBase {
     return ' · oldest ' . $this->dateFormatter->formatTimeDiffSince($timestamp, ['granularity' => 1]);
   }
 
+  /**
+   * A coloured status label for a list cell.
+   *
+   * The text carries the meaning, so the colour is never the only cue.
+   */
+  protected function badge(string $label, string $tone): array {
+    return [
+      'data' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#value' => $this->h($label),
+        '#attributes' => ['class' => ['bfep-status', 'bfep-status--' . $tone]],
+      ],
+    ];
+  }
+
   protected function queueCard(string $title, string $meta, string $description, string $route): array {
     return [
       '#type' => 'container',
@@ -419,7 +435,7 @@ final class AdminController extends ControllerBase {
         ];
       }
       $table_rows[] = [
-        'status' => AdminFormat::referralStatusLabel($row->verification_status),
+        'status' => $this->badge(AdminFormat::referralStatusLabel($row->verification_status), AdminFormat::referralStatusTone($row->verification_status)),
         'name' => $row->full_name ?: '—',
         'email' => $row->email ?: '—',
         'created' => $this->date($row->created_at),
@@ -469,12 +485,16 @@ final class AdminController extends ControllerBase {
 
     $table_rows = [];
     foreach ($rows as $row) {
-      $status_label = $row->accepted === NULL ? 'Pending' : (!empty($row->accepted) ? 'Accepted' : 'Not accepted');
+      [$status_label, $tone] = match (TRUE) {
+        $row->accepted === NULL => ['Pending', 'pending'],
+        !empty($row->accepted) => ['Accepted', 'success'],
+        default => ['Not accepted', 'neutral'],
+      };
       if (!empty($row->onboarded)) {
         $status_label .= ' · Onboarded';
       }
       $table_rows[] = [
-        'status' => $status_label,
+        'status' => $this->badge($status_label, $tone),
         'name' => $row->full_name ?: '—',
         'email' => $row->email ?: '—',
         'hours' => $row->hours_per_week ?: '—',
@@ -548,7 +568,7 @@ final class AdminController extends ControllerBase {
         ];
       }
       $table_rows[] = [
-        'status' => !empty($row->processed) ? 'Processed' : 'Pending',
+        'status' => !empty($row->processed) ? $this->badge('Processed', 'success') : $this->badge('Pending', 'pending'),
         'submitter' => $row->submitter_name ?: $row->submitter_email ?: '—',
         'type' => $row->submitter_type ?: '—',
         'line' => $row->family_line_number_raw ?: '—',

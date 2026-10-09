@@ -13,6 +13,12 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
   rate limiting on public submission forms.
 - Soft-deleted campaigns excluded from pages, search, counts, and sitemaps.
 - Public campaign descriptions separated from staff-only working notes.
+- An "already listed?" question on the referral form. When the fundraiser link
+  matches the active fundraiser of a listed campaign (compared the same way as
+  the admin's related records), the form links to that campaign in a new tab
+  and asks "Is this the fundraiser you are referring?". Yes opens the update
+  request form for that campaign without saving a referral; No saves the
+  referral as usual.
 
 ## Discovery and sharing
 

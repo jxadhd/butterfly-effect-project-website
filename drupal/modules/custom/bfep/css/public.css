@@ -91,3 +91,11 @@
 .bfep-spotlight { margin-block: 2rem 3rem; }
 .bfep-spotlight > h2 { margin-bottom: .25rem; }
 .bfep-spotlight__intro { margin: 0; opacity: .8; }
+
+/* Referral form: the "is this the fundraiser you are referring?" question. */
+form.bfep-public-form .bfep-form-notice .fieldset { margin: .75rem 0 0; padding: 0; border: 0; background: none; box-shadow: none; }
+form.bfep-public-form .bfep-form-notice .fieldset__legend { position: static; margin: 0; padding: 0; background: none; color: inherit; }
+form.bfep-public-form .bfep-form-notice .fieldset__label { padding: 0; font-size: 1rem; font-weight: 750; }
+form.bfep-public-form .bfep-form-notice .fieldset__wrapper { margin: .5rem 0 0; padding: 0; border: 0; }
+form.bfep-public-form .bfep-form-notice .form-type-radio { display: flex; align-items: center; gap: .75rem; margin: .4rem 0; }
+form.bfep-public-form .bfep-form-notice .form-type-radio label { margin: 0; }

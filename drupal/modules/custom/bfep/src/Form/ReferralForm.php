@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\bfep\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
 
 /**
  * Public fundraiser-referral form.
@@ -38,6 +40,27 @@ final class ReferralForm extends ProtectedExternalFormBase {
       '#maxlength' => 2048,
       '#description' => $this->t('Provide the public fundraiser page that you want the team to review.'),
     ];
+    $listed = $form_state->get('listed_campaign');
+    if ($listed !== NULL) {
+      $form['listed'] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['bfep-form-notice']],
+        'message' => [
+          '#markup' => '<p>' . $this->t('<strong>This fundraiser may already be listed.</strong> <a href=":url" target="_blank" rel="noopener">@name</a> uses the same fundraiser link. The link opens in a new tab, so your answers here are kept.', [
+            ':url' => Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $listed['id']])->toString(),
+            '@name' => $listed['label'],
+          ]) . '</p>',
+        ],
+        'same_fundraiser' => [
+          '#type' => 'radios',
+          '#title' => $this->t('Is this the fundraiser you are referring?'),
+          '#options' => [
+            'yes' => $this->t('Yes, it is the same fundraiser'),
+            'no' => $this->t('No, it is a different fundraiser'),
+          ],
+        ],
+      ];
+    }
     $form['social_media_usernames'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Public social media accounts or usernames'),
@@ -147,6 +170,24 @@ final class ReferralForm extends ProtectedExternalFormBase {
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $values = $form_state->getValues();
+
+    // A fundraiser that is already listed gets one yes or no question before
+    // the referral is saved. The answer only counts for the campaign it was
+    // asked about, in case the visitor changed the link in between.
+    $listed = $this->listedCampaign($this->clean($values['fundraiser_url']));
+    $asked = $form_state->get('listed_campaign');
+    if ($listed !== NULL && ($asked === NULL || $asked['id'] !== $listed['id'] || empty($values['same_fundraiser']))) {
+      $form_state->set('listed_campaign', $listed);
+      $form_state->setRebuild();
+      $this->messenger()->addWarning($this->t('Please answer the question under the fundraiser link, then submit again.'));
+      return;
+    }
+    if ($listed !== NULL && ($values['same_fundraiser'] ?? '') === 'yes') {
+      $this->messenger()->addStatus($this->t('Thank you for checking. That fundraiser is already listed, so it does not need a new referral. If something on its page is wrong or out of date, you can tell us below.'));
+      $form_state->setRedirect('bfep.change_request', [], ['query' => ['campaign_id' => $listed['id']]]);
+      return;
+    }
+
     $saved = $this->saveSubmission($form_state, fn() => $this->database->insert('referral_submissions')->fields([
       'full_name' => $this->clean($values['full_name']),
       'email' => $this->clean($values['email']),
@@ -168,6 +209,41 @@ final class ReferralForm extends ProtectedExternalFormBase {
     $this->registerSubmission();
     $this->messenger()->addStatus($this->t('Thank you. Your referral has been submitted for review.'));
     $form_state->setRedirect('bfep.refer');
+  }
+
+  /**
+   * Finds a listed campaign whose active fundraiser uses this URL.
+   *
+   * @return array{id: int, label: string}|null
+   *   The campaign's ID and a label such as "Family 42 (line 42)", or NULL
+   *   when none matches or bfdb cannot be searched.
+   */
+  protected function listedCampaign(string $url): ?array {
+    $key = AdminFormat::urlMatchKey($url);
+    if ($key === '' || $this->database === NULL) {
+      return NULL;
+    }
+    try {
+      $row = $this->database->query('
+        SELECT c.id, c.line_number, c.contact_name
+        FROM campaigns c
+        JOIN campaign_fundraisers cf ON cf.campaign_id = c.id AND cf.is_active
+        WHERE c.deleted_at IS NULL AND ' . AdminFormat::urlKeySql('cf.url') . ' = :key
+        ORDER BY c.id
+        LIMIT 1', [':key' => $key])->fetchObject();
+    }
+    catch (\Throwable $exception) {
+      $this->getLogger('bfep')->warning('Could not check whether a referred fundraiser is listed: @class', ['@class' => get_class($exception)]);
+      return NULL;
+    }
+    if (!$row) {
+      return NULL;
+    }
+    $name = trim((string) $row->contact_name) ?: (string) $this->t('Campaign @id', ['@id' => $row->id]);
+    return [
+      'id' => (int) $row->id,
+      'label' => $row->line_number ? (string) $this->t('@name (line @line)', ['@name' => $name, '@line' => $row->line_number]) : $name,
+    ];
   }
 
 }

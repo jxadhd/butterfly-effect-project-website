@@ -74,13 +74,19 @@ final class ReferralReviewForm extends AdminRecordFormBase {
       '#title' => $this->t('Review status'),
       '#open' => TRUE,
     ];
+    $existing = array_map('strval', array_column($this->optionalRows("
+      SELECT DISTINCT verification_status AS value
+      FROM referral_submissions
+      WHERE verification_status IS NOT NULL AND TRIM(verification_status) <> ''
+    ", []), 'value'));
+    $options = AdminFormat::referralStatusOptions($existing, $this->referral->verification_status ?? NULL);
     $form['workflow']['verification_status'] = [
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => $this->t('Verification status'),
-      '#default_value' => $this->referral->verification_status ?: 'pending',
+      '#options' => $options,
+      '#default_value' => AdminFormat::referralStatusKey($this->referral->verification_status ?? NULL, $options),
       '#required' => TRUE,
-      '#maxlength' => 100,
-      '#description' => $this->t('Use the status values your BFEP workflow already uses (for example pending, verified, rejected, or needs_information).'),
+      '#description' => $this->t('Statuses already used by other referrals are included, so existing workflow values are kept.'),
     ];
 
     $this->addActions($form, (string) $this->t('Save review'), (string) $this->t('Back to referrals'), 'bfep.admin_referrals');

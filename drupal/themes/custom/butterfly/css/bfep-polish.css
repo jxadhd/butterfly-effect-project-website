@@ -1016,3 +1016,127 @@ body:not(.path-admin) .bfep-footer-links p {
     transition: none !important;
   }
 }
+
+/* -------------------------------------------------------------------------
+ * Header refinements: logo and search.
+ *
+ * Flat, quiet surfaces: one border weight, one accent colour, no glow,
+ * gloss highlights or stacked rings. Public pages only.
+ * ---------------------------------------------------------------------- */
+
+/*
+ * The logo PNG has its round artwork sitting above the centre of a larger
+ * transparent canvas. Scale and shift the image so the artwork fills the box
+ * and is centred, and drop the ring/glow that was drawn around the box.
+ */
+body:not(.path-admin) .site-branding__logo img {
+  object-fit: contain;
+  border-radius: 0;
+  filter: none;
+  box-shadow: none;
+  transform: scale(1.3) translateY(4.5%);
+}
+
+/* Toggle button: plain bordered square; accent only while open. */
+body:not(.path-admin) .block-search-wide__button {
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: .65rem !important;
+  background: rgba(255, 255, 255, .04) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+
+body:not(.path-admin) .block-search-wide__button::before {
+  content: none !important;
+}
+
+body:not(.path-admin) .block-search-wide__button:hover,
+body:not(.path-admin) .block-search-wide__button:focus-visible,
+body:not(.path-admin) .block-search-wide__button[aria-expanded="true"] {
+  border-color: rgba(167, 139, 250, .7) !important;
+  background: rgba(139, 92, 246, .16) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Popover: one solid surface and one hairline border. */
+body:not(.path-admin) .block-search-wide__wrapper {
+  padding: .5rem !important;
+  border: 1px solid rgba(255, 255, 255, .12) !important;
+  border-radius: .75rem !important;
+  background: #0d0b12 !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .5) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:not(.path-admin) .block-search-wide .search-form {
+  gap: .5rem !important;
+}
+
+/* Field: flat, no inner shadow, no focus halo. */
+body:not(.path-admin) .block-search-wide input[type="search"],
+body:not(.path-admin) .block-search-wide input[type="text"] {
+  border: 1px solid rgba(255, 255, 255, .14) !important;
+  border-radius: .5rem !important;
+  background: #07060a !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:not(.path-admin) .block-search-wide input[type="search"]:focus,
+body:not(.path-admin) .block-search-wide input[type="text"]:focus {
+  border-color: #a78bfa !important;
+  box-shadow: none !important;
+}
+
+/* Submit: solid accent, icon optically centred. */
+body:not(.path-admin) .block-search-wide .search-form__submit,
+body:not(.path-admin) .block-search-wide input[type="submit"],
+body:not(.path-admin) .block-search-wide button[type="submit"] {
+  border: 0 !important;
+  border-radius: .5rem !important;
+  background: #7c3aed !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  transition: background-color .15s ease;
+}
+
+body:not(.path-admin) .block-search-wide .search-form__submit::before,
+body:not(.path-admin) .block-search-wide button[type="submit"]::before {
+  content: none !important;
+}
+
+body:not(.path-admin) .block-search-wide .search-form__submit:hover,
+body:not(.path-admin) .block-search-wide button[type="submit"]:hover {
+  background: #8b5cf6 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body:not(.path-admin) .block-search-wide .search-form__submit .icon,
+body:not(.path-admin) .block-search-wide .search-form__submit svg,
+body:not(.path-admin) .block-search-wide button[type="submit"] svg {
+  display: block !important;
+  position: static !important;
+  margin: 0 !important;
+  inset: auto !important;
+  transform: none !important;
+}
+
+/* Olivero offsets the magnifier span 22px from the left; centre it instead. */
+body:not(.path-admin) .block-search-wide .search-form__submit .icon--search {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1.25rem 1.25rem !important;
+}

@@ -60,6 +60,15 @@ final class AdminFormat {
   }
 
   /**
+   * SQL expression giving the same key as urlMatchKey() for a URL column.
+   *
+   * $column must be a trusted identifier, never user input.
+   */
+  public static function urlKeySql(string $column): string {
+    return "regexp_replace(regexp_replace(lower(trim({$column})), '^https?://(www\\.)?|[?#].*$', '', 'g'), '/+$', '')";
+  }
+
+  /**
    * Validates and clamps listing pagination.
    *
    * @return array{page: int, per_page: int, offset: int, total_pages: int}

@@ -2,10 +2,13 @@
 
 namespace Drupal\bfep\Form;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -144,6 +147,12 @@ final class CampaignAddForm extends FormBase {
       '#type' => 'url',
       '#title' => $this->t('Fundraiser URL'),
       '#maxlength' => 2000,
+    ];
+
+    $form['fundraiser']['allow_duplicate_url'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Add anyway if another campaign already uses this fundraiser URL'),
+      '#description' => $this->t('Leave unchecked to be warned about likely duplicates.'),
     ];
 
     $form['fundraiser']['currency_code'] = [
@@ -341,6 +350,19 @@ final class CampaignAddForm extends FormBase {
 
     if ($url !== '' && !in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], TRUE)) {
       $form_state->setErrorByName('fundraiser_url', $this->t('Use a valid public http:// or https:// fundraiser URL.'));
+    }
+
+    if ($url !== '' && !$form_state->getValue('allow_duplicate_url')) {
+      $duplicates = $this->campaignsUsingUrl($url);
+      if ($duplicates) {
+        $links = [];
+        foreach ($duplicates as $id => $label) {
+          $links[] = '<a href="' . Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $id])->toString() . '">' . Html::escape($label) . '</a>';
+        }
+        $form_state->setErrorByName('fundraiser_url', $this->t('This fundraiser URL is already used by: @campaigns. Edit that campaign instead, or tick “Add anyway” to create a separate campaign.', [
+          '@campaigns' => Markup::create(implode(', ', $links)),
+        ]));
+      }
     }
 
     if ($currency !== '' && !preg_match('/^[A-Z]{3}$/', $currency)) {
@@ -638,6 +660,39 @@ final class CampaignAddForm extends FormBase {
     $form_state->setRedirect('bfep.admin_campaign_edit', [
       'campaign_id' => $campaign_id,
     ]);
+  }
+
+  /**
+   * Returns active campaigns whose active fundraiser matches $url.
+   *
+   * @return array<int, string>
+   *   Labels keyed by campaign ID.
+   */
+  private function campaignsUsingUrl(string $url): array {
+    $key = AdminFormat::urlMatchKey($url);
+    if ($key === '') {
+      return [];
+    }
+    $campaigns = [];
+    try {
+      $rows = $this->bfdb()->query("
+        SELECT DISTINCT c.id, c.line_number, c.contact_name
+        FROM campaign_fundraisers cf
+        INNER JOIN campaigns c ON c.id = cf.campaign_id AND c.deleted_at IS NULL
+        WHERE cf.is_active AND " . AdminFormat::urlKeySql('cf.url') . " = :key
+        ORDER BY c.id
+        LIMIT 10
+      ", [':key' => $key])->fetchAll();
+    }
+    catch (\Throwable $exception) {
+      $this->logger('bfep')->warning('Duplicate fundraiser check failed: @message', ['@message' => $exception->getMessage()]);
+      return [];
+    }
+    foreach ($rows as $row) {
+      $label = trim((string) ($row->contact_name ?: 'Campaign #' . $row->id));
+      $campaigns[(int) $row->id] = $label . (!empty($row->line_number) ? ' (line ' . $row->line_number . ')' : '');
+    }
+    return $campaigns;
   }
 
   private function nullableText(mixed $value): ?string {

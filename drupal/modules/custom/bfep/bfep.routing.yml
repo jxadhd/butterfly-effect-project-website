@@ -272,3 +272,24 @@ bfep.admin_change_review:
     request_id: '\d+'
   options:
     _admin_route: TRUE
+
+# Shown by BfdbExceptionSubscriber in place of the generic error page.
+bfep.admin_error:
+  path: '/admin/bfep/error'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\ErrorPageController::staff'
+    _title: 'bfdb error'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.unavailable:
+  path: '/directory-unavailable'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\ErrorPageController::public'
+    _title: 'Temporarily unavailable'
+  requirements:
+    # Public on purpose: it is shown to anonymous visitors when a public page
+    # fails, and returns 404 when visited directly.
+    _access: 'TRUE'

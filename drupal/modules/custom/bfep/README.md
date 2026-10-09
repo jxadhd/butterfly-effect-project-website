@@ -76,6 +76,12 @@ form requires Drupal's `administer site configuration` permission.
 - **Lists** have working paging with a 25, 50 or 100 per-page choice, escape
   `%` and `_` in searches, and filter referrals by "Pending (including no
   status)" and campaigns by "Sync problems".
+- **CSV export.** "Download … as CSV" under the campaign list exports the
+  campaigns the list is showing, with the same search and filters (up to
+  10,000 rows): line, name, country, flags, tags, active fundraiser figures and
+  links. Internal notes and submitter details are never exported. Cells that
+  start with `=`, `+`, `-` or `@` get a leading apostrophe so spreadsheets do
+  not run them as formulas. Each export is logged with the user and row count.
 - **Sorting.** Click a column heading (line, name, country, email, hours,
   status, created or updated) to sort; click again to reverse. Only listed
   columns can be sorted, so the URL cannot inject SQL.

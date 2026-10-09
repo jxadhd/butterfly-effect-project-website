@@ -164,6 +164,41 @@ final class AdminFormat {
   }
 
   /**
+   * Builds CSV text (with a UTF-8 byte order mark, for Excel) from rows.
+   *
+   * @param array<int, array<int, mixed>> $rows
+   *   Rows of cell values. NULL becomes an empty cell.
+   */
+  public static function csv(array $rows): string {
+    $handle = fopen('php://temp', 'r+');
+    foreach ($rows as $row) {
+      fputcsv($handle, array_map([self::class, 'csvCell'], $row), ',', '"', '');
+    }
+    rewind($handle);
+    $csv = stream_get_contents($handle);
+    fclose($handle);
+    return "\u{FEFF}" . $csv;
+  }
+
+  /**
+   * Makes one value safe for a spreadsheet cell.
+   *
+   * Text starting with =, +, -, @, tab or carriage return is prefixed with an
+   * apostrophe, so a spreadsheet shows it instead of running it as a formula.
+   * Plain numbers, including negative ones, are left alone.
+   */
+  public static function csvCell(mixed $value): string {
+    if ($value === NULL || is_bool($value)) {
+      return $value ? '1' : '';
+    }
+    $value = (string) $value;
+    if (preg_match('/^-?[0-9]+(\.[0-9]+)?$/', $value)) {
+      return $value;
+    }
+    return preg_match('/^[=+\-@\t\r]/', $value) ? "'" . $value : $value;
+  }
+
+  /**
    * Builds the referral status options.
    *
    * Known workflow values come first, followed by any other values already in

@@ -116,6 +116,30 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::csvCell
+   */
+  public function testCsvCell(): void {
+    $this->assertSame('', AdminFormat::csvCell(NULL));
+    $this->assertSame('Family 1', AdminFormat::csvCell('Family 1'));
+    $this->assertSame('-12.5', AdminFormat::csvCell('-12.5'));
+    $this->assertSame('42', AdminFormat::csvCell(42));
+    $this->assertSame("'=HYPERLINK(\"http://x\")", AdminFormat::csvCell('=HYPERLINK("http://x")'));
+    $this->assertSame("'+1 555", AdminFormat::csvCell('+1 555'));
+    $this->assertSame("'-cmd", AdminFormat::csvCell('-cmd'));
+    $this->assertSame("'@SUM(A1)", AdminFormat::csvCell('@SUM(A1)'));
+  }
+
+  /**
+   * @covers ::csv
+   */
+  public function testCsv(): void {
+    $csv = AdminFormat::csv([['Name', 'Note'], ['A, B', "Line \"one\"\ntwo"], ['=1+1', NULL]]);
+    $this->assertStringStartsWith("\u{FEFF}Name,Note\n", $csv);
+    $this->assertStringContainsString("\"A, B\",\"Line \"\"one\"\"\ntwo\"\n", $csv);
+    $this->assertStringEndsWith("'=1+1,\n", $csv);
+  }
+
+  /**
    * @covers ::referralStatusOptions
    * @covers ::referralStatusKey
    */

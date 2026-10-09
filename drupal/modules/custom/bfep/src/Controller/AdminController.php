@@ -12,6 +12,7 @@ use Drupal\bfep\Admin\DataChecks;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class AdminController extends ControllerBase {
 
@@ -269,6 +270,11 @@ final class AdminController extends ControllerBase {
    * Only these columns can reach ORDER BY, so the sort query parameters
    * cannot inject SQL.
    */
+  /**
+   * Most rows a CSV export returns.
+   */
+  private const EXPORT_LIMIT = 10000;
+
   private const SORTABLE = [
     'campaigns' => ['Line' => 'line_number', 'Name' => 'contact_name', 'Country' => 'country_raw', 'Updated' => 'updated_at'],
     'referrals' => ['Status' => 'verification_status', 'Name' => 'full_name', 'Email' => 'email', 'Created' => 'created_at'],
@@ -328,29 +334,7 @@ final class AdminController extends ControllerBase {
         return $this->redirect('bfep.admin_campaign_edit', ['campaign_id' => (int) $ids[0]]);
       }
     }
-    $featured = $request->query->get('featured') === '1';
-    $urgent = $request->query->get('urgent') === '1';
-    $where = ['deleted_at IS NULL'];
-    $params = [];
-
-    if ($q !== '') {
-      $where[] = '(contact_name ILIKE :q OR country_raw ILIKE :q OR description ILIKE :q OR CAST(line_number AS TEXT) ILIKE :q)';
-      $params[':q'] = $this->like($q);
-    }
-    if ($featured) {
-      $where[] = 'featured_by_bfep = true';
-    }
-    if ($urgent) {
-      $where[] = 'urgent_medical_needs = true';
-    }
-    if ($request->query->get('sync') === 'problem') {
-      $where[] = "id IN (" . self::SYNC_PROBLEM_SQL . ")";
-    }
-    $check = DataChecks::get($request->query->get('check'));
-    if ($check !== NULL) {
-      $where[] = '(' . $check['sql'] . ')';
-    }
-    $where_sql = implode(' AND ', $where);
+    ['sql' => $where_sql, 'params' => $params, 'check' => $check] = $this->campaignFilter($request);
 
     $total = (int) $db->query("SELECT COUNT(*) FROM campaigns WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
@@ -398,6 +382,17 @@ final class AdminController extends ControllerBase {
       $table_rows,
       'No campaigns found.'
     );
+    if ($total > 0) {
+      $build['export'] = [
+        '#type' => 'link',
+        '#title' => $total > self::EXPORT_LIMIT
+          ? $this->t('Download the first @count campaigns as CSV', ['@count' => self::EXPORT_LIMIT])
+          : $this->formatPlural($total, 'Download this campaign as CSV', 'Download these @count campaigns as CSV'),
+        '#url' => Url::fromRoute('bfep.admin_campaigns_export', [], ['query' => array_intersect_key($request->query->all(), array_flip(['q', 'featured', 'urgent', 'sync', 'check']))]),
+        '#attributes' => ['class' => ['button', 'button--small']],
+        '#weight' => 1,
+      ];
+    }
     if ($check !== NULL) {
       $build['check_notice'] = [
         '#weight' => -20,
@@ -405,6 +400,106 @@ final class AdminController extends ControllerBase {
       ];
     }
     return $build;
+  }
+
+  /**
+   * The campaign list's WHERE clause for the request's filters.
+   *
+   * Every condition names campaigns columns without an alias, so the SQL must
+   * be used directly against "FROM campaigns".
+   *
+   * @return array{sql: string, params: array, check: array|null}
+   *   The WHERE SQL, its parameters and the active data check, if any.
+   */
+  protected function campaignFilter(Request $request): array {
+    $q = trim((string) $request->query->get('q', ''));
+    $where = ['deleted_at IS NULL'];
+    $params = [];
+
+    if ($q !== '') {
+      $where[] = '(contact_name ILIKE :q OR country_raw ILIKE :q OR description ILIKE :q OR CAST(line_number AS TEXT) ILIKE :q)';
+      $params[':q'] = $this->like($q);
+    }
+    if ($request->query->get('featured') === '1') {
+      $where[] = 'featured_by_bfep = true';
+    }
+    if ($request->query->get('urgent') === '1') {
+      $where[] = 'urgent_medical_needs = true';
+    }
+    if ($request->query->get('sync') === 'problem') {
+      $where[] = "id IN (" . self::SYNC_PROBLEM_SQL . ")";
+    }
+    $check = DataChecks::get($request->query->get('check'));
+    if ($check !== NULL) {
+      $where[] = '(' . $check['sql'] . ')';
+    }
+    return ['sql' => implode(' AND ', $where), 'params' => $params, 'check' => $check];
+  }
+
+  /**
+   * Downloads the filtered campaign list as CSV.
+   *
+   * Public and operational columns only: internal notes, review fields and
+   * submitter details are never exported.
+   */
+  public function campaignsExport(Request $request): Response {
+    ['sql' => $where_sql, 'params' => $params] = $this->campaignFilter($request);
+    $rows = $this->bfdb()->query("
+      SELECT c.id, c.line_number, c.contact_name, COALESCE(co.name, c.country_raw) AS country,
+        c.featured_by_bfep, c.urgent_medical_needs, c.updated_at,
+        p.name AS platform, f.url, f.currency_code, f.goal_amount, f.donated_amount,
+        (SELECT string_agg(t.name, ', ' ORDER BY t.name) FROM campaign_tags ct JOIN tags t ON t.id = ct.tag_id WHERE ct.campaign_id = c.id) AS tags
+      FROM (
+        SELECT id, line_number, contact_name, country_id, country_raw, featured_by_bfep, urgent_medical_needs, updated_at
+        FROM campaigns
+        WHERE {$where_sql}
+      ) c
+      LEFT JOIN LATERAL (
+        SELECT cf.platform_id, cf.url, cf.currency_code, cf.goal_amount, cf.donated_amount
+        FROM campaign_fundraisers cf
+        WHERE cf.campaign_id = c.id AND cf.is_active
+        ORDER BY cf.id DESC
+        LIMIT 1
+      ) f ON TRUE
+      LEFT JOIN fundraising_platforms p ON p.id = f.platform_id
+      LEFT JOIN countries co ON co.id = c.country_id
+      ORDER BY c.line_number ASC NULLS LAST, c.id ASC
+      LIMIT " . self::EXPORT_LIMIT, $params)->fetchAll();
+
+    $lines = [['Line', 'Name', 'Country', 'Featured', 'Urgent', 'Tags', 'Platform', 'Fundraiser URL', 'Currency', 'Goal', 'Raised', 'Percent funded', 'Last edited', 'Public page', 'Edit page']];
+    foreach ($rows as $row) {
+      $goal = $row->goal_amount !== NULL ? (float) $row->goal_amount : NULL;
+      $raised = $row->donated_amount !== NULL ? (float) $row->donated_amount : NULL;
+      $lines[] = [
+        $row->line_number,
+        $row->contact_name,
+        $row->country,
+        !empty($row->featured_by_bfep) ? 'Yes' : 'No',
+        !empty($row->urgent_medical_needs) ? 'Yes' : 'No',
+        $row->tags,
+        $row->platform,
+        $row->url,
+        $row->currency_code !== NULL ? trim((string) $row->currency_code) : NULL,
+        $row->goal_amount,
+        $row->donated_amount,
+        $goal > 0 && $raised !== NULL ? round($raised / $goal * 100, 1) : NULL,
+        $row->updated_at ? $this->dateFormatter->format(strtotime((string) $row->updated_at), 'custom', 'Y-m-d H:i') : NULL,
+        Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $row->id], ['absolute' => TRUE])->toString(),
+        Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $row->id], ['absolute' => TRUE])->toString(),
+      ];
+    }
+
+    $this->getLogger('bfep')->notice('@user exported @count campaigns as CSV.', [
+      '@user' => $this->currentUser()->getAccountName(),
+      '@count' => count($rows),
+    ]);
+
+    return new Response(AdminFormat::csv($lines), 200, [
+      'Content-Type' => 'text/csv; charset=utf-8',
+      'Content-Disposition' => 'attachment; filename="bfep-campaigns-' . date('Y-m-d') . '.csv"',
+      'Cache-Control' => 'private, no-store',
+      'X-Content-Type-Options' => 'nosniff',
+    ]);
   }
 
   /**

@@ -139,6 +139,90 @@ final class CampaignPresenter {
   }
 
   /**
+   * Builds an RSS 2.0 document for recently added campaigns.
+   *
+   * @param object[] $rows
+   *   Rows from CampaignRepository::recent().
+   * @param string $title
+   *   Channel title.
+   * @param string $siteUrl
+   *   Channel link (the campaigns page).
+   * @param string $feedUrl
+   *   The feed's own absolute URL.
+   * @param string $description
+   *   Channel description.
+   * @param callable $campaignUrl
+   *   Returns the absolute URL for a campaign ID.
+   *
+   * @return string
+   *   The RSS XML.
+   */
+  public function rss(array $rows, string $title, string $siteUrl, string $feedUrl, string $description, callable $campaignUrl): string {
+    $x = static fn(string $value): string => htmlspecialchars($value, ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $items = '';
+    $latest = NULL;
+    foreach ($rows as $row) {
+      $name = trim((string) ($row->contact_name ?: 'Campaign #' . $row->id));
+      $country = trim((string) ($row->country ?? ''));
+      $link = $campaignUrl((int) $row->id);
+      $summary = [];
+      if (($excerpt = $this->cleanDescription((string) ($row->description ?? ''), 400)) !== '') {
+        $summary[] = $excerpt;
+      }
+      foreach ($this->amounts($row) as $amount) {
+        $summary[] = $amount['label'] . ': ' . $amount['value'];
+      }
+      $categories = '';
+      foreach (array_filter([$country, $this->truthy($row->urgent_medical_needs ?? NULL) ? 'Urgent medical needs' : '', $this->truthy($row->featured_by_bfep ?? NULL) ? 'Featured' : '']) as $category) {
+        $categories .= '<category>' . $x($category) . '</category>';
+      }
+      $created = !empty($row->created_at) ? strtotime((string) $row->created_at) : FALSE;
+      if ($created && ($latest === NULL || $created > $latest)) {
+        $latest = $created;
+      }
+      $items .= '<item>'
+        . '<title>' . $x($name . ($country !== '' ? ' – ' . $country : '')) . '</title>'
+        . '<link>' . $x($link) . '</link>'
+        . '<guid isPermaLink="true">' . $x($link) . '</guid>'
+        . ($created ? '<pubDate>' . gmdate(DATE_RSS, $created) . '</pubDate>' : '')
+        . $categories
+        . '<description>' . $x(implode(' · ', $summary)) . '</description>'
+        . '</item>' . "\n";
+    }
+    return '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+      . '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>' . "\n"
+      . '<title>' . $x($title) . '</title>'
+      . '<link>' . $x($siteUrl) . '</link>'
+      . '<description>' . $x($description) . '</description>'
+      . '<language>en</language>'
+      . '<atom:link href="' . $x($feedUrl) . '" rel="self" type="application/rss+xml"/>'
+      . ($latest !== NULL ? '<lastBuildDate>' . gmdate(DATE_RSS, $latest) . '</lastBuildDate>' : '') . "\n"
+      . $items
+      . '</channel></rss>' . "\n";
+  }
+
+  /**
+   * Share links for a public campaign URL.
+   *
+   * Plain links to each service's own share page, so no third-party script
+   * is loaded and nothing is sent anywhere until the visitor clicks.
+   *
+   * @return array<int, array{label: string, url: string}>
+   *   Links in display order.
+   */
+  public function shareLinks(string $url, string $text): array {
+    $u = rawurlencode($url);
+    $t = rawurlencode($text);
+    return [
+      ['label' => 'WhatsApp', 'url' => 'https://wa.me/?text=' . rawurlencode($text . ' ' . $url)],
+      ['label' => 'Telegram', 'url' => 'https://t.me/share/url?url=' . $u . '&text=' . $t],
+      ['label' => 'Facebook', 'url' => 'https://www.facebook.com/sharer/sharer.php?u=' . $u],
+      ['label' => 'X', 'url' => 'https://x.com/intent/post?url=' . $u . '&text=' . $t],
+      ['label' => 'Email', 'url' => 'mailto:?subject=' . $t . '&body=' . rawurlencode($text . "\n\n" . $url)],
+    ];
+  }
+
+  /**
    * Funding progress for the progress bar, capped at 100.
    *
    * @return float|null

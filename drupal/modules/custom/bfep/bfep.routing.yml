@@ -32,6 +32,13 @@ bfep.admin_campaign_add:
   options:
     _admin_route: TRUE
 
+bfep.campaign_feed:
+  path: '/campaigns/feed'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\CampaignController::feed'
+  requirements:
+    _permission: 'access content'
+
 bfep.campaign_detail:
   path: '/campaigns/{campaign_id}'
   defaults:

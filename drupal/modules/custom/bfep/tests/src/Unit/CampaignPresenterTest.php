@@ -81,6 +81,43 @@ final class CampaignPresenterTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::rss
+   */
+  public function testRssFeedIsWellFormedAndEscaped(): void {
+    $rows = [
+      (object) [
+        'id' => 9,
+        'contact_name' => 'Family <9> & co',
+        'country' => 'Sudan',
+        'description' => 'Needs <b>help</b>.',
+        'urgent_medical_needs' => TRUE,
+        'currency_code' => 'USD',
+        'goal_amount' => '1000',
+        'donated_amount' => '100',
+        'pct_goal_achieved' => '10',
+        'created_at' => '2026-10-01T10:00:00+00:00',
+      ],
+    ];
+    $xml = $this->presenter()->rss($rows, 'New', 'https://example.org/campaigns', 'https://example.org/campaigns/feed', 'Desc', fn(int $id): string => 'https://example.org/campaigns/' . $id);
+    $doc = simplexml_load_string($xml);
+    $this->assertNotFalse($doc);
+    $this->assertSame('Family <9> & co – Sudan', (string) $doc->channel->item[0]->title);
+    $this->assertSame('https://example.org/campaigns/9', (string) $doc->channel->item[0]->link);
+    $this->assertSame('Thu, 01 Oct 2026 10:00:00 +0000', (string) $doc->channel->item[0]->pubDate);
+    $this->assertStringStartsWith('Needs help. · Raised: USD 100', (string) $doc->channel->item[0]->description);
+  }
+
+  /**
+   * @covers ::shareLinks
+   */
+  public function testShareLinksEncodeTheUrlAndText(): void {
+    $links = $this->presenter()->shareLinks('https://example.org/campaigns/7', 'Family & friends');
+    $this->assertSame(['WhatsApp', 'Telegram', 'Facebook', 'X', 'Email'], array_column($links, 'label'));
+    $this->assertSame('https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.org%2Fcampaigns%2F7', $links[2]['url']);
+    $this->assertStringContainsString('text=Family%20%26%20friends', $links[1]['url']);
+  }
+
+  /**
    * @covers ::card
    */
   public function testRejectsNonHttpSchemes(): void {

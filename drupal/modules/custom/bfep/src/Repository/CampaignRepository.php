@@ -16,15 +16,22 @@ use Drupal\bfep\Service\BfepSettings;
 final class CampaignRepository {
 
   public function __construct(
-    private readonly Connection $database,
+    private readonly \Closure $connection,
     private readonly CacheBackendInterface $cache,
     private readonly TimeInterface $time,
     private readonly BfepSettings $settings,
   ) {}
 
+  /**
+   * The bfdb connection, opened on first use.
+   */
+  private function db(): Connection {
+    return ($this->connection)();
+  }
+
   public function stats(): array {
     return $this->remember('bfep:stats', function (): array {
-      $row = $this->database->query(<<<'SQL'
+      $row = $this->db()->query(<<<'SQL'
         SELECT
           COUNT(*) FILTER (WHERE id IS NOT NULL) AS total_campaigns,
           COUNT(*) FILTER (WHERE id IS NOT NULL AND featured_by_bfep = TRUE) AS featured_campaigns,
@@ -69,7 +76,7 @@ final class CampaignRepository {
             WHERE t ILIKE :q
           )
           SQL;
-        $params[':q'] = '%' . $this->database->escapeLike($filters['q']) . '%';
+        $params[':q'] = '%' . $this->db()->escapeLike($filters['q']) . '%';
 
         // A bare number (optionally "#142") also matches that exact line.
         if (preg_match('/^#?([0-9]{1,9})$/', $filters['q'], $matches)) {
@@ -107,6 +114,10 @@ final class CampaignRepository {
         'created_desc' => 'created_at DESC NULLS LAST, id DESC',
         'name_asc' => 'contact_name ASC NULLS LAST, id ASC',
         'country_asc' => 'country ASC NULLS LAST, contact_name ASC NULLS LAST, id ASC',
+        // Campaigns without a goal have no percentage and go last.
+        'funded_asc' => 'pct_goal_achieved ASC NULLS LAST, line_number DESC NULLS LAST, id DESC',
+        // Nearest to 100% first; fully funded campaigns after the rest.
+        'funded_desc' => 'COALESCE(pct_goal_achieved >= 100, TRUE) ASC, pct_goal_achieved DESC NULLS LAST, line_number DESC NULLS LAST, id DESC',
         default => 'line_number DESC NULLS LAST, id DESC',
       };
       if ($lineNumber !== NULL) {
@@ -117,12 +128,12 @@ final class CampaignRepository {
       $limit = (int) $filters['per_page'];
       $offset = ((int) $filters['page'] - 1) * $limit;
 
-      $total = (int) $this->database->query(
+      $total = (int) $this->db()->query(
         "SELECT COUNT(*) FROM v_campaigns WHERE {$whereSql}",
         $params,
       )->fetchField();
 
-      $rows = $this->database->query(<<<SQL
+      $rows = $this->db()->query(<<<SQL
         SELECT
           id,
           line_number,
@@ -157,7 +168,7 @@ final class CampaignRepository {
     $result = $this->remember(
       'bfep:campaign:' . $campaignId,
       function () use ($campaignId): object|false {
-        return $this->database->query(<<<'SQL'
+        return $this->db()->query(<<<'SQL'
           SELECT
             v.id,
             v.line_number,
@@ -189,6 +200,127 @@ final class CampaignRepository {
   }
 
   /**
+   * Campaigns short of their goal for the homepage, neediest first.
+   *
+   * Urgent medical cases first, then least funded. Fully funded campaigns
+   * and campaigns without a goal are left out.
+   */
+  public function needingHelp(int $limit = 3): array {
+    $limit = max(1, min(12, $limit));
+    return $this->remember(
+      'bfep:needing-help:' . $limit,
+      fn(): array => $this->db()->query(<<<SQL
+        SELECT
+          v.id,
+          v.line_number,
+          v.contact_name,
+          v.country,
+          v.global_region,
+          v.description,
+          v.featured_by_bfep,
+          v.urgent_medical_needs,
+          v.fundraiser_url,
+          v.platform,
+          v.currency_code,
+          v.goal_amount,
+          v.donated_amount,
+          v.pct_goal_achieved,
+          v.tags,
+          v.created_at,
+          v.updated_at
+        FROM v_campaigns v
+        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        WHERE v.pct_goal_achieved < 100
+        ORDER BY
+          COALESCE(v.urgent_medical_needs, FALSE) DESC,
+          v.pct_goal_achieved ASC,
+          v.id DESC
+        LIMIT {$limit}
+        SQL)->fetchAll(),
+      [BfepCacheInvalidator::HOME, BfepCacheInvalidator::CAMPAIGNS],
+    );
+  }
+
+  /**
+   * The most recently added public campaigns, newest first, for the feed.
+   */
+  public function recent(int $limit = 30): array {
+    $limit = max(1, min(100, $limit));
+    return $this->remember(
+      'bfep:recent:' . $limit,
+      fn(): array => $this->db()->query(<<<SQL
+        SELECT
+          v.id,
+          v.line_number,
+          v.contact_name,
+          v.country,
+          v.description,
+          v.featured_by_bfep,
+          v.urgent_medical_needs,
+          v.platform,
+          v.currency_code,
+          v.goal_amount,
+          v.donated_amount,
+          v.pct_goal_achieved,
+          v.created_at,
+          v.updated_at
+        FROM v_campaigns v
+        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        ORDER BY v.created_at DESC NULLS LAST, v.id DESC
+        LIMIT {$limit}
+        SQL)->fetchAll(),
+      [BfepCacheInvalidator::CAMPAIGNS],
+      $this->settings->listingCacheMaxAge(),
+    );
+  }
+
+  /**
+   * Other public campaigns in the same country, for the campaign page.
+   *
+   * Urgent medical cases first, then campaigns still short of their goal,
+   * least funded first.
+   */
+  public function related(int $campaignId, string $country, int $limit = 3): array {
+    if (trim($country) === '') {
+      return [];
+    }
+    $limit = max(1, min(12, $limit));
+    return $this->remember(
+      'bfep:related:' . $campaignId . ':' . $limit,
+      fn(): array => $this->db()->query(<<<SQL
+        SELECT
+          v.id,
+          v.line_number,
+          v.contact_name,
+          v.country,
+          v.global_region,
+          v.description,
+          v.featured_by_bfep,
+          v.urgent_medical_needs,
+          v.fundraiser_url,
+          v.platform,
+          v.currency_code,
+          v.goal_amount,
+          v.donated_amount,
+          v.pct_goal_achieved,
+          v.tags,
+          v.created_at,
+          v.updated_at
+        FROM v_campaigns v
+        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        WHERE v.country = :country AND v.id <> :id
+        ORDER BY
+          COALESCE(v.urgent_medical_needs, FALSE) DESC,
+          COALESCE(v.pct_goal_achieved >= 100, FALSE) ASC,
+          v.pct_goal_achieved ASC NULLS LAST,
+          v.id DESC
+        LIMIT {$limit}
+        SQL, [':country' => $country, ':id' => $campaignId])->fetchAll(),
+      [BfepCacheInvalidator::CAMPAIGNS, 'bfep:campaign:' . $campaignId],
+    );
+  }
+
+  /**
    * Returns the ID of the one public campaign with this line number.
    *
    * NULL when no campaign, or more than one, has that line.
@@ -196,7 +328,7 @@ final class CampaignRepository {
   public function idForLineNumber(int $lineNumber): ?int {
     $ids = $this->remember(
       'bfep:line-number:' . $lineNumber,
-      fn(): array => $this->database->query(<<<'SQL'
+      fn(): array => $this->db()->query(<<<'SQL'
         SELECT v.id
         FROM v_campaigns v
         INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -211,7 +343,7 @@ final class CampaignRepository {
   public function countryCount(string $country): int {
     return (int) $this->remember(
       'bfep:country-count:' . hash('sha256', mb_strtolower($country)),
-      fn(): int => (int) $this->database->query(
+      fn(): int => (int) $this->db()->query(
         'SELECT COUNT(*) FROM v_campaigns v INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL WHERE v.country = :country',
         [':country' => $country],
       )->fetchField(),
@@ -220,7 +352,7 @@ final class CampaignRepository {
   }
 
   public function countries(): array {
-    return $this->remember('bfep:countries', fn(): array => $this->database->query(<<<'SQL'
+    return $this->remember('bfep:countries', fn(): array => $this->db()->query(<<<'SQL'
       SELECT
         v.country,
         v.global_region,
@@ -238,7 +370,7 @@ final class CampaignRepository {
   public function canonicalCountry(string $country): ?string {
     $result = $this->remember(
       'bfep:canonical-country:' . hash('sha256', mb_strtolower($country)),
-      fn(): string|false => $this->database->query(<<<'SQL'
+      fn(): string|false => $this->db()->query(<<<'SQL'
         SELECT v.country
         FROM v_campaigns v
         INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -258,7 +390,7 @@ final class CampaignRepository {
     return $this->remember('bfep:filter-options', function (): array {
       $options = [];
       foreach (['country', 'global_region', 'platform'] as $column) {
-        $options[$column] = $this->database->query(<<<SQL
+        $options[$column] = $this->db()->query(<<<SQL
           SELECT DISTINCT v.{$column} AS value
           FROM v_campaigns v
           INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -266,7 +398,7 @@ final class CampaignRepository {
           ORDER BY v.{$column}
           SQL)->fetchCol();
       }
-      $options['tag'] = $this->database->query(<<<'SQL'
+      $options['tag'] = $this->db()->query(<<<'SQL'
         SELECT DISTINCT tag AS value
         FROM v_campaigns v
         INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -282,7 +414,7 @@ final class CampaignRepository {
    * Returns lightweight records used only while generating the XML sitemap.
    */
   public function sitemapCampaigns(): array {
-    return $this->database->query(<<<'SQL'
+    return $this->db()->query(<<<'SQL'
       SELECT v.id, COALESCE(v.updated_at, v.created_at) AS lastmod
       FROM v_campaigns v
       INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -292,7 +424,7 @@ final class CampaignRepository {
   }
 
   public function sitemapCountries(): array {
-    return $this->database->query(<<<'SQL'
+    return $this->db()->query(<<<'SQL'
       SELECT v.country, MAX(COALESCE(v.updated_at, v.created_at)) AS lastmod
       FROM v_campaigns v
       INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL

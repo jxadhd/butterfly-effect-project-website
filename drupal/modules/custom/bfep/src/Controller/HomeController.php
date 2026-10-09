@@ -9,6 +9,7 @@ use Drupal\Core\Url;
 use Drupal\bfep\Repository\CampaignRepository;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Drupal\bfep\Service\BfepSettings;
+use Drupal\bfep\Service\CampaignPresenter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,18 +20,35 @@ final class HomeController extends ControllerBase {
   public function __construct(
     protected CampaignRepository $campaigns,
     protected BfepSettings $settings,
+    protected CampaignPresenter $presenter,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('bfep.campaign_repository'),
       $container->get('bfep.settings'),
+      $container->get('bfep.campaign_presenter'),
     );
   }
 
   public function home(): array {
+    $spotlight = [];
+    try {
+      foreach ($this->campaigns->needingHelp(3) as $row) {
+        $spotlight[] = $this->presenter->card(
+          $row,
+          Url::fromRoute('bfep.campaign_detail', ['campaign_id' => (int) $row->id])->toString(),
+        );
+      }
+    }
+    catch (\Throwable $exception) {
+      // The homepage still renders without the spotlight.
+      $this->getLogger('bfep')->warning('Homepage spotlight failed: @message', ['@message' => $exception->getMessage()]);
+    }
+
     return [
       '#theme' => 'bfep_home',
+      '#spotlight' => $spotlight,
       '#attached' => ['library' => ['bfep/public']],
       '#organization' => $this->settings->organizationName(),
       '#tagline' => $this->settings->string('tagline'),
@@ -44,6 +62,7 @@ final class HomeController extends ControllerBase {
         'transparency' => Url::fromRoute('bfep.trust_transparency')->toString(),
         'verify' => Url::fromRoute('bfep.trust_how_we_verify')->toString(),
         'change' => Url::fromRoute('bfep.change_request')->toString(),
+        'least_funded' => Url::fromRoute('bfep.campaigns', [], ['query' => ['sort' => 'funded_asc']])->toString(),
       ],
       '#cache' => [
         'tags' => [BfepCacheInvalidator::HOME, BfepCacheInvalidator::CAMPAIGNS, 'config:bfep.settings'],

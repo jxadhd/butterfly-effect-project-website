@@ -51,7 +51,9 @@ form requires Drupal's `administer site configuration` permission.
 - **Dashboard.** Counts come from one query. A database error shows a notice
   instead of breaking the page. Each queue shows how many items are pending and
   the age of the oldest one. A "Fundraiser sync problems" card appears when the
-  sync columns exist.
+  sync columns exist. The bfdb line at the bottom says when the sync last
+  checked a fundraiser, and a warning appears at the top when that was over
+  48 hours ago.
 - **Data checks** (`/admin/bfep/checks`) count campaigns with no active
   fundraiser, a fundraiser URL shared with another campaign, a line number used
   twice, no line number, no country, no public description, no goal, amounts

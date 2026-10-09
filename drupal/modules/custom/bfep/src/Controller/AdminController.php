@@ -10,6 +10,7 @@ use Drupal\Core\Utility\TableSort;
 use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Admin\DataChecks;
 use Drupal\bfep\OptionalBfdb;
+use Drupal\bfep\Service\HealthCheck;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,12 +29,14 @@ final class AdminController extends ControllerBase {
   public function __construct(
     protected ?Connection $database,
     protected DateFormatterInterface $dateFormatter,
+    protected HealthCheck $healthCheck,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
       OptionalBfdb::get($container),
       $container->get('date.formatter'),
+      $container->get('bfep.health_check'),
     );
   }
 
@@ -201,8 +204,24 @@ final class AdminController extends ControllerBase {
       ];
     }
 
+    $health = '<strong>bfdb:</strong> connected · dashboard queries completed in ' . $latency . ' ms';
+    $sync = $this->healthCheck->syncSummary($db);
+    $sync_warning = [];
+    if ($sync !== NULL && $sync['auto'] > 0) {
+      $health .= ' · ' . $this->h($this->healthCheck->lastCheckedText($sync['last_checked']));
+      if ($this->healthCheck->syncStalled($sync)) {
+        $sync_warning = [
+          '#markup' => '<div class="bfep-admin-notice bfep-admin-notice--warning" role="status"><strong>' . $this->t('The fundraiser sync looks stalled.') . '</strong> ' . $this->t('No fundraiser has been checked for over @hours hours, so raised amounts on the site may be out of date. See the <a href=":url">status report</a>.', [
+            '@hours' => HealthCheck::SYNC_STALE_HOURS,
+            ':url' => Url::fromRoute('system.status')->toString(),
+          ]) . '</div>',
+        ];
+      }
+    }
+
     return [
       '#attached' => ['library' => ['bfep/admin']],
+      'sync_warning' => $sync_warning,
       'intro' => [
         '#markup' => '<p class="bfep-admin-lead">Manage BFEP campaign data and staff review queues from one place. New here? Read the <a href="' . Url::fromRoute('bfep.admin_help')->toString() . '">staff guide</a>.</p>',
       ],
@@ -217,7 +236,7 @@ final class AdminController extends ControllerBase {
         'changes' => $this->queueCard('Change requests', $changes . ' pending' . $this->oldest($counts->oldest_change), 'Review requests to correct existing campaign information.', 'bfep.admin_changes'),
       ],
       'health' => [
-        '#markup' => '<div class="bfep-admin-health"><strong>bfdb:</strong> connected · dashboard queries completed in ' . $latency . ' ms</div>',
+        '#markup' => '<div class="bfep-admin-health">' . $health . '</div>',
       ],
     ];
   }

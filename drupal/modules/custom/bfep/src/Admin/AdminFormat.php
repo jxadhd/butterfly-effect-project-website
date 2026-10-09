@@ -116,11 +116,21 @@ final class AdminFormat {
    *   Distinct statuses already stored.
    * @param string|null $current
    *   The status of the record being edited.
+   * @param string[]|null $allowed
+   *   The column's enum labels, when it is an enum. Only these are offered.
    *
    * @return array<string, string>
    *   Options keyed by stored value.
    */
-  public static function referralStatusOptions(array $existing, ?string $current = NULL): array {
+  public static function referralStatusOptions(array $existing, ?string $current = NULL, ?array $allowed = NULL): array {
+    // An enum column accepts only its own labels, so offer exactly those.
+    if ($allowed !== NULL) {
+      $options = [];
+      foreach ($allowed as $value) {
+        $options[(string) $value] = self::referralStatusLabel((string) $value);
+      }
+      return $options;
+    }
     $options = self::REFERRAL_STATUSES;
     foreach ([...$existing, (string) $current] as $value) {
       $value = trim((string) $value);
@@ -137,12 +147,17 @@ final class AdminFormat {
   public static function referralStatusKey(?string $value, array $options): string {
     $value = trim((string) $value);
     if ($value === '') {
-      return 'pending';
+      $value = 'pending';
     }
     if (isset($options[$value])) {
       return $value;
     }
-    return isset($options[strtolower($value)]) ? strtolower($value) : $value;
+    foreach (array_keys($options) as $key) {
+      if (strtolower((string) $key) === strtolower($value)) {
+        return (string) $key;
+      }
+    }
+    return $value;
   }
 
   /**

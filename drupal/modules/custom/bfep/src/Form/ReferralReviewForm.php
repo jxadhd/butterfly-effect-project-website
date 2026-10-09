@@ -7,6 +7,7 @@ namespace Drupal\bfep\Form;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\PgEnum;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -24,7 +25,7 @@ final class ReferralReviewForm extends AdminRecordFormBase {
   protected function nextPendingId(int $currentId): ?int {
     $id = $this->bfdb()->query("
       SELECT id FROM referral_submissions
-      WHERE (verification_status IS NULL OR TRIM(verification_status) = '' OR LOWER(verification_status) = 'pending') AND id <> :id
+      WHERE (verification_status IS NULL OR TRIM(CAST(verification_status AS TEXT)) = '' OR LOWER(CAST(verification_status AS TEXT)) = 'pending') AND id <> :id
       ORDER BY created_at ASC NULLS LAST, id ASC
       LIMIT 1
     ", [':id' => $currentId])->fetchField();
@@ -112,16 +113,19 @@ final class ReferralReviewForm extends AdminRecordFormBase {
     $existing = array_map('strval', array_column($this->optionalRows("
       SELECT DISTINCT verification_status AS value
       FROM referral_submissions
-      WHERE verification_status IS NOT NULL AND TRIM(verification_status) <> ''
+      WHERE verification_status IS NOT NULL AND TRIM(CAST(verification_status AS TEXT)) <> ''
     ", []), 'value'));
-    $options = AdminFormat::referralStatusOptions($existing, $this->referral->verification_status ?? NULL);
+    $allowed = PgEnum::labels($this->bfdb(), 'referral_submissions', 'verification_status');
+    $options = AdminFormat::referralStatusOptions($existing, $this->referral->verification_status ?? NULL, $allowed);
     $form['workflow']['verification_status'] = [
       '#type' => 'select',
       '#title' => $this->t('Verification status'),
       '#options' => $options,
       '#default_value' => AdminFormat::referralStatusKey($this->referral->verification_status ?? NULL, $options),
       '#required' => TRUE,
-      '#description' => $this->t('Statuses already used by other referrals are included, so existing workflow values are kept.'),
+      '#description' => $allowed !== NULL
+        ? $this->t('These are the statuses bfdb accepts for a referral.')
+        : $this->t('Statuses already used by other referrals are included, so existing workflow values are kept.'),
     ];
 
     $this->addActions($form, (string) $this->t('Save review'), (string) $this->t('Back to referrals'), 'bfep.admin_referrals');

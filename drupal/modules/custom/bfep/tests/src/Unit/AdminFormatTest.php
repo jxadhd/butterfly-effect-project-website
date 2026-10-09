@@ -104,6 +104,17 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::referralStatusOptions
+   * @covers ::referralStatusKey
+   */
+  public function testReferralStatusOptionsForAnEnumColumn(): void {
+    $options = AdminFormat::referralStatusOptions(['legacy'], 'other', ['Pending', 'Needs_information', 'Verified']);
+    $this->assertSame(['Pending' => 'Pending', 'Needs_information' => 'Needs information', 'Verified' => 'Verified'], $options);
+    $this->assertSame('Pending', AdminFormat::referralStatusKey(NULL, $options));
+    $this->assertSame('Verified', AdminFormat::referralStatusKey('verified', $options));
+  }
+
+  /**
    * @covers ::fundraiserErrors
    */
   public function testFundraiserErrors(): void {

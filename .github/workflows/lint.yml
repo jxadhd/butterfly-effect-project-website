@@ -1,0 +1,72 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: PHP and YAML syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: PHP syntax (php -l)
+        run: |
+          set -euo pipefail
+          status=0
+          while IFS= read -r -d '' f; do
+            php -l "$f" >/dev/null || { echo "::error file=$f::PHP syntax error"; php -l "$f" || true; status=1; }
+          done < <(find drupal -type f \( -name '*.php' -o -name '*.module' -o -name '*.install' -o -name '*.inc' -o -name '*.theme' -o -name '*.profile' \) -print0)
+          exit $status
+
+      - name: YAML syntax (info, routing, services, libraries, permissions)
+        run: |
+          python3 - <<'PY'
+          import sys, pathlib, yaml
+          bad = 0
+          for p in sorted(pathlib.Path("drupal").rglob("*.yml")):
+              try:
+                  yaml.safe_load(p.read_text())
+              except Exception as e:
+                  bad += 1
+                  print(f"::error file={p}::{e}")
+          sys.exit(1 if bad else 0)
+          PY
+
+  coding-standards:
+    name: Drupal coding standards (advisory)
+    runs-on: ubuntu-latest
+    # Advisory until the existing code has been cleaned up; remove this line
+    # to make violations block merges.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      - name: Install Drupal coder
+        run: |
+          composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --no-interaction drupal/coder:^8.3
+          echo "$(composer global config bin-dir --absolute --quiet)" >> "$GITHUB_PATH"
+
+      - name: phpcs (Drupal, DrupalPractice)
+        run: |
+          phpcs --standard=Drupal,DrupalPractice \
+            --extensions=php,module,inc,install,theme,yml \
+            --report=full --colors \
+            drupal/modules/custom drupal/themes/custom

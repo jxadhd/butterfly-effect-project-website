@@ -20,14 +20,24 @@ function bfep_theme($existing, $type, $theme, $path): array {
     ],
     'bfep_campaign_list' => [
       'variables' => [
-        'campaigns' => [], 'filters' => [], 'options' => [], 'fixed_country' => NULL,
-        'action_url' => '', 'clear_url' => '', 'total' => 0, 'total_pages' => 1,
-        'previous_url' => NULL, 'next_url' => NULL, 'active_filters' => FALSE,
+        'campaigns' => [],
+        'filters' => [],
+        'options' => [],
+        'fixed_country' => NULL,
+        'action_url' => '',
+        'clear_url' => '',
+        'total' => 0,
+        'total_pages' => 1,
+        'previous_url' => NULL,
+        'next_url' => NULL,
+        'active_filters' => FALSE,
       ],
     ],
     'bfep_campaign_detail' => [
       'variables' => [
-        'campaign' => [], 'change_url' => '', 'campaigns_url' => '',
+        'campaign' => [],
+        'change_url' => '',
+        'campaigns_url' => '',
         'verification_url' => '',
       ],
     ],
@@ -39,7 +49,10 @@ function bfep_theme($existing, $type, $theme, $path): array {
     ],
     'bfep_trust_page' => [
       'variables' => [
-        'intro' => '', 'sections' => [], 'actions' => [], 'updated' => '',
+        'intro' => '',
+        'sections' => [],
+        'actions' => [],
+        'updated' => '',
         'contact_email' => '',
       ],
     ],
@@ -109,7 +122,8 @@ function bfep_page_attachments(array &$attachments): void {
         '#tag' => 'script',
         '#attributes' => ['type' => 'application/ld+json'],
         '#value' => Markup::create($json),
-      ], 'bfep_json_ld_' . $index];
+      ], 'bfep_json_ld_' . $index,
+      ];
     }
   }
 
@@ -132,7 +146,8 @@ function bfep_page_attachments(array &$attachments): void {
         '#tag' => 'script',
         '#attributes' => ['type' => 'application/ld+json'],
         '#value' => Markup::create($json),
-      ], 'bfep_organization_json_ld'];
+      ], 'bfep_organization_json_ld',
+      ];
     }
   }
 
@@ -144,7 +159,8 @@ function bfep_page_attachments(array &$attachments): void {
       $attachments['#attached']['html_head'][] = [[
         '#tag' => 'meta',
         '#attributes' => ['name' => $name, 'content' => $content],
-      ], 'bfep_' . str_replace(['-', '.'], '_', $name)];
+      ], 'bfep_' . str_replace(['-', '.'], '_', $name),
+      ];
     }
   }
 }

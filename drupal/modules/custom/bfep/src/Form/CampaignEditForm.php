@@ -63,7 +63,7 @@ final class CampaignEditForm extends FormBase {
       '#attributes' => ['class' => ['bfep-admin-edit-summary']],
       'text' => [
         '#markup' => '<strong>Campaign #' . $this->campaignId . '</strong>'
-          . (!empty($this->campaign->line_number) ? ' · Line ' . htmlspecialchars((string) $this->campaign->line_number, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : ''),
+        . (!empty($this->campaign->line_number) ? ' · Line ' . htmlspecialchars((string) $this->campaign->line_number, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : ''),
       ],
       'preview' => [
         '#type' => 'link',
@@ -75,18 +75,26 @@ final class CampaignEditForm extends FormBase {
 
     $form['identity'] = ['#type' => 'details', '#title' => $this->t('Campaign identity'), '#open' => TRUE];
     $form['identity']['contact_name'] = [
-      '#type' => 'textfield', '#title' => $this->t('Contact / campaign name'),
-      '#default_value' => $this->campaign->contact_name, '#required' => TRUE, '#maxlength' => 500,
+      '#type' => 'textfield',
+      '#title' => $this->t('Contact / campaign name'),
+      '#default_value' => $this->campaign->contact_name,
+      '#required' => TRUE,
+      '#maxlength' => 500,
     ];
     $form['identity']['country_id'] = [
-      '#type' => 'select', '#title' => $this->t('Country'), '#options' => $countries,
-      '#default_value' => (int) $this->campaign->country_id, '#required' => TRUE,
+      '#type' => 'select',
+      '#title' => $this->t('Country'),
+      '#options' => $countries,
+      '#default_value' => (int) $this->campaign->country_id,
+      '#required' => TRUE,
       '#empty_option' => $this->t('- Select country -'),
       '#description' => $this->t('This updates both the normalized country relation used by public pages and the legacy country text.'),
     ];
     $form['identity']['career'] = [
-      '#type' => 'textfield', '#title' => $this->t('Career / background'),
-      '#default_value' => $this->campaign->career, '#maxlength' => 500,
+      '#type' => 'textfield',
+      '#title' => $this->t('Career / background'),
+      '#default_value' => $this->campaign->career,
+      '#maxlength' => 500,
     ];
 
     $form['public_content'] = ['#type' => 'details', '#title' => $this->t('Public content'), '#open' => TRUE];
@@ -94,40 +102,54 @@ final class CampaignEditForm extends FormBase {
       '#markup' => '<p><strong>' . $this->t('Public field:') . '</strong> ' . $this->t('Write a respectful reader-facing summary. Do not include contact details, private verification evidence, workflow instructions, or internal volunteer notes.') . '</p>',
     ];
     $form['public_content']['description'] = [
-      '#type' => 'textarea', '#title' => $this->t('Public description'),
-      '#default_value' => $this->campaign->description, '#rows' => 12, '#maxlength' => 5000,
+      '#type' => 'textarea',
+      '#title' => $this->t('Public description'),
+      '#default_value' => $this->campaign->description,
+      '#rows' => 12,
+      '#maxlength' => 5000,
     ];
 
     $form['classification'] = ['#type' => 'details', '#title' => $this->t('Classification'), '#open' => TRUE];
     $form['classification']['featured_by_bfep'] = [
-      '#type' => 'checkbox', '#title' => $this->t('Featured by BFEP'),
+      '#type' => 'checkbox',
+      '#title' => $this->t('Featured by BFEP'),
       '#default_value' => $this->truthy($this->campaign->featured_by_bfep ?? NULL),
     ];
     $form['classification']['urgent_medical_needs'] = [
-      '#type' => 'checkbox', '#title' => $this->t('Urgent medical needs'),
+      '#type' => 'checkbox',
+      '#title' => $this->t('Urgent medical needs'),
       '#default_value' => $this->truthy($this->campaign->urgent_medical_needs ?? NULL),
     ];
     $form['classification']['vetted_by_trusted_group'] = [
-      '#type' => 'textfield', '#title' => $this->t('Vetted by trusted group'),
-      '#default_value' => $this->campaign->vetted_by_trusted_group, '#maxlength' => 500,
+      '#type' => 'textfield',
+      '#title' => $this->t('Vetted by trusted group'),
+      '#default_value' => $this->campaign->vetted_by_trusted_group,
+      '#maxlength' => 500,
     ];
     $form['classification']['featured_self_selected'] = [
-      '#type' => 'textfield', '#title' => $this->t('Featured self-selected'),
-      '#default_value' => $this->campaign->featured_self_selected, '#maxlength' => 500,
+      '#type' => 'textfield',
+      '#title' => $this->t('Featured self-selected'),
+      '#default_value' => $this->campaign->featured_self_selected,
+      '#maxlength' => 500,
     ];
 
     $form['internal'] = ['#type' => 'details', '#title' => $this->t('Internal information'), '#open' => FALSE];
     $form['internal']['internal_notes'] = [
-      '#type' => 'textarea', '#title' => $this->t('Internal notes'),
-      '#default_value' => $this->campaign->internal_notes, '#rows' => 8, '#maxlength' => 10000,
+      '#type' => 'textarea',
+      '#title' => $this->t('Internal notes'),
+      '#default_value' => $this->campaign->internal_notes,
+      '#rows' => 8,
+      '#maxlength' => 10000,
       '#description' => $this->t('Internal only. This field is never selected by the public controllers, templates, search results, or sitemap.'),
     ];
 
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Save campaign'), '#button_type' => 'primary'];
     $form['actions']['cancel'] = [
-      '#type' => 'link', '#title' => $this->t('Back to campaigns'),
-      '#url' => Url::fromRoute('bfep.admin_campaigns'), '#attributes' => ['class' => ['button']],
+      '#type' => 'link',
+      '#title' => $this->t('Back to campaigns'),
+      '#url' => Url::fromRoute('bfep.admin_campaigns'),
+      '#attributes' => ['class' => ['button']],
     ];
     return $form;
   }

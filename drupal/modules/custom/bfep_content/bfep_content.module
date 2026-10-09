@@ -1,5 +1,8 @@
 <?php
 
+use Drupal\Core\Url;
+use Drupal\Component\Utility\Html;
+
 declare(strict_types=1);
 
 /**
@@ -122,7 +125,7 @@ function bfep_content_preprocess_page(array &$variables): void {
   bfep_content_add_section_navigation($variables);
 
   $instagram = bfep_content_instagram();
-  $message = \Drupal\Component\Utility\Html::escape($instagram['message']);
+  $message = Html::escape($instagram['message']);
 
   $variables['page']['footer_bottom']['bfep_content_official_channel'] = [
     '#type' => 'container',
@@ -134,7 +137,7 @@ function bfep_content_preprocess_page(array &$variables): void {
     'link' => [
       '#type' => 'link',
       '#title' => 'Follow ' . $instagram['handle'],
-      '#url' => \Drupal\Core\Url::fromUri($instagram['url']),
+      '#url' => Url::fromUri($instagram['url']),
       '#attributes' => [
         'class' => ['bfep-instagram-link'],
         'target' => '_blank',
@@ -145,7 +148,6 @@ function bfep_content_preprocess_page(array &$variables): void {
     '#cache' => ['tags' => ['config:bfep_content.settings']],
   ];
 }
-
 
 /**
  * Replaces the flat BFEP menu links with complete grouped navigation.
@@ -243,10 +245,10 @@ function bfep_content_add_section_navigation(array &$variables): void {
         '#markup' => '<p class="bfep-eyebrow">Explore this section</p>',
       ],
       'heading' => [
-        '#markup' => '<h2 id="' . $headingId . '">' . \Drupal\Component\Utility\Html::escape($section['title']) . '</h2>',
+        '#markup' => '<h2 id="' . $headingId . '">' . Html::escape($section['title']) . '</h2>',
       ],
       'description' => [
-        '#markup' => '<p class="bfep-section-nav__description">' . \Drupal\Component\Utility\Html::escape($section['description']) . '</p>',
+        '#markup' => '<p class="bfep-section-nav__description">' . Html::escape($section['description']) . '</p>',
       ],
       'links' => [
         '#type' => 'container',
@@ -264,7 +266,7 @@ function bfep_content_add_section_navigation(array &$variables): void {
       $navigation['links']['link_' . $index] = [
         '#type' => 'link',
         '#title' => $link['label'],
-        '#url' => \Drupal\Core\Url::fromRoute($link['route']),
+        '#url' => Url::fromRoute($link['route']),
         '#attributes' => $attributes,
       ];
     }

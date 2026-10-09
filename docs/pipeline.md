@@ -138,7 +138,8 @@ for that check:
    The lines after it say which file and line, and what's wrong.
 3. Some checks also add **annotations**. These are short error notes shown on
    the run's **Summary** page and next to the line in the PR's **Files changed** tab.
-   The syntax and Twig checks do this.
+   The syntax, coding standards and Twig checks do this. GitHub shows at most 10
+   errors per step this way, but the log always has the full list.
 
 The **Checks** tab at the top of the PR lists the same checks with their logs.
 Each commit in the **Commits** tab also has its own tick or cross.
@@ -183,7 +184,8 @@ PHPCBF CAN FIX THE 2 MARKED SNIFF VIOLATIONS AUTOMATICALLY
 ```
 
 The number is the line, and `[x]` means the tool can fix it for you. `[ ]`
-means a person has to fix it.
+means a person has to fix it. Each problem also shows as an annotation next to
+its line in the PR's **Files changed** tab.
 
 **How to fix it.** Pick whichever option suits you:
 

@@ -57,7 +57,7 @@ jobs:
         with:
           php-version: '8.5'
           coverage: none
-          tools: composer
+          tools: composer, cs2pr
 
       - name: Install Drupal coder
         run: |
@@ -65,5 +65,12 @@ jobs:
           composer global require --no-interaction drupal/coder:^8.3
           echo "$(composer global config bin-dir --absolute --quiet)" >> "$GITHUB_PATH"
 
+      # The full report goes to the log. The checkstyle copy is turned into
+      # annotations, so each problem also shows next to its line in the PR's
+      # Files changed tab.
       - name: phpcs (rules in phpcs.xml.dist)
-        run: phpcs --report=full
+        run: |
+          status=0
+          phpcs --basepath=. --report-full --report-checkstyle="$RUNNER_TEMP/phpcs.xml" || status=$?
+          cs2pr "$RUNNER_TEMP/phpcs.xml" || true
+          exit "$status"

@@ -517,6 +517,25 @@ body:not(.path-admin) .block-search-narrow .icon--search {
     border-radius: var(--bf-polish-radius) !important;
     background: var(--bf-polish-panel) !important;
     box-shadow: 0 20px 56px rgba(0, 0, 0, .56), inset 0 1px 0 rgba(255, 255, 255, .04) !important;
+
+    /*
+     * Closed state. Olivero's base rule leaves this panel at display:none, so
+     * its .is-active toggle never made it visible. Keep it rendered and hide
+     * it with visibility/opacity instead; the opacity transition also fires
+     * the transitionend event Olivero uses to focus the search field.
+     */
+    display: block !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity .18s ease, visibility 0s linear .18s !important;
+  }
+
+  body:not(.path-admin) .block-search-wide__wrapper.is-active {
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transition: opacity .18s ease, visibility 0s !important;
   }
 
   body:not(.path-admin) .block-search-wide__container,

@@ -16,7 +16,7 @@ use Drupal\Core\Render\Markup;
 function bfep_theme($existing, $type, $theme, $path): array {
   return [
     'bfep_home' => [
-      'variables' => ['organization' => '', 'tagline' => '', 'stats' => [], 'links' => []],
+      'variables' => ['organization' => '', 'tagline' => '', 'stats' => [], 'links' => [], 'spotlight' => []],
     ],
     'bfep_campaign_list' => [
       'variables' => [

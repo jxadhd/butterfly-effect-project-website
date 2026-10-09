@@ -87,3 +87,7 @@
 .bfep-share__link { padding: .45rem .9rem; border: 1px solid var(--bf-border-strong, currentColor); border-radius: 100vmax; font-weight: 700; text-decoration: none; }
 .bfep-share__link:hover,.bfep-share__link:focus-visible { text-decoration: underline; }
 .bfep-share__status { min-height: 1.4em; margin: .5rem 0 0; font-size: .9rem; }
+/* Homepage "Campaigns that need help now". */
+.bfep-spotlight { margin-block: 2rem 3rem; }
+.bfep-spotlight > h2 { margin-bottom: .25rem; }
+.bfep-spotlight__intro { margin: 0; opacity: .8; }

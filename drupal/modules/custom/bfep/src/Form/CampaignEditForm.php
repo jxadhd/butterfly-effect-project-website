@@ -147,6 +147,13 @@ final class CampaignEditForm extends FormBase {
       '#description' => $this->t('Internal only. This field is never selected by the public controllers, templates, search results, or sitemap.'),
     ];
 
+    // The version the editor started from; compared on save so a second
+    // editor's changes are not silently overwritten.
+    $form['loaded_updated_at'] = [
+      '#type' => 'hidden',
+      '#default_value' => (string) ($this->campaign->updated_at ?? ''),
+    ];
+
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Save campaign'), '#button_type' => 'primary'];
     $form['actions']['cancel'] = [
@@ -159,6 +166,12 @@ final class CampaignEditForm extends FormBase {
   }
 
   public function validateForm(array &$form, FormStateInterface $form_state): void {
+    $current = $this->database->query('SELECT updated_at FROM campaigns WHERE id = :id', [':id' => $this->campaignId])->fetchField();
+    if ((string) ($current ?? '') !== (string) $form_state->getValue('loaded_updated_at')) {
+      $form_state->setErrorByName('', $this->t('This campaign was changed by someone else after you opened it. <a href=":url">Reload the campaign</a> to see the latest version, then make your changes again.', [
+        ':url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId])->toString(),
+      ]));
+    }
     $countryId = (int) $form_state->getValue('country_id');
     if ($countryId < 1 || !(int) $this->database->query('SELECT CASE WHEN EXISTS (SELECT 1 FROM countries WHERE id = :id) THEN 1 ELSE 0 END', [':id' => $countryId])->fetchField()) {
       $form_state->setErrorByName('country_id', $this->t('Select a valid country.'));

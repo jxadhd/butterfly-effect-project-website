@@ -1154,7 +1154,6 @@ body:not(.path-admin) .block-search-wide__button {
 }
 
 body:not(.path-admin) .block-search-wide__button svg {
-  display: block !important;
   flex: none;
   width: 1.15rem !important;
   height: 1.15rem !important;
@@ -1186,4 +1185,13 @@ body:not(.path-admin) .block-search-wide__button:focus-visible {
   body:not(.path-admin) .region--secondary-menu .block-search-wide {
     margin: 0 !important;
   }
+}
+
+/* The button holds the magnifier plus a separate close (X) span; show one. */
+body:not(.path-admin) .block-search-wide__button[aria-expanded="true"] svg {
+  display: none !important;
+}
+
+body:not(.path-admin) .block-search-wide__button[aria-expanded="false"] .block-search-wide__button-close {
+  display: none !important;
 }

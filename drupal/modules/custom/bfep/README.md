@@ -14,6 +14,21 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
 - Soft-deleted campaigns excluded from pages, search, counts, and sitemaps.
 - Public campaign descriptions separated from staff-only working notes.
 
+## Discovery and sharing
+
+- **Sorting by need.** The campaign list can sort "Least funded first" or
+  "Closest to goal" (fully funded campaigns last).
+- **Homepage spotlight.** "Campaigns that need help now" shows three
+  campaigns short of their goal, urgent medical cases first.
+- **Related campaigns.** Each campaign page suggests up to three more
+  campaigns from the same country.
+- **Share buttons.** Campaign pages have a native Share button, Copy link,
+  and plain WhatsApp, Telegram, Facebook, X and email links. No third-party
+  scripts are loaded.
+- **RSS feed.** `/campaigns/feed` lists the 30 most recently added campaigns
+  (public fields only). Point a feed reader or an automation tool (IFTTT,
+  Zapier, Make, Buffer) at it to draft posts for new campaigns.
+
 ## Administration
 
 - `/admin/bfep` — workflow dashboard

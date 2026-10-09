@@ -39,6 +39,8 @@ function bfep_theme($existing, $type, $theme, $path): array {
         'change_url' => '',
         'campaigns_url' => '',
         'verification_url' => '',
+        'related' => [],
+        'country_url' => '',
       ],
     ],
     'bfep_country_list' => [

@@ -200,6 +200,52 @@ final class CampaignRepository {
   }
 
   /**
+   * Other public campaigns in the same country, for the campaign page.
+   *
+   * Urgent medical cases first, then campaigns still short of their goal,
+   * least funded first.
+   */
+  public function related(int $campaignId, string $country, int $limit = 3): array {
+    if (trim($country) === '') {
+      return [];
+    }
+    $limit = max(1, min(12, $limit));
+    return $this->remember(
+      'bfep:related:' . $campaignId . ':' . $limit,
+      fn(): array => $this->database->query(<<<SQL
+        SELECT
+          v.id,
+          v.line_number,
+          v.contact_name,
+          v.country,
+          v.global_region,
+          v.description,
+          v.featured_by_bfep,
+          v.urgent_medical_needs,
+          v.fundraiser_url,
+          v.platform,
+          v.currency_code,
+          v.goal_amount,
+          v.donated_amount,
+          v.pct_goal_achieved,
+          v.tags,
+          v.created_at,
+          v.updated_at
+        FROM v_campaigns v
+        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        WHERE v.country = :country AND v.id <> :id
+        ORDER BY
+          COALESCE(v.urgent_medical_needs, FALSE) DESC,
+          COALESCE(v.pct_goal_achieved >= 100, FALSE) ASC,
+          v.pct_goal_achieved ASC NULLS LAST,
+          v.id DESC
+        LIMIT {$limit}
+        SQL, [':country' => $country, ':id' => $campaignId])->fetchAll(),
+      [BfepCacheInvalidator::CAMPAIGNS, 'bfep:campaign:' . $campaignId],
+    );
+  }
+
+  /**
    * Returns the ID of the one public campaign with this line number.
    *
    * NULL when no campaign, or more than one, has that line.

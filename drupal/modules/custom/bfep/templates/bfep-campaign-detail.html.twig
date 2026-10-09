@@ -25,4 +25,25 @@
     <a class="button" href="{{ change_url }}">{% trans %}Request an update{% endtrans %}</a>
     <a class="button" href="{{ campaigns_url }}">{% trans %}Back to campaigns{% endtrans %}</a>
   </div>
+
+  {% if related %}
+    <section class="bfep-related" aria-labelledby="bfep-related-heading">
+      <h2 id="bfep-related-heading">{% trans %}More campaigns in {{ campaign.country }}{% endtrans %}</h2>
+      <div class="bfep-campaign-grid">
+        {% for item in related %}
+          <article class="bfep-campaign-card bfep-campaign-card--compact">
+            <div class="bfep-card-heading">
+              <h3><a class="bfep-campaign-title" href="{{ item.detail_url }}">{{ item.name }}</a></h3>
+              {% if item.line_number %}<span class="bfep-line">{% trans %}Line #{{ item.line_number }}{% endtrans %}</span>{% endif %}
+            </div>
+            {% if item.badges %}<ul class="bfep-badges" aria-label="{% trans %}Campaign details{% endtrans %}">{% for badge in item.badges %}<li>{{ badge }}</li>{% endfor %}</ul>{% endif %}
+            {% if item.amounts %}<dl class="bfep-amounts">{% for amount in item.amounts %}<div><dt>{{ amount.label }}</dt><dd>{{ amount.value }}</dd></div>{% endfor %}</dl>{% endif %}
+            {% if item.progress is not null %}<progress class="bfep-progress" max="100" value="{{ item.progress }}" aria-label="{% trans %}Funding progress{% endtrans %}">{{ item.progress }}%</progress>{% endif %}
+            <div class="bfep-card-actions"><a class="button" href="{{ item.detail_url }}">{% trans %}View details{% endtrans %}<span class="visually-hidden">: {{ item.name }}</span></a></div>
+          </article>
+        {% endfor %}
+      </div>
+      {% if country_url %}<p class="bfep-related-more"><a href="{{ country_url }}">{% trans %}See all campaigns in {{ campaign.country }}{% endtrans %}</a></p>{% endif %}
+    </section>
+  {% endif %}
 </article>

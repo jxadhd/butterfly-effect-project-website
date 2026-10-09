@@ -324,7 +324,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
       "COALESCE(contact_name, '')",
       "COALESCE(country_raw, '')",
       "COALESCE(project_description, '')",
-      "COALESCE(initiative_type, '')",
+      "COALESCE(CAST(initiative_type AS TEXT), '')",
     ], $tokens, 'initiative', $params);
 
     $visibility = $is_staff ? 'TRUE' : 'featured_by_bfep = true';
@@ -358,7 +358,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
       "COALESCE(social_media_usernames, '')",
       "COALESCE(city_country, '')",
       "COALESCE(family_description, '')",
-      "COALESCE(verification_status, '')",
+      "COALESCE(CAST(verification_status AS TEXT), '')",
     ], $tokens, 'referral', $params);
 
     $rows = $this->rows("\n      SELECT id, full_name, email, fundraiser_url, city_country, family_description, verification_status, created_at\n      FROM referral_submissions\n      WHERE {$where}\n      ORDER BY created_at DESC NULLS LAST, id DESC\n      LIMIT 40", $params, 'referrals');
@@ -416,7 +416,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
     $where = $this->buildWhere([
       "COALESCE(submitter_email, '')",
       "COALESCE(submitter_name, '')",
-      "COALESCE(submitter_type, '')",
+      "COALESCE(CAST(submitter_type AS TEXT), '')",
       "COALESCE(family_line_number_raw, '')",
       "COALESCE(CAST(campaign_id AS TEXT), '')",
       "COALESCE(fundraiser_url, '')",

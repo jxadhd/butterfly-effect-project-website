@@ -19,6 +19,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class CampaignEditForm extends FormBase {
 
+  use SaveFailureTrait;
+
   protected int $campaignId = 0;
   protected object $campaign;
 
@@ -334,7 +336,8 @@ final class CampaignEditForm extends FormBase {
     }
     catch (\Throwable $exception) {
       $transaction->rollBack();
-      throw $exception;
+      $this->reportSaveFailure($form_state, $exception, 'campaign ' . $this->campaignId);
+      return;
     }
     // Commit before invalidating caches.
     unset($transaction);

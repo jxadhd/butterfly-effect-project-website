@@ -20,6 +20,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class CampaignAddForm extends FormBase {
 
+  use SaveFailureTrait;
+
   private const LINE_LOCK_ID = 42633701;
 
   public function __construct(
@@ -640,7 +642,8 @@ final class CampaignAddForm extends FormBase {
     }
     catch (\Throwable $e) {
       $transaction->rollBack();
-      throw $e;
+      $this->reportSaveFailure($form_state, $e, 'new campaign');
+      return;
     }
 
     // Commit before invalidating, so a concurrent request cannot repopulate the

@@ -200,6 +200,48 @@ final class CampaignRepository {
   }
 
   /**
+   * Campaigns short of their goal for the homepage, neediest first.
+   *
+   * Urgent medical cases first, then least funded. Fully funded campaigns
+   * and campaigns without a goal are left out.
+   */
+  public function needingHelp(int $limit = 3): array {
+    $limit = max(1, min(12, $limit));
+    return $this->remember(
+      'bfep:needing-help:' . $limit,
+      fn(): array => $this->database->query(<<<SQL
+        SELECT
+          v.id,
+          v.line_number,
+          v.contact_name,
+          v.country,
+          v.global_region,
+          v.description,
+          v.featured_by_bfep,
+          v.urgent_medical_needs,
+          v.fundraiser_url,
+          v.platform,
+          v.currency_code,
+          v.goal_amount,
+          v.donated_amount,
+          v.pct_goal_achieved,
+          v.tags,
+          v.created_at,
+          v.updated_at
+        FROM v_campaigns v
+        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        WHERE v.pct_goal_achieved < 100
+        ORDER BY
+          COALESCE(v.urgent_medical_needs, FALSE) DESC,
+          v.pct_goal_achieved ASC,
+          v.id DESC
+        LIMIT {$limit}
+        SQL)->fetchAll(),
+      [BfepCacheInvalidator::HOME, BfepCacheInvalidator::CAMPAIGNS],
+    );
+  }
+
+  /**
    * The most recently added public campaigns, newest first, for the feed.
    */
   public function recent(int $limit = 30): array {

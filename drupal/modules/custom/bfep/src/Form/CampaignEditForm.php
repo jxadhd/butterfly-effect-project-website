@@ -22,6 +22,18 @@ final class CampaignEditForm extends FormBase {
   protected int $campaignId = 0;
   protected object $campaign;
 
+  /**
+   * The campaign's active fundraiser row, if it has one.
+   */
+  protected ?object $fundraiser = NULL;
+
+  /**
+   * IDs of the tags currently attached to the campaign.
+   *
+   * @var int[]
+   */
+  protected array $tagIds = [];
+
   public function __construct(
     protected Connection $database,
     protected BfepCacheInvalidator $cacheInvalidator,
@@ -59,6 +71,26 @@ final class CampaignEditForm extends FormBase {
         $label .= ' — ' . $row->global_region;
       }
       $countries[(int) $row->id] = $label;
+    }
+
+    $this->fundraiser = $this->database->query('
+      SELECT platform_id, url, currency_code, goal_amount, donated_amount
+      FROM campaign_fundraisers
+      WHERE campaign_id = :id AND is_active
+      LIMIT 1
+    ', [':id' => $this->campaignId])->fetchObject() ?: NULL;
+    $this->tagIds = array_map('intval', $this->database->query(
+      'SELECT tag_id FROM campaign_tags WHERE campaign_id = :id',
+      [':id' => $this->campaignId],
+    )->fetchCol());
+
+    $platforms = [];
+    foreach ($this->database->query('SELECT id, name FROM fundraising_platforms ORDER BY name')->fetchAll() as $row) {
+      $platforms[(int) $row->id] = (string) $row->name;
+    }
+    $tags = [];
+    foreach ($this->database->query('SELECT id, name FROM tags ORDER BY name')->fetchAll() as $row) {
+      $tags[(int) $row->id] = (string) $row->name;
     }
 
     $form['#attached']['library'][] = 'bfep/admin';
@@ -113,6 +145,56 @@ final class CampaignEditForm extends FormBase {
       '#maxlength' => 5000,
     ];
 
+    $form['fundraiser'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Active fundraiser'),
+      '#open' => TRUE,
+      '#description' => $this->t('Changing the URL keeps the old fundraiser as an inactive record and creates a new active one. Choosing “No active fundraiser” deactivates the current one; nothing is deleted.'),
+    ];
+    $form['fundraiser']['platform_id'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Fundraising platform'),
+      '#options' => $platforms,
+      '#empty_option' => $this->t('- No active fundraiser -'),
+      '#default_value' => $this->fundraiser ? (int) $this->fundraiser->platform_id : '',
+    ];
+    $form['fundraiser']['fundraiser_url'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Fundraiser URL'),
+      '#maxlength' => 2000,
+      '#default_value' => $this->fundraiser->url ?? '',
+    ];
+    $form['fundraiser']['currency_code'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Currency code'),
+      '#maxlength' => 3,
+      '#size' => 6,
+      '#placeholder' => 'USD',
+      '#default_value' => $this->fundraiser->currency_code ?? '',
+    ];
+    $form['fundraiser']['goal_amount'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Goal amount'),
+      '#min' => 0,
+      '#step' => '0.01',
+      '#default_value' => $this->fundraiser->goal_amount ?? '',
+    ];
+    $form['fundraiser']['donated_amount'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Amount donated / raised'),
+      '#min' => 0,
+      '#step' => '0.01',
+      '#default_value' => $this->fundraiser->donated_amount ?? '',
+    ];
+
+    $form['tags_section'] = ['#type' => 'details', '#title' => $this->t('Tags'), '#open' => FALSE];
+    $form['tags_section']['tag_ids'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Campaign tags'),
+      '#options' => $tags,
+      '#default_value' => array_values(array_intersect($this->tagIds, array_keys($tags))),
+    ];
+
     $form['classification'] = ['#type' => 'details', '#title' => $this->t('Classification'), '#open' => TRUE];
     $form['classification']['featured_by_bfep'] = [
       '#type' => 'checkbox',
@@ -123,6 +205,12 @@ final class CampaignEditForm extends FormBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Urgent medical needs'),
       '#default_value' => $this->truthy($this->campaign->urgent_medical_needs ?? NULL),
+    ];
+    $form['classification']['no_feature_response'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('No-feature response'),
+      '#default_value' => $this->campaign->no_feature_response ?? '',
+      '#maxlength' => 500,
     ];
     $form['classification']['vetted_by_trusted_group'] = [
       '#type' => 'textfield',
@@ -172,6 +260,16 @@ final class CampaignEditForm extends FormBase {
         ':url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId])->toString(),
       ]));
     }
+    $fundraiserErrors = AdminFormat::fundraiserErrors(
+      (int) $form_state->getValue('platform_id'),
+      trim((string) $form_state->getValue('fundraiser_url')),
+      strtoupper(trim((string) $form_state->getValue('currency_code'))),
+      $form_state->getValue('goal_amount'),
+      $form_state->getValue('donated_amount'),
+    );
+    foreach ($fundraiserErrors as $name => $message) {
+      $form_state->setErrorByName($name, $this->t($message));
+    }
     $countryId = (int) $form_state->getValue('country_id');
     if ($countryId < 1 || !(int) $this->database->query('SELECT CASE WHEN EXISTS (SELECT 1 FROM countries WHERE id = :id) THEN 1 ELSE 0 END', [':id' => $countryId])->fetchField()) {
       $form_state->setErrorByName('country_id', $this->t('Select a valid country.'));
@@ -195,16 +293,104 @@ final class CampaignEditForm extends FormBase {
       'urgent_medical_needs' => !empty($values['urgent_medical_needs']) ? 'true' : 'false',
       'vetted_by_trusted_group' => trim((string) $values['vetted_by_trusted_group']),
       'featured_self_selected' => trim((string) $values['featured_self_selected']),
+      'no_feature_response' => trim((string) $values['no_feature_response']),
       'internal_notes' => trim((string) $values['internal_notes']),
     ];
     $changed = AdminFormat::changedKeys((array) $this->campaign, $fields);
     $fields['updated_at'] = date('c');
-    $this->database->update('campaigns')->fields($fields)->condition('id', $this->campaignId)->execute();
+    $transaction = $this->database->startTransaction();
+    try {
+      $this->database->update('campaigns')->fields($fields)->condition('id', $this->campaignId)->execute();
+      $changed = [...$changed, ...$this->saveFundraiser($values), ...$this->saveTags($values)];
+    }
+    catch (\Throwable $exception) {
+      $transaction->rollBack();
+      throw $exception;
+    }
+    // Commit before invalidating caches.
+    unset($transaction);
     $this->auditLogger->record('updated', 'campaign', $this->campaignId, $changed);
 
     $this->cacheInvalidator->invalidateCampaign($this->campaignId);
     $this->messenger()->addStatus($this->t('Campaign saved. Public caches for this campaign, listings, countries, and the homepage were invalidated.'));
     $form_state->setRedirect('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId]);
+  }
+
+  /**
+   * Applies fundraiser changes and returns the names of changed fields.
+   */
+  private function saveFundraiser(array $values): array {
+    $platformId = (int) ($values['platform_id'] ?? 0);
+    $new = [
+      'platform_id' => $platformId,
+      'url' => trim((string) ($values['fundraiser_url'] ?? '')),
+      'currency_code' => strtoupper(trim((string) ($values['currency_code'] ?? ''))),
+      'goal_amount' => AdminFormat::isBlank($values['goal_amount'] ?? NULL) ? NULL : (string) $values['goal_amount'],
+      'donated_amount' => AdminFormat::isBlank($values['donated_amount'] ?? NULL) ? NULL : (string) $values['donated_amount'],
+    ];
+    $old = $this->fundraiser ? (array) $this->fundraiser : [];
+    if ($platformId < 1) {
+      if (!$old) {
+        return [];
+      }
+      $this->database->update('campaign_fundraisers')
+        ->fields(['is_active' => 'false'])
+        ->condition('campaign_id', $this->campaignId)
+        ->condition('is_active', TRUE)
+        ->execute();
+      return ['fundraiser (deactivated)'];
+    }
+
+    $changed = AdminFormat::changedKeys($old, $new);
+    if (!$changed) {
+      return [];
+    }
+    $row = $new;
+    $row['currency_code'] = $row['currency_code'] === '' ? NULL : $row['currency_code'];
+    $sameFundraiser = $old && AdminFormat::urlMatchKey($old['url'] ?? '') === AdminFormat::urlMatchKey($new['url']);
+    if ($sameFundraiser) {
+      $this->database->update('campaign_fundraisers')
+        ->fields($row)
+        ->condition('campaign_id', $this->campaignId)
+        ->condition('is_active', TRUE)
+        ->execute();
+      return array_map(static fn(string $key): string => 'fundraiser.' . $key, $changed);
+    }
+    // A different URL is a different fundraiser: keep the old row as history.
+    if ($old) {
+      $this->database->update('campaign_fundraisers')
+        ->fields(['is_active' => 'false'])
+        ->condition('campaign_id', $this->campaignId)
+        ->condition('is_active', TRUE)
+        ->execute();
+    }
+    $this->database->insert('campaign_fundraisers')
+      ->fields(['campaign_id' => $this->campaignId, 'is_active' => 'true'] + $row)
+      ->execute();
+    return [$old ? 'fundraiser (replaced)' : 'fundraiser (added)'];
+  }
+
+  /**
+   * Syncs campaign_tags with the selection and returns changed field names.
+   */
+  private function saveTags(array $values): array {
+    $selected = array_map('intval', array_values(array_filter($values['tag_ids'] ?? [])));
+    $added = array_diff($selected, $this->tagIds);
+    $removed = array_diff($this->tagIds, $selected);
+    if ($removed) {
+      $this->database->delete('campaign_tags')
+        ->condition('campaign_id', $this->campaignId)
+        ->condition('tag_id', array_values($removed), 'IN')
+        ->execute();
+    }
+    foreach ($added as $tagId) {
+      $this->database->query('
+        INSERT INTO campaign_tags (campaign_id, tag_id)
+        VALUES (:campaign_id, :tag_id)
+        ON CONFLICT DO NOTHING
+      ', [':campaign_id' => $this->campaignId, ':tag_id' => $tagId]);
+    }
+    return ($added || $removed) ? ['tags'] : [];
   }
 
   private function truthy(mixed $value): bool {

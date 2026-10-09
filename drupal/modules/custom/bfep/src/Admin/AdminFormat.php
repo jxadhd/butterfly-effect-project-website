@@ -69,6 +69,18 @@ final class AdminFormat {
   }
 
   /**
+   * Returns the line number when a search is only a line number.
+   *
+   * "142", "#142" and " 142 " qualify; "142 Gaza" or "1e3" do not.
+   */
+  public static function lineNumberQuery(mixed $query): ?int {
+    if (!is_scalar($query) || !preg_match('/^#?([1-9][0-9]{0,8})$/', trim((string) $query), $matches)) {
+      return NULL;
+    }
+    return (int) $matches[1];
+  }
+
+  /**
    * Validates and clamps listing pagination.
    *
    * @return array{page: int, per_page: int, offset: int, total_pages: int}

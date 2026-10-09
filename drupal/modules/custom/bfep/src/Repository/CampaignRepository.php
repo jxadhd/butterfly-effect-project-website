@@ -188,6 +188,26 @@ final class CampaignRepository {
     return $result === FALSE ? NULL : $result;
   }
 
+  /**
+   * Returns the ID of the one public campaign with this line number.
+   *
+   * NULL when no campaign, or more than one, has that line.
+   */
+  public function idForLineNumber(int $lineNumber): ?int {
+    $ids = $this->remember(
+      'bfep:line-number:' . $lineNumber,
+      fn(): array => $this->database->query(<<<'SQL'
+        SELECT v.id
+        FROM v_campaigns v
+        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        WHERE v.line_number = :line
+        LIMIT 2
+        SQL, [':line' => $lineNumber])->fetchCol(),
+      [BfepCacheInvalidator::CAMPAIGNS],
+    );
+    return count($ids) === 1 ? (int) $ids[0] : NULL;
+  }
+
   public function countryCount(string $country): int {
     return (int) $this->remember(
       'bfep:country-count:' . hash('sha256', mb_strtolower($country)),

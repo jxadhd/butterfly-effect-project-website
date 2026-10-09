@@ -8,6 +8,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 final class AdminController extends ControllerBase {
@@ -220,9 +221,15 @@ final class AdminController extends ControllerBase {
     ];
   }
 
-  public function campaigns(Request $request): array {
+  public function campaigns(Request $request): array|RedirectResponse {
     $db = $this->bfdb();
     $q = trim((string) $request->query->get('q', ''));
+    if (($line = AdminFormat::lineNumberQuery($q)) !== NULL) {
+      $ids = $db->query('SELECT id FROM campaigns WHERE line_number = :line AND deleted_at IS NULL LIMIT 2', [':line' => $line])->fetchCol();
+      if (count($ids) === 1) {
+        return $this->redirect('bfep.admin_campaign_edit', ['campaign_id' => (int) $ids[0]]);
+      }
+    }
     $featured = $request->query->get('featured') === '1';
     $urgent = $request->query->get('urgent') === '1';
     $where = ['deleted_at IS NULL'];
@@ -243,6 +250,9 @@ final class AdminController extends ControllerBase {
     $total = (int) $db->query("SELECT COUNT(*) FROM campaigns WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
     $rows = $db->query("\n      SELECT id, line_number, contact_name, country_raw, featured_by_bfep, urgent_medical_needs, updated_at\n      FROM campaigns\n      WHERE {$where_sql}\n      ORDER BY updated_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    if ($q !== '' && $total === 1 && count($rows) === 1) {
+      return $this->redirect('bfep.admin_campaign_edit', ['campaign_id' => (int) $rows[0]->id]);
+    }
 
     $table_rows = [];
     foreach ($rows as $row) {
@@ -283,7 +293,7 @@ final class AdminController extends ControllerBase {
     );
   }
 
-  public function referrals(Request $request): array {
+  public function referrals(Request $request): array|RedirectResponse {
     $db = $this->bfdb();
     $q = trim((string) $request->query->get('q', ''));
     $status = trim((string) $request->query->get('status', ''));
@@ -307,6 +317,9 @@ final class AdminController extends ControllerBase {
     $total = (int) $db->query("SELECT COUNT(*) FROM referral_submissions WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
     $rows = $db->query("\n      SELECT id, verification_status, email, full_name, fundraiser_url, created_at\n      FROM referral_submissions\n      WHERE {$where_sql}\n      ORDER BY created_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    if ($q !== '' && $total === 1 && count($rows) === 1) {
+      return $this->redirect('bfep.admin_referral_review', ['referral_id' => (int) $rows[0]->id]);
+    }
 
     $table_rows = [];
     foreach ($rows as $row) {
@@ -343,7 +356,7 @@ final class AdminController extends ControllerBase {
     );
   }
 
-  public function volunteers(Request $request): array {
+  public function volunteers(Request $request): array|RedirectResponse {
     $db = $this->bfdb();
     $q = trim((string) $request->query->get('q', ''));
     $status = trim((string) $request->query->get('status', ''));
@@ -366,6 +379,9 @@ final class AdminController extends ControllerBase {
     $total = (int) $db->query("SELECT COUNT(*) FROM volunteers WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
     $rows = $db->query("\n      SELECT id, full_name, email, hours_per_week, accepted, contacted, onboarded, created_at\n      FROM volunteers\n      WHERE {$where_sql}\n      ORDER BY created_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    if ($q !== '' && $total === 1 && count($rows) === 1) {
+      return $this->redirect('bfep.admin_volunteer_review', ['volunteer_id' => (int) $rows[0]->id]);
+    }
 
     $table_rows = [];
     foreach ($rows as $row) {
@@ -405,7 +421,7 @@ final class AdminController extends ControllerBase {
     );
   }
 
-  public function changes(Request $request): array {
+  public function changes(Request $request): array|RedirectResponse {
     $db = $this->bfdb();
     $q = trim((string) $request->query->get('q', ''));
     $status = trim((string) $request->query->get('status', ''));
@@ -427,6 +443,9 @@ final class AdminController extends ControllerBase {
     $total = (int) $db->query("SELECT COUNT(*) FROM info_change_requests WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
     $rows = $db->query("\n      SELECT id, submitter_email, submitter_type, submitter_name, family_line_number_raw, campaign_id, fields_to_change, processed, created_at\n      FROM info_change_requests\n      WHERE {$where_sql}\n      ORDER BY processed ASC, created_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    if ($q !== '' && $total === 1 && count($rows) === 1) {
+      return $this->redirect('bfep.admin_change_review', ['request_id' => (int) $rows[0]->id]);
+    }
 
     $table_rows = [];
     foreach ($rows as $row) {

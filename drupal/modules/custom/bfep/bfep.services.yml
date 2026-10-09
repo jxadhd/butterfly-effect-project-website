@@ -59,3 +59,14 @@ services:
       - '@bfep.campaign_repository'
       - '@bfep.settings'
       - '@logger.channel.bfep'
+
+  bfep.search_shortcut_subscriber:
+    class: Drupal\bfep\EventSubscriber\SearchShortcutSubscriber
+    arguments:
+      - '@current_route_match'
+      - '@entity_type.manager'
+      - '@current_user'
+      - '@bfep.campaign_repository'
+      - '@logger.channel.bfep'
+    tags:
+      - { name: event_subscriber }

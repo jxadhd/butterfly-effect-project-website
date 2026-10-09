@@ -47,6 +47,18 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::lineNumberQuery
+   */
+  public function testLineNumberQuery(): void {
+    $this->assertSame(142, AdminFormat::lineNumberQuery(' #142 '));
+    $this->assertSame(7, AdminFormat::lineNumberQuery('7'));
+    $this->assertNull(AdminFormat::lineNumberQuery('142 Gaza'));
+    $this->assertNull(AdminFormat::lineNumberQuery('0'));
+    $this->assertNull(AdminFormat::lineNumberQuery('1e3'));
+    $this->assertNull(AdminFormat::lineNumberQuery(['142']));
+  }
+
+  /**
    * @covers ::pageWindow
    */
   public function testPageWindowClampsToLastPage(): void {

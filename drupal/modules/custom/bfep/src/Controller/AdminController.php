@@ -112,16 +112,45 @@ final class AdminController extends ControllerBase {
     $started = microtime(TRUE);
     $db = $this->bfdb();
 
-    $campaigns = (int) $db->query("SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL")->fetchField();
-    $referrals = (int) $db->query("SELECT COUNT(*) FROM referral_submissions")->fetchField();
-    $volunteers = (int) $db->query("SELECT COUNT(*) FROM volunteers")->fetchField();
-    $pending_volunteers = (int) $db->query("SELECT COUNT(*) FROM volunteers WHERE accepted IS NULL")->fetchField();
-    $changes = (int) $db->query("SELECT COUNT(*) FROM info_change_requests WHERE processed = false")->fetchField();
+    try {
+      $counts = $db->query(<<<'SQL'
+        SELECT
+          (SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL) AS campaigns,
+          (SELECT COUNT(*) FROM referral_submissions) AS referrals,
+          (SELECT COUNT(*) FROM referral_submissions
+            WHERE verification_status IS NULL OR TRIM(verification_status) = ''
+              OR LOWER(verification_status) = 'pending') AS pending_referrals,
+          (SELECT MIN(created_at) FROM referral_submissions
+            WHERE verification_status IS NULL OR TRIM(verification_status) = ''
+              OR LOWER(verification_status) = 'pending') AS oldest_referral,
+          (SELECT COUNT(*) FROM volunteers) AS volunteers,
+          (SELECT COUNT(*) FROM volunteers WHERE accepted IS NULL) AS pending_volunteers,
+          (SELECT MIN(created_at) FROM volunteers WHERE accepted IS NULL) AS oldest_volunteer,
+          (SELECT COUNT(*) FROM info_change_requests WHERE processed = false) AS changes,
+          (SELECT MIN(created_at) FROM info_change_requests WHERE processed = false) AS oldest_change
+        SQL)->fetchObject();
+    }
+    catch (\Throwable $exception) {
+      $this->getLogger('bfep')->error('BFEP dashboard could not query bfdb: @message', ['@message' => $exception->getMessage()]);
+      return [
+        '#attached' => ['library' => ['bfep/admin']],
+        'error' => [
+          '#markup' => '<div class="bfep-admin-notice bfep-admin-notice--error" role="alert"><strong>' . $this->t('bfdb is unavailable.') . '</strong> ' . $this->t('The external database could not be reached, so queue counts cannot be shown. Details are in Reports › Recent log messages.') . '</div>',
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
+    }
+    $campaigns = (int) $counts->campaigns;
+    $referrals = (int) $counts->referrals;
+    $pending_referrals = (int) $counts->pending_referrals;
+    $volunteers = (int) $counts->volunteers;
+    $pending_volunteers = (int) $counts->pending_volunteers;
+    $changes = (int) $counts->changes;
     $latency = round((microtime(TRUE) - $started) * 1000, 1);
 
     $cards = [
       ['value' => $campaigns, 'label' => $this->t('Campaigns'), 'route' => 'bfep.admin_campaigns'],
-      ['value' => $referrals, 'label' => $this->t('Referrals'), 'route' => 'bfep.admin_referrals'],
+      ['value' => $pending_referrals, 'label' => $this->t('Pending referrals'), 'route' => 'bfep.admin_referrals', 'query' => ['status' => 'pending']],
       ['value' => $pending_volunteers, 'label' => $this->t('Pending volunteers'), 'route' => 'bfep.admin_volunteers', 'query' => ['status' => 'pending']],
       ['value' => $changes, 'label' => $this->t('Pending changes'), 'route' => 'bfep.admin_changes', 'query' => ['status' => 'pending']],
     ];
@@ -154,14 +183,25 @@ final class AdminController extends ControllerBase {
         '#type' => 'container',
         '#attributes' => ['class' => ['bfep-admin-queue-grid']],
         'campaigns' => $this->queueCard('Campaigns', $campaigns . ' active records', 'Edit public campaign information and internal flags.', 'bfep.admin_campaigns'),
-        'referrals' => $this->queueCard('Referrals', $referrals . ' submissions', 'Review submitted fundraiser referrals and update verification status.', 'bfep.admin_referrals'),
-        'volunteers' => $this->queueCard('Volunteers', $pending_volunteers . ' pending of ' . $volunteers, 'Accept, decline, contact, and onboard volunteer applicants.', 'bfep.admin_volunteers'),
-        'changes' => $this->queueCard('Change requests', $changes . ' pending', 'Review requests to correct existing campaign information.', 'bfep.admin_changes'),
+        'referrals' => $this->queueCard('Referrals', $pending_referrals . ' pending of ' . $referrals . $this->oldest($counts->oldest_referral), 'Review submitted fundraiser referrals and update verification status.', 'bfep.admin_referrals'),
+        'volunteers' => $this->queueCard('Volunteers', $pending_volunteers . ' pending of ' . $volunteers . $this->oldest($counts->oldest_volunteer), 'Accept, decline, contact, and onboard volunteer applicants.', 'bfep.admin_volunteers'),
+        'changes' => $this->queueCard('Change requests', $changes . ' pending' . $this->oldest($counts->oldest_change), 'Review requests to correct existing campaign information.', 'bfep.admin_changes'),
       ],
       'health' => [
         '#markup' => '<div class="bfep-admin-health"><strong>bfdb:</strong> connected · dashboard queries completed in ' . $latency . ' ms</div>',
       ],
     ];
+  }
+
+  /**
+   * Describes how long the oldest pending item has waited, e.g. " · oldest 3 days".
+   */
+  protected function oldest(mixed $createdAt): string {
+    $timestamp = !AdminFormat::isBlank($createdAt) ? strtotime((string) $createdAt) : FALSE;
+    if (!$timestamp) {
+      return '';
+    }
+    return ' · oldest ' . $this->dateFormatter->formatTimeDiffSince($timestamp, ['granularity' => 1]);
   }
 
   protected function queueCard(string $title, string $meta, string $description, string $route): array {
@@ -254,7 +294,11 @@ final class AdminController extends ControllerBase {
       $where[] = '(full_name ILIKE :q OR email ILIKE :q OR fundraiser_url ILIKE :q)';
       $params[':q'] = $this->like($q);
     }
-    if ($status !== '') {
+    if ($status === 'pending') {
+      // Matches the dashboard: no status yet counts as pending.
+      $where[] = "(verification_status IS NULL OR TRIM(verification_status) = '' OR LOWER(verification_status) = 'pending')";
+    }
+    elseif ($status !== '') {
       $where[] = 'verification_status = :status';
       $params[':status'] = $status;
     }

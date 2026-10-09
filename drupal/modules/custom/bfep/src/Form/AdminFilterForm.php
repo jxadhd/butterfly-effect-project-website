@@ -34,12 +34,15 @@ final class AdminFilterForm extends FormBase {
   }
 
   protected function referralStatusOptions(): array {
-    $options = ['' => '- Any status -'];
+    $options = ['' => '- Any status -', 'pending' => 'Pending (including no status)'];
 
     try {
       $rows = $this->bfdb()->query("\n        SELECT DISTINCT verification_status AS value\n        FROM referral_submissions\n        WHERE verification_status IS NOT NULL AND verification_status <> ''\n        ORDER BY verification_status\n      ")->fetchAll();
 
       foreach ($rows as $row) {
+        if (strtolower((string) $row->value) === 'pending') {
+          continue;
+        }
         $options[(string) $row->value] = (string) $row->value;
       }
     }

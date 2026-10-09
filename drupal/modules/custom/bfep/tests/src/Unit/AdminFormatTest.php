@@ -59,6 +59,34 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::matchCountry
+   */
+  public function testMatchCountry(): void {
+    $names = [1 => 'Sudan', 2 => 'South Sudan', 3 => 'Palestine', 4 => 'Niger', 5 => 'Nigeria'];
+    $this->assertSame(3, AdminFormat::matchCountry('Gaza City, Palestine', $names));
+    $this->assertSame(2, AdminFormat::matchCountry('Juba, south sudan', $names));
+    $this->assertSame(1, AdminFormat::matchCountry('Khartoum (Sudan)', $names));
+    $this->assertSame(5, AdminFormat::matchCountry('Lagos, Nigeria', $names));
+    $this->assertSame(4, AdminFormat::matchCountry('Niamey, Niger', $names));
+    $this->assertNull(AdminFormat::matchCountry('Somewhere else', $names));
+    $this->assertNull(AdminFormat::matchCountry('', $names));
+  }
+
+  /**
+   * @covers ::matchPlatform
+   */
+  public function testMatchPlatform(): void {
+    $names = [1 => 'GoFundMe', 2 => 'Chuffed', 3 => 'Give Send Go', 4 => 'Other'];
+    $this->assertSame(1, AdminFormat::matchPlatform('https://www.gofundme.com/f/family-1', $names));
+    $this->assertSame(1, AdminFormat::matchPlatform('https://uk.gofundme.com/f/x?utm=y', $names));
+    $this->assertSame(2, AdminFormat::matchPlatform('http://chuffed.org/project/abc', $names));
+    $this->assertSame(3, AdminFormat::matchPlatform('https://www.givesendgo.com/abc', $names));
+    $this->assertNull(AdminFormat::matchPlatform('https://example.org/gofundme', $names));
+    $this->assertNull(AdminFormat::matchPlatform('javascript:alert(1)', $names));
+    $this->assertNull(AdminFormat::matchPlatform('', $names));
+  }
+
+  /**
    * @covers ::lineNumberQuery
    */
   public function testLineNumberQuery(): void {

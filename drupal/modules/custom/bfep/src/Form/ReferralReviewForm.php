@@ -80,6 +80,15 @@ final class ReferralReviewForm extends AdminRecordFormBase {
       $campaignLinks[] = ['label' => $campaign['label'], 'url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $campaign['id']])];
     }
     $form['related']['campaigns'] = $this->relatedList((string) $this->t('Campaigns already using this fundraiser'), $campaignLinks, (string) $this->t('None found'));
+    $addUrl = Url::fromRoute('bfep.admin_campaign_add', [], ['query' => ['referral' => $this->referralId]]);
+    if ($addUrl->access()) {
+      $form['related']['add_campaign'] = [
+        '#type' => 'link',
+        '#title' => $campaignLinks ? $this->t('Add as a new campaign anyway') : $this->t('Add as a new campaign'),
+        '#url' => $addUrl,
+        '#attributes' => ['class' => ['button', 'button--small']],
+      ];
+    }
 
     $referralLinks = [];
     $urlKey = AdminFormat::urlMatchKey($this->referral->fundraiser_url ?? NULL);

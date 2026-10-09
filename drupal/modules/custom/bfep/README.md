@@ -67,6 +67,12 @@ form requires Drupal's `administer site configuration` permission.
 - **Campaign add** refuses a fundraiser URL that another campaign already uses,
   with links to those campaigns, unless "Add anyway if another campaign
   already uses this fundraiser URL" is ticked.
+- **Referral to campaign.** A referral's "Add as a new campaign" button opens
+  the add form (`?referral=ID`) with the contact name, fundraiser URL, a
+  platform guessed from the URL's host, a country guessed from the referral's
+  city/country text, and an internal note naming the referral. The public
+  description is left empty on purpose. After saving, staff are reminded to
+  update the referral's status.
 - **Lists** have working paging with a 25, 50 or 100 per-page choice, escape
   `%` and `_` in searches, and filter referrals by "Pending (including no
   status)" and campaigns by "Sync problems".

@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   syntax:
     name: PHP and YAML syntax
@@ -44,11 +48,8 @@ jobs:
           PY
 
   coding-standards:
-    name: Drupal coding standards (advisory)
+    name: Drupal coding standards
     runs-on: ubuntu-latest
-    # Advisory until the existing code has been cleaned up; remove this line
-    # to make violations block merges.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 

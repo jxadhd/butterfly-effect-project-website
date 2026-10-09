@@ -16,6 +16,13 @@ on:
 permissions:
   contents: read
 
+env:
+  # The base image is pinned by digest only, so a Dependabot bump can move to
+  # a new Drupal major version. The build fails if that happens, so an
+  # unplanned major upgrade can't be merged as a routine update. Change this
+  # when the site is deliberately moved to the next major version.
+  EXPECTED_DRUPAL_MAJOR: '11'
+
 concurrency:
   group: image-${{ github.ref }}
   cancel-in-progress: true
@@ -37,3 +44,25 @@ jobs:
           docker run --rm bfep-drupal:ci php -m | grep -qx gmp
           docker run --rm bfep-drupal:ci vendor/bin/drush --version
           docker run --rm bfep-drupal:ci sh -c 'grep -q "^Sitemap: https://butterfly.joshcross.co.nz/sitemap.xml" web/robots.txt'
+
+      # Lists what this build installed on the run's Summary page, so a
+      # reviewer can compare a Dependabot bump or a weekly run with the last one.
+      - name: Versions
+        run: |
+          set -euo pipefail
+          php="$(docker run --rm bfep-drupal:ci php -r 'echo PHP_VERSION;')"
+          drupal="$(docker run --rm bfep-drupal:ci php -r 'require "web/core/lib/Drupal.php"; echo Drupal::VERSION;')"
+          {
+            echo '### Versions in this image'
+            echo
+            echo '| Component | Version |'
+            echo '|---|---|'
+            echo "| PHP | $php |"
+            echo "| Drupal core | $drupal |"
+            docker run --rm bfep-drupal:ci composer show --direct --format=json 2>/dev/null \
+              | jq -r '.installed[] | select((.name | test("^(drupal|drush)/")) and (.name | test("^drupal/core") | not)) | "| \(.name) | \(.version) |"'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          if [ "${drupal%%.*}" != "$EXPECTED_DRUPAL_MAJOR" ]; then
+            echo "::error file=Dockerfile.drupal,line=1::The base image has Drupal $drupal, but Drupal $EXPECTED_DRUPAL_MAJOR is expected. A major upgrade needs testing on a copy of the site first. When it is ready, change EXPECTED_DRUPAL_MAJOR in .github/workflows/image.yml."
+            exit 1
+          fi

@@ -301,12 +301,21 @@ clicks **Run workflow** on the **Actions** tab. Building the image installs the
 contrib modules and Drush with Composer, which picks the newest releases the
 Dockerfile's version rules allow (`^2.2` means "2.2 or any later 2.x").
 
+The run's **Summary** page has a **Versions in this image** table listing
+PHP, Drupal core, Drush and each contrib module. The check also **fails on
+purpose if Drupal's major version isn't 11**, so an unplanned Drupal 12 upgrade
+can't slip in as a routine update. When the site is deliberately moved to the next
+major version, change `EXPECTED_DRUPAL_MAJOR` at the top of `.github/workflows/image.yml`.
+
 **When it fails:**
 
 - **In the "Build" step:** The base image or a package changed, or the
   Dockerfile has a mistake. Read the last lines of the step, which name the
   failing command. If the PR didn't touch the Dockerfile (the weekly run, for example), see
   [The weekly image build](#the-weekly-image-build).
+- **In the "Versions" step, with "Drupal 11 is expected":** The base image moved
+  to a new Drupal major version. Don't merge it. Tell Josh, because the site
+  needs testing on the new version first.
 - **In the "Smoke test" step:** The image built but something is missing. The
   failing line is the one printed just before the error. For example, if
   `php -m | grep -qx gmp` fails, the gmp extension is missing.
@@ -366,13 +375,14 @@ Dependabot PRs run the same checks as anyone else's. A Docker bump also runs
 
 1. Wait for the checks. If they're all green, carry on. If one is red, see
    below.
-2. **For a Docker bump,** open the **Image build** check's **Details**, expand
-   **Smoke test** and look at the `PHP …` and `Drush …` version lines. Because
-   the base image is pinned only by its digest, with no version tag, a bump could bring
-   in a new **major** version of PHP or Drupal when the official image moves on
-   (for example Drupal 11 to 12). If the first
-   number of either version changed, don't merge it as routine. Ask Josh, because
-   a major upgrade needs testing on a copy of the site first.
+2. **For a Docker bump,** open the **Image build** check's **Details**, click
+   **Summary** at the top left, and look at the **Versions in this image** table.
+   Compare it with the latest run on `main` (**Actions > Image build**). Because
+   the base image is pinned only by its digest, with no version tag, a bump could
+   bring in a new version of PHP or Drupal when the official image moves on.
+   A new Drupal major version (11 to 12) fails the check on purpose. If PHP's
+   first or second number changed (for example 8.5 to 8.6), ask Josh before merging,
+   because a new PHP version can need code changes.
 3. **For an Actions bump,** read the release notes Dependabot links in the PR
    description. If the checks are green, these are low-risk.
 4. Merge with **Create a merge commit**. A Docker bump reaches the live site
@@ -407,7 +417,9 @@ failure notice to the person who added the schedule, or who last changed it.
 **When it fails:** Nothing on the live site has changed. It means the next
 release would fail to build if it went ahead unchanged.
 
-1. Open the run and find the failing step, as described above.
+1. Open the run and find the failing step, as described above. The
+   **Versions in this image** table on a passing run's Summary page shows what
+   changed since the previous week.
 2. If it's a network error, click **Re-run all jobs** once.
 3. If it fails again, tell Josh before the next release. Include the run link and
    the last error lines from the log.

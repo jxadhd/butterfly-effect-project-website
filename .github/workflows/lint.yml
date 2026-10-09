@@ -64,9 +64,5 @@ jobs:
           composer global require --no-interaction drupal/coder:^8.3
           echo "$(composer global config bin-dir --absolute --quiet)" >> "$GITHUB_PATH"
 
-      - name: phpcs (Drupal, DrupalPractice)
-        run: |
-          phpcs --standard=Drupal,DrupalPractice \
-            --extensions=php,module,inc,install,theme,yml \
-            --report=full --colors \
-            drupal/modules/custom drupal/themes/custom
+      - name: phpcs (rules in phpcs.xml.dist)
+        run: phpcs --report=full

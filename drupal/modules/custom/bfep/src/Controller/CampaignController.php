@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\bfep\Controller;
 
+use Drupal\Core\Cache\CacheableResponse;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\bfep\Repository\CampaignRepository;
@@ -39,6 +40,26 @@ final class CampaignController extends ControllerBase {
 
   public function campaignList(Request $request): array|RedirectResponse {
     return $this->listBuilder->build($request);
+  }
+
+  /**
+   * RSS feed of the 30 most recently added public campaigns.
+   */
+  public function feed(): CacheableResponse {
+    $feedUrl = $this->settings->absoluteUrl('/campaigns/feed');
+    $xml = $this->presenter->rss(
+      $this->campaigns->recent(30),
+      'New campaigns · ' . $this->settings->organizationName(),
+      $this->settings->absoluteUrl('/campaigns'),
+      $feedUrl,
+      'Humanitarian fundraisers recently added to the ' . $this->settings->organizationName() . ' directory.',
+      fn(int $id): string => $this->settings->absoluteUrl('/campaigns/' . $id),
+    );
+    $response = new CacheableResponse($xml, 200, ['Content-Type' => 'application/rss+xml; charset=utf-8']);
+    $response->getCacheableMetadata()
+      ->addCacheTags([BfepCacheInvalidator::CAMPAIGNS, 'config:bfep.settings'])
+      ->setCacheMaxAge($this->settings->listingCacheMaxAge());
+    return $response;
   }
 
   public function detail(int|string $campaign_id): array {

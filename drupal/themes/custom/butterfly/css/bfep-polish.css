@@ -206,9 +206,9 @@ body:not(.path-admin) .site-branding__logo {
 
 body:not(.path-admin) .site-branding__logo img {
   display: block;
-  width: 2.75rem !important;
-  height: 2.75rem !important;
-  object-fit: cover;
+  width: 4.5rem !important;
+  height: 4.5rem !important;
+  object-fit: contain;
 }
 
 body:not(.path-admin) .site-branding__text {
@@ -957,8 +957,8 @@ body:not(.path-admin) .bfep-footer-links p {
   }
 
   body:not(.path-admin) .site-branding__logo img {
-    width: 2.5rem !important;
-    height: 2.5rem !important;
+    width: 3.25rem !important;
+    height: 3.25rem !important;
   }
 
   body:not(.path-admin) .site-branding__name,

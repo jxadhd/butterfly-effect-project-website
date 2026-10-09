@@ -1,39 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\bfep\Form;
 
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final class ChangeRequestReviewForm extends FormBase {
+/**
+ * Staff workflow for one information, privacy, or safety request.
+ */
+final class ChangeRequestReviewForm extends AdminRecordFormBase {
 
   protected int $requestId = 0;
   protected object $changeRequest;
-
-  public function __construct(
-    protected Connection $database,
-  ) {}
-
-  public static function create(ContainerInterface $container): static {
-    return new static($container->get('bfep.database'));
-  }
 
   public function getFormId(): string {
     return 'bfep_change_request_review_form';
   }
 
-  protected function bfdb(): Connection {
-    return $this->database;
-  }
-
-  protected function item(string $title, $value): array {
-    $text = trim((string) ($value ?? ''));
-    return ['#type' => 'item', '#title' => $title, '#markup' => $text === '' ? '<em>Not provided</em>' : nl2br(Html::escape($text))];
+  protected function reviewRoute(int $id): array {
+    return ['bfep.admin_change_review', ['request_id' => $id]];
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $request_id = NULL): array {
@@ -45,6 +33,7 @@ final class ChangeRequestReviewForm extends FormBase {
 
     $form['#attached']['library'][] = 'bfep/admin';
     $form['request'] = ['#type' => 'details', '#title' => $this->t('Requested change'), '#open' => TRUE];
+    $form['request']['created'] = $this->dateItem('Submitted', $this->changeRequest->submitted_at ?? $this->changeRequest->created_at ?? NULL);
     $form['request']['submitter'] = $this->item('Submitter', trim((string) ($this->changeRequest->submitter_name ?? '')) . (!empty($this->changeRequest->submitter_email) ? ' <' . $this->changeRequest->submitter_email . '>' : ''));
     $form['request']['type'] = $this->item('Submitter type', $this->changeRequest->submitter_type ?? NULL);
     $form['request']['line'] = $this->item('Family / line reference', $this->changeRequest->family_line_number_raw ?? NULL);
@@ -54,8 +43,9 @@ final class ChangeRequestReviewForm extends FormBase {
     $form['request']['new_social'] = $this->item('New social media', $this->changeRequest->new_social_media ?? NULL);
     $form['request']['existing'] = $this->item('Confirmed existing family', !empty($this->changeRequest->confirmed_existing_family) ? 'Yes' : 'No');
 
-    if (!empty($this->changeRequest->fundraiser_url) && filter_var($this->changeRequest->fundraiser_url, FILTER_VALIDATE_URL)) {
-      $form['request']['fundraiser'] = ['#type' => 'link', '#title' => $this->t('Open submitted fundraiser'), '#url' => Url::fromUri($this->changeRequest->fundraiser_url), '#attributes' => ['class' => ['button'], 'target' => '_blank', 'rel' => 'noopener']];
+    $form['request']['fundraiser_url'] = $this->item('Submitted fundraiser URL', $this->changeRequest->fundraiser_url ?? NULL);
+    if ($link = $this->externalLink($this->changeRequest->fundraiser_url ?? NULL, (string) $this->t('Open submitted fundraiser'))) {
+      $form['request']['fundraiser'] = $link;
     }
     if (!empty($this->changeRequest->campaign_id)) {
       $form['request']['campaign'] = ['#type' => 'link', '#title' => $this->t('Edit linked campaign'), '#url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->changeRequest->campaign_id]), '#attributes' => ['class' => ['button']]];
@@ -64,15 +54,13 @@ final class ChangeRequestReviewForm extends FormBase {
     $form['workflow'] = ['#type' => 'details', '#title' => $this->t('Workflow'), '#open' => TRUE];
     $form['workflow']['processed'] = ['#type' => 'checkbox', '#title' => $this->t('Mark this request processed'), '#default_value' => !empty($this->changeRequest->processed)];
     if (!empty($this->changeRequest->processed_at)) {
-      $form['workflow']['processed_at'] = $this->item('Processed at', $this->changeRequest->processed_at);
+      $form['workflow']['processed_at'] = $this->dateItem('Processed at', $this->changeRequest->processed_at);
     }
     if (!empty($this->changeRequest->processed_by)) {
       $form['workflow']['processed_by'] = $this->item('Processed by', $this->changeRequest->processed_by);
     }
 
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Save workflow'), '#button_type' => 'primary'];
-    $form['actions']['cancel'] = ['#type' => 'link', '#title' => $this->t('Back to change requests'), '#url' => Url::fromRoute('bfep.admin_changes'), '#attributes' => ['class' => ['button']]];
+    $this->addActions($form, (string) $this->t('Save workflow'), (string) $this->t('Back to change requests'), 'bfep.admin_changes');
     return $form;
   }
 
@@ -88,7 +76,7 @@ final class ChangeRequestReviewForm extends FormBase {
 
     $this->bfdb()->update('info_change_requests')->fields($fields)->condition('id', $this->requestId)->execute();
     $this->messenger()->addStatus($this->t('Change request workflow saved.'));
-    $form_state->setRedirect('bfep.admin_change_review', ['request_id' => $this->requestId]);
+    $this->redirectAfterSave($form_state, $this->requestId, 'bfep.admin_changes');
   }
 
 }

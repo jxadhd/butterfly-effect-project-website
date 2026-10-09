@@ -16,6 +16,10 @@ services:
     class: Drupal\bfep\Service\BfepCacheInvalidator
     arguments: ['@cache_tags.invalidator']
 
+  bfep.audit_logger:
+    class: Drupal\bfep\Service\AuditLogger
+    arguments: ['@logger.channel.bfep', '@current_user']
+
   bfep.submission_guard:
     class: Drupal\bfep\Service\SubmissionGuard
     arguments: ['@flood', '@request_stack', '@bfep.settings', '@string_translation']

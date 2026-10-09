@@ -146,6 +146,9 @@ function bfep_update_11003(): string {
   }
   $transaction = $database->startTransaction();
   try {
+    // Drupal rewrites { } as table-prefix markers and, by default, [ ] as
+    // identifier quotes anywhere in a query. The empty tags array is written
+    // as ARRAY[]::text[] (no braces) and square brackets are allowed below.
     $database->query(<<<'SQL'
     CREATE OR REPLACE VIEW public.v_campaigns AS
     SELECT
@@ -167,7 +170,7 @@ function bfep_update_11003(): string {
       cf.pct_goal_achieved * 100::numeric AS pct_goal_achieved,
       COALESCE(
         array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL),
-        '{}'::text[]
+        ARRAY[]::text[]
       ) AS tags,
       c.created_at,
       c.updated_at
@@ -189,7 +192,7 @@ function bfep_update_11003(): string {
       cf.goal_amount,
       cf.donated_amount,
       cf.pct_goal_achieved
-    SQL);
+    SQL, [], ['allow_square_brackets' => TRUE]);
 
     // Public application code uses a least-privilege projection. Keeping the
     // legacy view intact avoids breaking staff tooling while making it impossible

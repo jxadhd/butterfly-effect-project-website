@@ -144,6 +144,20 @@ final class AdminFormat {
   }
 
   /**
+   * A readable label for a stored referral status.
+   *
+   * Blank counts as pending, standard statuses match case-insensitively, and
+   * anything else is shown with underscores and hyphens as spaces.
+   */
+  public static function referralStatusLabel(?string $value): string {
+    $value = trim((string) $value);
+    if ($value === '') {
+      return self::REFERRAL_STATUSES['pending'];
+    }
+    return self::REFERRAL_STATUSES[strtolower($value)] ?? self::humanize($value);
+  }
+
+  /**
    * Turns a machine value such as "needs_information" into a label.
    */
   public static function humanize(string $value): string {

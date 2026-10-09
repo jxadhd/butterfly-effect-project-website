@@ -388,8 +388,9 @@ final class AdminController extends ControllerBase {
       $where[] = "(verification_status IS NULL OR TRIM(verification_status) = '' OR LOWER(verification_status) = 'pending')";
     }
     elseif ($status !== '') {
-      $where[] = 'verification_status = :status';
-      $params[':status'] = $status;
+      // Case-insensitive, so "Verified" and "verified" filter together.
+      $where[] = 'LOWER(TRIM(verification_status)) = :status';
+      $params[':status'] = strtolower($status);
     }
     $where_sql = implode(' AND ', $where);
 
@@ -418,7 +419,7 @@ final class AdminController extends ControllerBase {
         ];
       }
       $table_rows[] = [
-        'status' => $row->verification_status ?: 'Pending',
+        'status' => AdminFormat::referralStatusLabel($row->verification_status),
         'name' => $row->full_name ?: '—',
         'email' => $row->email ?: '—',
         'created' => $this->date($row->created_at),

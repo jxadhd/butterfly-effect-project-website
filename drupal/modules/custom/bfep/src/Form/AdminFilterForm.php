@@ -6,6 +6,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 final class AdminFilterForm extends FormBase {
@@ -40,10 +41,11 @@ final class AdminFilterForm extends FormBase {
       $rows = $this->bfdb()->query("\n        SELECT DISTINCT verification_status AS value\n        FROM referral_submissions\n        WHERE verification_status IS NOT NULL AND verification_status <> ''\n        ORDER BY verification_status\n      ")->fetchAll();
 
       foreach ($rows as $row) {
-        if (strtolower((string) $row->value) === 'pending') {
+        $key = strtolower(trim((string) $row->value));
+        if ($key === '' || $key === 'pending' || isset($options[$key])) {
           continue;
         }
-        $options[(string) $row->value] = (string) $row->value;
+        $options[$key] = AdminFormat::referralStatusLabel((string) $row->value);
       }
     }
     catch (\Throwable) {

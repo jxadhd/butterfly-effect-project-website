@@ -129,4 +129,15 @@ final class AdminFormatTest extends UnitTestCase {
     $this->assertSame(['urgent_medical_needs'], AdminFormat::changedKeys($before, $after));
   }
 
+  /**
+   * @covers ::referralStatusLabel
+   */
+  public function testReferralStatusLabel(): void {
+    $this->assertSame('Pending', AdminFormat::referralStatusLabel(NULL));
+    $this->assertSame('Pending', AdminFormat::referralStatusLabel('  '));
+    $this->assertSame('Needs information', AdminFormat::referralStatusLabel('needs_information'));
+    $this->assertSame('Verified', AdminFormat::referralStatusLabel('VERIFIED'));
+    $this->assertSame('On hold awaiting docs', AdminFormat::referralStatusLabel('on_hold-awaiting docs'));
+  }
+
 }

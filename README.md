@@ -30,6 +30,19 @@ The repository initially represents the custom source currently deployed to the
 BFEP website. Reproducible development, automated validation and tagged
 deployment workflows are being added incrementally.
 
+## Continuous integration
+
+Every pull request runs:
+
+- **Lint**: PHP and YAML syntax, and Drupal coding standards (`phpcs.xml.dist`).
+  Coding standards failures block the check.
+- **Tests**: the custom modules' PHPUnit unit tests against a throwaway Drupal 11
+  codebase, plus a Twig template syntax check.
+- **Docker image**: builds `Dockerfile.drupal` and starts it once, on pull
+  requests that change it and weekly. It never pushes an image.
+
+Dependabot proposes updates for the Docker base image and GitHub Actions versions.
+
 ## Security
 
 Please do not report security vulnerabilities through a public issue. See

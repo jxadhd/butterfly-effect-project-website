@@ -66,9 +66,18 @@ final class CampaignController extends ControllerBase {
       ]);
     }
 
+    $name = trim((string) ($row->contact_name ?: 'Campaign #' . $campaignId));
+    $shareUrl = $this->settings->absoluteUrl('/campaigns/' . $campaignId);
+    $shareText = $name . ($country !== '' ? ' (' . $country . ')' : '') . ' · ' . $this->settings->organizationName();
+
     return [
       '#theme' => 'bfep_campaign_detail',
-      '#attached' => ['library' => ['bfep/public']],
+      '#attached' => ['library' => ['bfep/public', 'bfep/share']],
+      '#share' => [
+        'url' => $shareUrl,
+        'title' => $shareText,
+        'links' => $this->presenter->shareLinks($shareUrl, $shareText),
+      ],
       '#campaign' => $this->presenter->detail($row),
       '#change_url' => Url::fromRoute('bfep.change_request', [], [
         'query' => ['campaign_id' => $campaignId],

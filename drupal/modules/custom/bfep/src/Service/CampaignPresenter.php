@@ -139,6 +139,27 @@ final class CampaignPresenter {
   }
 
   /**
+   * Share links for a public campaign URL.
+   *
+   * Plain links to each service's own share page, so no third-party script
+   * is loaded and nothing is sent anywhere until the visitor clicks.
+   *
+   * @return array<int, array{label: string, url: string}>
+   *   Links in display order.
+   */
+  public function shareLinks(string $url, string $text): array {
+    $u = rawurlencode($url);
+    $t = rawurlencode($text);
+    return [
+      ['label' => 'WhatsApp', 'url' => 'https://wa.me/?text=' . rawurlencode($text . ' ' . $url)],
+      ['label' => 'Telegram', 'url' => 'https://t.me/share/url?url=' . $u . '&text=' . $t],
+      ['label' => 'Facebook', 'url' => 'https://www.facebook.com/sharer/sharer.php?u=' . $u],
+      ['label' => 'X', 'url' => 'https://x.com/intent/post?url=' . $u . '&text=' . $t],
+      ['label' => 'Email', 'url' => 'mailto:?subject=' . $t . '&body=' . rawurlencode($text . "\n\n" . $url)],
+    ];
+  }
+
+  /**
    * Funding progress for the progress bar, capped at 100.
    *
    * @return float|null

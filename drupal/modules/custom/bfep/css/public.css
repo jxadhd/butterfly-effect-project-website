@@ -80,3 +80,10 @@
 .bfep-related { margin-top: 3rem; }
 .bfep-related > h2 { margin-bottom: 0; }
 .bfep-related-more { margin-top: 1rem; }
+/* Share this campaign. */
+.bfep-share { margin-top: 2rem; }
+.bfep-share h2 { margin: 0 0 .75rem; font-size: 1.1rem; }
+.bfep-share__actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.bfep-share__link { padding: .45rem .9rem; border: 1px solid var(--bf-border-strong, currentColor); border-radius: 100vmax; font-weight: 700; text-decoration: none; }
+.bfep-share__link:hover,.bfep-share__link:focus-visible { text-decoration: underline; }
+.bfep-share__status { min-height: 1.4em; margin: .5rem 0 0; font-size: .9rem; }

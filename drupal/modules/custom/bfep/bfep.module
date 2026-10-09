@@ -41,6 +41,7 @@ function bfep_theme($existing, $type, $theme, $path): array {
         'verification_url' => '',
         'related' => [],
         'country_url' => '',
+        'share' => [],
       ],
     ],
     'bfep_country_list' => [

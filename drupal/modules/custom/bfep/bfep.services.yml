@@ -73,3 +73,9 @@ services:
       - '@logger.channel.bfep'
     tags:
       - { name: event_subscriber }
+
+  bfep.bfdb_exception_subscriber:
+    class: Drupal\bfep\EventSubscriber\BfdbExceptionSubscriber
+    arguments: ['@http_kernel', '@logger.channel.bfep']
+    tags:
+      - { name: event_subscriber }

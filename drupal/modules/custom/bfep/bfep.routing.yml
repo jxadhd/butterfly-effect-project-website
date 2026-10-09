@@ -179,6 +179,16 @@ bfep.admin:
   options:
     _admin_route: TRUE
 
+bfep.admin_help:
+  path: '/admin/bfep/help'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\StaffGuideController::page'
+    _title: 'Staff guide'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
 bfep.admin_campaigns:
   path: '/admin/bfep/campaigns'
   defaults:

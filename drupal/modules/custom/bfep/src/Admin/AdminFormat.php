@@ -65,7 +65,9 @@ final class AdminFormat {
    * $column must be a trusted identifier, never user input.
    */
   public static function urlKeySql(string $column): string {
-    return "regexp_replace(regexp_replace(lower(trim({$column})), '^https?://(www\\.)?|[?#].*$', '', 'g'), '/+$', '')";
+    // No square brackets: Drupal turns [ and ] into identifier quotes in
+    // every query, even inside string literals, so "[?#]" would break.
+    return "regexp_replace(regexp_replace(lower(trim({$column})), '^https?://(www\\.)?|(\\?|#).*$', '', 'g'), '/+$', '')";
   }
 
   /**

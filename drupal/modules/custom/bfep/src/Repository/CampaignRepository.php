@@ -16,15 +16,22 @@ use Drupal\bfep\Service\BfepSettings;
 final class CampaignRepository {
 
   public function __construct(
-    private readonly Connection $database,
+    private readonly \Closure $connection,
     private readonly CacheBackendInterface $cache,
     private readonly TimeInterface $time,
     private readonly BfepSettings $settings,
   ) {}
 
+  /**
+   * The bfdb connection, opened on first use.
+   */
+  private function db(): Connection {
+    return ($this->connection)();
+  }
+
   public function stats(): array {
     return $this->remember('bfep:stats', function (): array {
-      $row = $this->database->query(<<<'SQL'
+      $row = $this->db()->query(<<<'SQL'
         SELECT
           COUNT(*) FILTER (WHERE id IS NOT NULL) AS total_campaigns,
           COUNT(*) FILTER (WHERE id IS NOT NULL AND featured_by_bfep = TRUE) AS featured_campaigns,
@@ -69,7 +76,7 @@ final class CampaignRepository {
             WHERE t ILIKE :q
           )
           SQL;
-        $params[':q'] = '%' . $this->database->escapeLike($filters['q']) . '%';
+        $params[':q'] = '%' . $this->db()->escapeLike($filters['q']) . '%';
 
         // A bare number (optionally "#142") also matches that exact line.
         if (preg_match('/^#?([0-9]{1,9})$/', $filters['q'], $matches)) {
@@ -121,12 +128,12 @@ final class CampaignRepository {
       $limit = (int) $filters['per_page'];
       $offset = ((int) $filters['page'] - 1) * $limit;
 
-      $total = (int) $this->database->query(
+      $total = (int) $this->db()->query(
         "SELECT COUNT(*) FROM v_campaigns WHERE {$whereSql}",
         $params,
       )->fetchField();
 
-      $rows = $this->database->query(<<<SQL
+      $rows = $this->db()->query(<<<SQL
         SELECT
           id,
           line_number,
@@ -161,7 +168,7 @@ final class CampaignRepository {
     $result = $this->remember(
       'bfep:campaign:' . $campaignId,
       function () use ($campaignId): object|false {
-        return $this->database->query(<<<'SQL'
+        return $this->db()->query(<<<'SQL'
           SELECT
             v.id,
             v.line_number,
@@ -202,7 +209,7 @@ final class CampaignRepository {
     $limit = max(1, min(12, $limit));
     return $this->remember(
       'bfep:needing-help:' . $limit,
-      fn(): array => $this->database->query(<<<SQL
+      fn(): array => $this->db()->query(<<<SQL
         SELECT
           v.id,
           v.line_number,
@@ -241,7 +248,7 @@ final class CampaignRepository {
     $limit = max(1, min(100, $limit));
     return $this->remember(
       'bfep:recent:' . $limit,
-      fn(): array => $this->database->query(<<<SQL
+      fn(): array => $this->db()->query(<<<SQL
         SELECT
           v.id,
           v.line_number,
@@ -280,7 +287,7 @@ final class CampaignRepository {
     $limit = max(1, min(12, $limit));
     return $this->remember(
       'bfep:related:' . $campaignId . ':' . $limit,
-      fn(): array => $this->database->query(<<<SQL
+      fn(): array => $this->db()->query(<<<SQL
         SELECT
           v.id,
           v.line_number,
@@ -321,7 +328,7 @@ final class CampaignRepository {
   public function idForLineNumber(int $lineNumber): ?int {
     $ids = $this->remember(
       'bfep:line-number:' . $lineNumber,
-      fn(): array => $this->database->query(<<<'SQL'
+      fn(): array => $this->db()->query(<<<'SQL'
         SELECT v.id
         FROM v_campaigns v
         INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -336,7 +343,7 @@ final class CampaignRepository {
   public function countryCount(string $country): int {
     return (int) $this->remember(
       'bfep:country-count:' . hash('sha256', mb_strtolower($country)),
-      fn(): int => (int) $this->database->query(
+      fn(): int => (int) $this->db()->query(
         'SELECT COUNT(*) FROM v_campaigns v INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL WHERE v.country = :country',
         [':country' => $country],
       )->fetchField(),
@@ -345,7 +352,7 @@ final class CampaignRepository {
   }
 
   public function countries(): array {
-    return $this->remember('bfep:countries', fn(): array => $this->database->query(<<<'SQL'
+    return $this->remember('bfep:countries', fn(): array => $this->db()->query(<<<'SQL'
       SELECT
         v.country,
         v.global_region,
@@ -363,7 +370,7 @@ final class CampaignRepository {
   public function canonicalCountry(string $country): ?string {
     $result = $this->remember(
       'bfep:canonical-country:' . hash('sha256', mb_strtolower($country)),
-      fn(): string|false => $this->database->query(<<<'SQL'
+      fn(): string|false => $this->db()->query(<<<'SQL'
         SELECT v.country
         FROM v_campaigns v
         INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -383,7 +390,7 @@ final class CampaignRepository {
     return $this->remember('bfep:filter-options', function (): array {
       $options = [];
       foreach (['country', 'global_region', 'platform'] as $column) {
-        $options[$column] = $this->database->query(<<<SQL
+        $options[$column] = $this->db()->query(<<<SQL
           SELECT DISTINCT v.{$column} AS value
           FROM v_campaigns v
           INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -391,7 +398,7 @@ final class CampaignRepository {
           ORDER BY v.{$column}
           SQL)->fetchCol();
       }
-      $options['tag'] = $this->database->query(<<<'SQL'
+      $options['tag'] = $this->db()->query(<<<'SQL'
         SELECT DISTINCT tag AS value
         FROM v_campaigns v
         INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -407,7 +414,7 @@ final class CampaignRepository {
    * Returns lightweight records used only while generating the XML sitemap.
    */
   public function sitemapCampaigns(): array {
-    return $this->database->query(<<<'SQL'
+    return $this->db()->query(<<<'SQL'
       SELECT v.id, COALESCE(v.updated_at, v.created_at) AS lastmod
       FROM v_campaigns v
       INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
@@ -417,7 +424,7 @@ final class CampaignRepository {
   }
 
   public function sitemapCountries(): array {
-    return $this->database->query(<<<'SQL'
+    return $this->db()->query(<<<'SQL'
       SELECT v.country, MAX(COALESCE(v.updated_at, v.created_at)) AS lastmod
       FROM v_campaigns v
       INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL

@@ -43,6 +43,10 @@ Every pull request runs:
 
 Dependabot proposes updates for the Docker base image and GitHub Actions versions.
 
+Staff guide: [Using the pipeline](docs/pipeline.md) explains each check, how to
+open a pull request and read the results, what to do when a check fails,
+Dependabot pull requests, the weekly image build, and running the sync service safely.
+
 ## Security
 
 Please do not report security vulnerabilities through a public issue. See

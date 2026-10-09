@@ -29,6 +29,7 @@ bfep.settings:
     index_volunteer_page: { type: boolean, label: 'Index volunteer page' }
     index_initiatives_page: { type: boolean, label: 'Index initiatives page' }
     index_transparency_pages: { type: boolean, label: 'Index accountability pages' }
+    staff_guide_url: { type: string, label: 'Full staff guide URL' }
 
 search.plugin.bfep_database:
   type: mapping

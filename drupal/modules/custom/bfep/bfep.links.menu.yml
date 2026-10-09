@@ -29,6 +29,13 @@ bfep.admin_changes:
   parent: bfep.admin
   weight: 3
 
+bfep.admin_help:
+  title: 'Staff guide'
+  description: 'Quick guide to the BFEP admin workflow'
+  route_name: bfep.admin_help
+  parent: bfep.admin
+  weight: 9
+
 bfep.settings:
   title: 'Settings'
   description: 'Configure BFEP titles, contact details, indexing, caching, and rate limits'

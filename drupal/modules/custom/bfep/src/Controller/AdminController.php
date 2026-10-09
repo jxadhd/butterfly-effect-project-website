@@ -8,6 +8,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\TableSort;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\OptionalBfdb;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,19 +24,19 @@ final class AdminController extends ControllerBase {
   private const SYNC_PROBLEM_SQL = "SELECT cf.campaign_id FROM campaign_fundraisers cf WHERE cf.is_active AND cf.auto_sync AND cf.sync_status IS NOT NULL AND cf.sync_status <> 'ok'";
 
   public function __construct(
-    protected Connection $database,
+    protected ?Connection $database,
     protected DateFormatterInterface $dateFormatter,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('bfep.database'),
+      OptionalBfdb::get($container),
       $container->get('date.formatter'),
     );
   }
 
   protected function bfdb(): Connection {
-    return $this->database;
+    return $this->database ?? throw new \RuntimeException('bfdb is unavailable.');
   }
 
   protected function h($value): string {
@@ -110,7 +111,7 @@ final class AdminController extends ControllerBase {
    * An ILIKE pattern that matches $q literally (%, _ and \ are escaped).
    */
   protected function like(string $q): string {
-    return '%' . $this->database->escapeLike($q) . '%';
+    return '%' . $this->bfdb()->escapeLike($q) . '%';
   }
 
   protected function date(mixed $value): string {
@@ -120,9 +121,9 @@ final class AdminController extends ControllerBase {
 
   public function dashboard(): array {
     $started = microtime(TRUE);
-    $db = $this->bfdb();
 
     try {
+      $db = $this->bfdb();
       $counts = $db->query(<<<'SQL'
         SELECT
           (SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL) AS campaigns,

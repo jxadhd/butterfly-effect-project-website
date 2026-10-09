@@ -16,11 +16,18 @@ use Drupal\bfep\Service\BfepSettings;
 final class InitiativeRepository {
 
   public function __construct(
-    private readonly Connection $database,
+    private readonly \Closure $connection,
     private readonly CacheBackendInterface $cache,
     private readonly TimeInterface $time,
     private readonly BfepSettings $settings,
   ) {}
+
+  /**
+   * The bfdb connection, opened on first use.
+   */
+  private function db(): Connection {
+    return ($this->connection)();
+  }
 
   public function featured(): array {
     $cached = $this->cache->get('bfep:featured-initiatives');
@@ -28,7 +35,7 @@ final class InitiativeRepository {
       return $cached->data;
     }
 
-    $rows = $this->database->select('ground_initiatives', 'g')
+    $rows = $this->db()->select('ground_initiatives', 'g')
       ->fields('g', [
         'id',
         'contact_name',

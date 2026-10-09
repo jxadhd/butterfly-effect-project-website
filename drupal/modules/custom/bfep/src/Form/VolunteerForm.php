@@ -16,6 +16,9 @@ final class VolunteerForm extends ProtectedExternalFormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    if ($this->database === NULL) {
+      throw new \RuntimeException('bfdb is unavailable, so the volunteer form cannot list interest areas.');
+    }
     $options = [];
     foreach ($this->database->select('interest_areas', 'i')->fields('i', ['id', 'name'])->orderBy('id')->execute()->fetchAll() as $row) {
       $options[(int) $row->id] = (string) $row->name;

@@ -120,7 +120,8 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
     $campaignId = (int) $form_state->getValue('campaign_id');
-    if ($campaignId > 0 && !(int) $this->database->query(
+    // Without bfdb the save fails anyway, with a message that keeps the form.
+    if ($campaignId > 0 && $this->database !== NULL && !(int) $this->database->query(
       'SELECT CASE WHEN EXISTS (SELECT 1 FROM campaigns WHERE id = :id AND deleted_at IS NULL) THEN 1 ELSE 0 END',
       [':id' => $campaignId],
     )->fetchField()) {

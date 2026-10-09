@@ -8,6 +8,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\bfep\OptionalBfdb;
 use Drupal\bfep\Service\SubmissionGuard;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -17,13 +18,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class ProtectedExternalFormBase extends FormBase {
 
   public function __construct(
-    protected Connection $database,
+    protected ?Connection $database,
     protected SubmissionGuard $submissionGuard,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('bfep.database'),
+      OptionalBfdb::get($container),
       $container->get('bfep.submission_guard'),
     );
   }
@@ -71,6 +72,9 @@ abstract class ProtectedExternalFormBase extends FormBase {
    */
   protected function saveSubmission(FormStateInterface $form_state, callable $write): bool {
     try {
+      if ($this->database === NULL) {
+        throw new \RuntimeException('bfdb is unavailable.');
+      }
       $write();
       return TRUE;
     }

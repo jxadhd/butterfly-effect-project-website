@@ -1,0 +1,39 @@
+name: Image build
+
+# Builds Dockerfile.drupal to prove it still builds. The image is never
+# pushed or deployed. Runs when the Dockerfile changes and weekly, so a
+# breaking upstream release (base image, contrib module, Drush) is noticed
+# before the next real deployment.
+on:
+  pull_request:
+    paths:
+      - Dockerfile.drupal
+      - .github/workflows/image.yml
+  schedule:
+    - cron: '0 20 * * 0'   # Monday 09:00 NZDT
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Drupal image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: docker build --pull -f Dockerfile.drupal -t bfep-drupal:ci .
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          docker run --rm bfep-drupal:ci php -v
+          docker run --rm bfep-drupal:ci php -m | grep -qx gmp
+          docker run --rm bfep-drupal:ci vendor/bin/drush --version
+          docker run --rm bfep-drupal:ci sh -c 'grep -q "^Sitemap: https://butterfly.joshcross.co.nz/sitemap.xml" web/robots.txt'

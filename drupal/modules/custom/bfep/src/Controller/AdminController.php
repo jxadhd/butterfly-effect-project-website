@@ -8,6 +8,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\TableSort;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\DataChecks;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -172,6 +173,13 @@ final class AdminController extends ControllerBase {
     }
     catch (\Throwable) {
       // No sync columns; leave the card out.
+    }
+    try {
+      $flagged = (int) $db->query(DataChecks::countSql())->fetchObject()->flagged;
+      $cards[] = ['value' => $flagged, 'label' => $this->t('Campaigns flagged by data checks'), 'route' => 'bfep.admin_checks'];
+    }
+    catch (\Throwable $exception) {
+      $this->getLogger('bfep')->warning('BFEP data checks failed: @class', ['@class' => get_class($exception)]);
     }
 
     $stats = [
@@ -338,6 +346,10 @@ final class AdminController extends ControllerBase {
     if ($request->query->get('sync') === 'problem') {
       $where[] = "id IN (" . self::SYNC_PROBLEM_SQL . ")";
     }
+    $check = DataChecks::get($request->query->get('check'));
+    if ($check !== NULL) {
+      $where[] = '(' . $check['sql'] . ')';
+    }
     $where_sql = implode(' AND ', $where);
 
     $total = (int) $db->query("SELECT COUNT(*) FROM campaigns WHERE {$where_sql}", $params)->fetchField();
@@ -377,7 +389,7 @@ final class AdminController extends ControllerBase {
       ];
     }
 
-    return $this->adminListBuild(
+    $build = $this->adminListBuild(
       $request,
       'campaigns',
       'bfep.admin_campaigns',
@@ -386,6 +398,61 @@ final class AdminController extends ControllerBase {
       $table_rows,
       'No campaigns found.'
     );
+    if ($check !== NULL) {
+      $build['check_notice'] = [
+        '#weight' => -20,
+        '#markup' => '<p class="bfep-admin-notice"><strong>' . $this->h($check['label']) . ':</strong> ' . $this->h($check['help']) . ' <a href="' . Url::fromRoute('bfep.admin_checks')->toString() . '">' . $this->t('All data checks') . '</a></p>',
+      ];
+    }
+    return $build;
+  }
+
+  /**
+   * Lists every data check with how many campaigns it flags.
+   */
+  public function checks(): array {
+    try {
+      $counts = (array) $this->bfdb()->query(DataChecks::countSql())->fetchObject();
+    }
+    catch (\Throwable $exception) {
+      $this->getLogger('bfep')->error('BFEP data checks failed: @class', ['@class' => get_class($exception)]);
+      return [
+        '#attached' => ['library' => ['bfep/admin']],
+        'error' => [
+          '#markup' => '<div class="bfep-admin-notice bfep-admin-notice--error" role="alert">' . $this->t('The data checks could not run. Details are in Reports › Recent log messages.') . '</div>',
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
+    }
+
+    $rows = [];
+    foreach (DataChecks::all() as $key => $check) {
+      $count = (int) ($counts[$key] ?? 0);
+      $rows[] = [
+        'class' => $count === 0 ? ['bfep-check--clear'] : [],
+        'data' => [
+          'check' => $count > 0
+            ? ['data' => ['#type' => 'link', '#title' => $check['label'], '#url' => Url::fromRoute('bfep.admin_campaigns', [], ['query' => ['check' => $key]])]]
+            : $check['label'],
+          'count' => $count > 0 ? $count : $this->t('None'),
+          'help' => $check['help'],
+        ],
+      ];
+    }
+
+    return [
+      '#attached' => ['library' => ['bfep/admin']],
+      'intro' => [
+        '#markup' => '<p class="bfep-admin-lead">' . $this->t('Campaigns with missing or conflicting details. @count campaigns are flagged by at least one check. Open a check to see its campaigns.', ['@count' => (int) ($counts['flagged'] ?? 0)]) . '</p>',
+      ],
+      'table' => [
+        '#type' => 'table',
+        '#header' => [$this->t('Check'), $this->t('Campaigns'), $this->t('Why it matters')],
+        '#rows' => $rows,
+        '#attributes' => ['class' => ['bfep-admin-table', 'bfep-checks-table']],
+      ],
+      '#cache' => ['max-age' => 0],
+    ];
   }
 
   public function referrals(Request $request): array|RedirectResponse {

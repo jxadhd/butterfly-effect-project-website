@@ -21,6 +21,8 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
 - `/admin/bfep/referrals` — referral review
 - `/admin/bfep/volunteers` — volunteer workflow
 - `/admin/bfep/change-requests` — update/privacy/safety requests
+- `/admin/bfep/checks` — data checks: campaigns with missing or conflicting
+  details
 - `/admin/bfep/help` — short staff guide to the admin workflow, linking to
   the full guide set in settings ("Full staff guide URL")
 - `/admin/config/search/bfep` — titles, contact details, indexing, caching,
@@ -35,6 +37,13 @@ form requires Drupal's `administer site configuration` permission.
   instead of breaking the page. Each queue shows how many items are pending and
   the age of the oldest one. A "Fundraiser sync problems" card appears when the
   sync columns exist.
+- **Data checks** (`/admin/bfep/checks`) count campaigns with no active
+  fundraiser, a fundraiser URL shared with another campaign, a line number used
+  twice, no line number, no country, no public description, no goal, amounts
+  without a currency, fully funded, or no edit in 6 months. Each count links
+  to the campaign list filtered by that check (the "Data check" filter), and
+  the dashboard shows how many campaigns are flagged. The checks are defined
+  in `src/Admin/DataChecks.php`.
 - **Review forms** (referrals, volunteers, change requests) show the submitted
   date and render external URLs as links only when they are `http(s)`. Each
   form has a "Save and review next pending" button that opens the oldest

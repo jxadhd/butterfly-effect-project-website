@@ -15,6 +15,7 @@
 .bfep-admin-filter .form-actions { display: flex; gap: .5rem; margin: 0; align-items: center; }
 .bfep-admin-pager { display: flex; gap: 1rem; justify-content: space-between; align-items: center; margin: 1rem 0; }
 .bfep-admin-table { background: #fff; }
+.bfep-checks-table .bfep-check--clear { color: #6b6b75; }
 .bfep-admin-edit-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; margin-bottom: 1rem; background: #f7f2fa; border-radius: 10px; }
 .bfep-staff-guide { max-width: 760px; }
 .bfep-staff-guide__steps li,.bfep-staff-guide__tips li { margin-bottom: .75rem; line-height: 1.5; }

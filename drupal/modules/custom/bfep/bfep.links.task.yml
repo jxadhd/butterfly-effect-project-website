@@ -28,6 +28,12 @@ bfep.admin_changes_tab:
   base_route: bfep.admin
   weight: 3
 
+bfep.admin_checks_tab:
+  route_name: bfep.admin_checks
+  title: 'Data checks'
+  base_route: bfep.admin
+  weight: 4
+
 bfep.admin_help_tab:
   route_name: bfep.admin_help
   title: 'Staff guide'

@@ -114,6 +114,10 @@ final class CampaignRepository {
         'created_desc' => 'created_at DESC NULLS LAST, id DESC',
         'name_asc' => 'contact_name ASC NULLS LAST, id ASC',
         'country_asc' => 'country ASC NULLS LAST, contact_name ASC NULLS LAST, id ASC',
+        // Campaigns without a goal have no percentage and go last.
+        'funded_asc' => 'pct_goal_achieved ASC NULLS LAST, line_number DESC NULLS LAST, id DESC',
+        // Nearest to 100% first; fully funded campaigns after the rest.
+        'funded_desc' => 'COALESCE(pct_goal_achieved >= 100, TRUE) ASC, pct_goal_achieved DESC NULLS LAST, line_number DESC NULLS LAST, id DESC',
         default => 'line_number DESC NULLS LAST, id DESC',
       };
       if ($lineNumber !== NULL) {

@@ -76,3 +76,7 @@
 .bfep-progress::-webkit-progress-bar { background: var(--bf-border-strong, rgba(127,127,127,.25)); }
 .bfep-progress::-webkit-progress-value { border-radius: 100vmax; background: var(--bf-purple, currentColor); }
 .bfep-progress::-moz-progress-bar { border-radius: 100vmax; background: var(--bf-purple, currentColor); }
+/* "More campaigns in <country>" on the campaign page. */
+.bfep-related { margin-top: 3rem; }
+.bfep-related > h2 { margin-bottom: 0; }
+.bfep-related-more { margin-top: 1rem; }

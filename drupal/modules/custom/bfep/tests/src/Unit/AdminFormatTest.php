@@ -47,6 +47,18 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::urlKeySql
+   */
+  public function testUrlKeySqlAvoidsSquareBrackets(): void {
+    // Drupal rewrites [ and ] as identifier quotes anywhere in a query, so a
+    // regex character class would silently stop matching query strings.
+    $sql = AdminFormat::urlKeySql('cf.url');
+    $this->assertStringNotContainsString('[', $sql);
+    $this->assertStringNotContainsString(']', $sql);
+    $this->assertStringContainsString('lower(trim(cf.url))', $sql);
+  }
+
+  /**
    * @covers ::lineNumberQuery
    */
   public function testLineNumberQuery(): void {

@@ -144,7 +144,7 @@ abstract class AdminRecordFormBase extends FormBase {
    * slashes, and lower-cases the rest. Mirrors AdminFormat::urlMatchKey().
    */
   protected function urlKeySql(string $column): string {
-    return "regexp_replace(regexp_replace(lower(trim({$column})), '^https?://(www\\.)?|[?#].*$', '', 'g'), '/+$', '')";
+    return AdminFormat::urlKeySql($column);
   }
 
   /**

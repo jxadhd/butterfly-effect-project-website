@@ -1,0 +1,7 @@
+name: 'BFEP OIDC Role Sync'
+type: module
+description: 'Grants the Butterfly role to users in the authentik "Staff Users" group when they sign in through the OpenID Connect Client (oidc) module.'
+package: Custom
+core_version_requirement: ^11
+dependencies:
+  - oidc:oidc

@@ -1,0 +1,13 @@
+services:
+  logger.channel.bfep_oidc:
+    parent: logger.channel_base
+    arguments: ['bfep_oidc']
+
+  bfep_oidc.event_subscriber.staff_group_role:
+    class: Drupal\bfep_oidc\EventSubscriber\StaffGroupRoleSubscriber
+    arguments:
+      - '@oidc.openid_connect_session'
+      - '@entity_type.manager'
+      - '@logger.channel.bfep_oidc'
+    tags:
+      - { name: event_subscriber }

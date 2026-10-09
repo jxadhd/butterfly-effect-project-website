@@ -20,6 +20,16 @@ final class ReferralReviewForm extends AdminRecordFormBase {
     return 'bfep_referral_review_form';
   }
 
+  protected function nextPendingId(int $currentId): ?int {
+    $id = $this->bfdb()->query("
+      SELECT id FROM referral_submissions
+      WHERE (verification_status IS NULL OR TRIM(verification_status) = '' OR LOWER(verification_status) = 'pending') AND id <> :id
+      ORDER BY created_at ASC NULLS LAST, id ASC
+      LIMIT 1
+    ", [':id' => $currentId])->fetchField();
+    return $id === FALSE ? NULL : (int) $id;
+  }
+
   protected function reviewRoute(int $id): array {
     return ['bfep.admin_referral_review', ['referral_id' => $id]];
   }

@@ -20,6 +20,16 @@ final class VolunteerReviewForm extends AdminRecordFormBase {
     return 'bfep_volunteer_review_form';
   }
 
+  protected function nextPendingId(int $currentId): ?int {
+    $id = $this->bfdb()->query("
+      SELECT id FROM volunteers
+      WHERE accepted IS NULL AND id <> :id
+      ORDER BY created_at ASC NULLS LAST, id ASC
+      LIMIT 1
+    ", [':id' => $currentId])->fetchField();
+    return $id === FALSE ? NULL : (int) $id;
+  }
+
   protected function reviewRoute(int $id): array {
     return ['bfep.admin_volunteer_review', ['volunteer_id' => $id]];
   }

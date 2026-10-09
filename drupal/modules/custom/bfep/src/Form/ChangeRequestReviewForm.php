@@ -21,6 +21,16 @@ final class ChangeRequestReviewForm extends AdminRecordFormBase {
     return 'bfep_change_request_review_form';
   }
 
+  protected function nextPendingId(int $currentId): ?int {
+    $id = $this->bfdb()->query("
+      SELECT id FROM info_change_requests
+      WHERE processed = false AND id <> :id
+      ORDER BY created_at ASC NULLS LAST, id ASC
+      LIMIT 1
+    ", [':id' => $currentId])->fetchField();
+    return $id === FALSE ? NULL : (int) $id;
+  }
+
   protected function reviewRoute(int $id): array {
     return ['bfep.admin_change_review', ['request_id' => $id]];
   }

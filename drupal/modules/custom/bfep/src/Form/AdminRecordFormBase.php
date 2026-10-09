@@ -17,8 +17,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Shared plumbing for the staff review forms.
  *
- * Provides read-only display items, safe external links, and the services
- * every staff form needs.
+ * Provides read-only display items, safe external links, the services every
+ * staff form needs, and a "save and review next" action that walks the
+ * pending queue oldest first.
  */
 abstract class AdminRecordFormBase extends FormBase {
 
@@ -35,6 +36,11 @@ abstract class AdminRecordFormBase extends FormBase {
       $container->get('date.formatter'),
     );
   }
+
+  /**
+   * Returns the ID of the oldest other pending record, if any.
+   */
+  abstract protected function nextPendingId(int $currentId): ?int;
 
   /**
    * Returns the review route for one record of this form's type.
@@ -89,7 +95,7 @@ abstract class AdminRecordFormBase extends FormBase {
   }
 
   /**
-   * Adds the standard save and back actions.
+   * Adds the standard save, save-and-next and back actions.
    */
   protected function addActions(array &$form, string $saveLabel, string $backLabel, string $backRoute): void {
     $form['actions'] = ['#type' => 'actions'];
@@ -97,6 +103,11 @@ abstract class AdminRecordFormBase extends FormBase {
       '#type' => 'submit',
       '#value' => $saveLabel,
       '#button_type' => 'primary',
+    ];
+    $form['actions']['submit_next'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Save and review next pending'),
+      '#bfep_next' => TRUE,
     ];
     $form['actions']['cancel'] = [
       '#type' => 'link',
@@ -107,9 +118,21 @@ abstract class AdminRecordFormBase extends FormBase {
   }
 
   /**
-   * Redirects back to the saved record.
+   * Redirects to the next pending record or back to the saved one.
    */
   protected function redirectAfterSave(FormStateInterface $form_state, int $currentId, string $listRoute): void {
+    $trigger = $form_state->getTriggeringElement();
+    if (!empty($trigger['#bfep_next'])) {
+      $next = $this->nextPendingId($currentId);
+      if ($next !== NULL) {
+        [$route, $parameters] = $this->reviewRoute($next);
+        $form_state->setRedirect($route, $parameters);
+        return;
+      }
+      $this->messenger()->addStatus($this->t('There are no other pending records in this queue.'));
+      $form_state->setRedirect($listRoute);
+      return;
+    }
     [$route, $parameters] = $this->reviewRoute($currentId);
     $form_state->setRedirect($route, $parameters);
   }

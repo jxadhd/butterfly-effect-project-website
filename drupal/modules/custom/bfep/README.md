@@ -21,6 +21,8 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
 - `/admin/bfep/referrals` — referral review
 - `/admin/bfep/volunteers` — volunteer workflow
 - `/admin/bfep/change-requests` — update/privacy/safety requests
+- `/admin/bfep/help` — short staff guide to the admin workflow, linking to
+  the full guide set in settings ("Full staff guide URL")
 - `/admin/config/search/bfep` — titles, contact details, indexing, caching,
   verification tokens, social profiles, and submission limits
 

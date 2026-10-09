@@ -194,7 +194,7 @@ final class AdminController extends ControllerBase {
     return [
       '#attached' => ['library' => ['bfep/admin']],
       'intro' => [
-        '#markup' => '<p class="bfep-admin-lead">Manage BFEP campaign data and staff review queues from one place.</p>',
+        '#markup' => '<p class="bfep-admin-lead">Manage BFEP campaign data and staff review queues from one place. New here? Read the <a href="' . Url::fromRoute('bfep.admin_help')->toString() . '">staff guide</a>.</p>',
       ],
       'stats' => $stats,
       'queues_title' => ['#markup' => '<h2>Work queues</h2>'],

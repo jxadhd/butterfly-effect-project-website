@@ -41,6 +41,7 @@ final class BfepSettings {
     'index_volunteer_page' => TRUE,
     'index_initiatives_page' => FALSE,
     'index_transparency_pages' => TRUE,
+    'staff_guide_url' => '',
   ];
 
   public function __construct(

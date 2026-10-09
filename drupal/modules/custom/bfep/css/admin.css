@@ -16,5 +16,8 @@
 .bfep-admin-pager { display: flex; gap: 1rem; justify-content: space-between; align-items: center; margin: 1rem 0; }
 .bfep-admin-table { background: #fff; }
 .bfep-admin-edit-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; margin-bottom: 1rem; background: #f7f2fa; border-radius: 10px; }
+.bfep-staff-guide { max-width: 760px; }
+.bfep-staff-guide__steps li,.bfep-staff-guide__tips li { margin-bottom: .75rem; line-height: 1.5; }
+.bfep-staff-guide__steps strong { display: block; }
 @media (max-width: 900px) { .bfep-admin-filter { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .bfep-admin-filter { grid-template-columns: 1fr; } .bfep-admin-pager,.bfep-admin-edit-summary { align-items: stretch; flex-direction: column; } }

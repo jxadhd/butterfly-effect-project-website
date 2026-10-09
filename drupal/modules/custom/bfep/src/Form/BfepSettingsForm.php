@@ -113,6 +113,19 @@ final class BfepSettingsForm extends ConfigFormBase {
       ];
     }
 
+    $form['staff'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Staff'),
+      '#open' => FALSE,
+    ];
+    $form['staff']['staff_guide_url'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Full staff guide URL'),
+      '#default_value' => $config->get('staff_guide_url'),
+      '#maxlength' => 2048,
+      '#description' => $this->t('For example, the Nextcloud Collectives page. It is linked from the top of BFEP Admin › Staff guide.'),
+    ];
+
     $form['performance'] = [
       '#type' => 'details',
       '#title' => $this->t('Caching and submission protection'),
@@ -162,6 +175,10 @@ final class BfepSettingsForm extends ConfigFormBase {
         break;
       }
     }
+    $guideUrl = trim((string) $form_state->getValue('staff_guide_url'));
+    if ($guideUrl !== '' && !str_starts_with(strtolower($guideUrl), 'https://')) {
+      $form_state->setErrorByName('staff_guide_url', $this->t('Use a complete HTTPS URL.'));
+    }
     if (!str_contains((string) $form_state->getValue('campaign_title_pattern'), '[campaign:name]')) {
       $form_state->setErrorByName('campaign_title_pattern', $this->t('The campaign pattern must include [campaign:name].'));
     }
@@ -185,7 +202,7 @@ final class BfepSettingsForm extends ConfigFormBase {
       'google_site_verification', 'bing_site_verification', 'home_title',
       'home_description', 'campaign_title_pattern', 'country_title_pattern',
       ...$integerKeys, 'index_referral_page', 'index_volunteer_page',
-      'index_initiatives_page', 'index_transparency_pages',
+      'index_initiatives_page', 'index_transparency_pages', 'staff_guide_url',
     ] as $key) {
       $value = $form_state->getValue($key);
       if (str_starts_with($key, 'index_')) {

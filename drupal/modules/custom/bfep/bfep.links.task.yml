@@ -27,3 +27,9 @@ bfep.admin_changes_tab:
   title: 'Change requests'
   base_route: bfep.admin
   weight: 3
+
+bfep.admin_help_tab:
+  route_name: bfep.admin_help
+  title: 'Staff guide'
+  base_route: bfep.admin
+  weight: 20

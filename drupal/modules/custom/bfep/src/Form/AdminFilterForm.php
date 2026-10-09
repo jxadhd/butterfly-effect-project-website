@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\DataChecks;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 final class AdminFilterForm extends FormBase {
@@ -38,7 +39,7 @@ final class AdminFilterForm extends FormBase {
     $options = ['' => '- Any status -', 'pending' => 'Pending (including no status)'];
 
     try {
-      $rows = $this->bfdb()->query("\n        SELECT DISTINCT verification_status AS value\n        FROM referral_submissions\n        WHERE verification_status IS NOT NULL AND verification_status <> ''\n        ORDER BY verification_status\n      ")->fetchAll();
+      $rows = $this->bfdb()->query("\n        SELECT DISTINCT CAST(verification_status AS TEXT) AS value\n        FROM referral_submissions\n        WHERE verification_status IS NOT NULL AND CAST(verification_status AS TEXT) <> ''\n        ORDER BY value\n      ")->fetchAll();
 
       foreach ($rows as $row) {
         $key = strtolower(trim((string) $row->value));
@@ -89,6 +90,13 @@ final class AdminFilterForm extends FormBase {
         '#title' => $this->t('Sync problems'),
         '#return_value' => 'problem',
         '#default_value' => $request->query->get('sync') === 'problem',
+      ];
+      $check = (string) $request->query->get('check', '');
+      $form['check'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Data check'),
+        '#options' => ['' => $this->t('- Any -')] + DataChecks::options(),
+        '#default_value' => DataChecks::get($check) !== NULL ? $check : '',
       ];
     }
     elseif ($section === 'referrals') {
@@ -157,7 +165,7 @@ final class AdminFilterForm extends FormBase {
     $values = $form_state->getValues();
     $query = [];
 
-    foreach (['q', 'status', 'featured', 'urgent', 'sync', 'per_page'] as $key) {
+    foreach (['q', 'status', 'featured', 'urgent', 'sync', 'check', 'per_page'] as $key) {
       if (!array_key_exists($key, $values)) {
         continue;
       }

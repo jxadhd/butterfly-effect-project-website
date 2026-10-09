@@ -10,14 +10,22 @@
 .bfep-admin-queue-meta { font-weight: 700; color: #5f326e; }
 .bfep-admin-health,.bfep-admin-notice { padding: .85rem 1rem; border-left: 4px solid #7d4a91; background: #f7f2fa; margin: 1rem 0; }
 .bfep-admin-notice--error { border-left-color: #a51b1b; background: #fcf0f0; }
+.bfep-admin-notice--warning { border-left-color: #b7791f; background: #fff8e6; }
 .bfep-admin-filter { display: grid; grid-template-columns: minmax(240px,2fr) repeat(3,minmax(130px,1fr)); gap: .75rem; align-items: end; padding: 1rem; margin: 1rem 0; background: #fff; border: 1px solid #ded8e4; border-radius: 10px; }
 .bfep-admin-filter .form-item { margin: 0; }
 .bfep-admin-filter .form-actions { display: flex; gap: .5rem; margin: 0; align-items: center; }
 .bfep-admin-pager { display: flex; gap: 1rem; justify-content: space-between; align-items: center; margin: 1rem 0; }
 .bfep-admin-table { background: #fff; }
+.bfep-checks-table .bfep-check--clear { color: #6b6b75; }
 .bfep-admin-edit-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; margin-bottom: 1rem; background: #f7f2fa; border-radius: 10px; }
 .bfep-staff-guide { max-width: 760px; }
 .bfep-staff-guide__steps li,.bfep-staff-guide__tips li { margin-bottom: .75rem; line-height: 1.5; }
 .bfep-staff-guide__steps strong { display: block; }
+.bfep-status { display: inline-block; padding: .15rem .6rem; border: 1px solid; border-radius: 999px; font-size: .85rem; font-weight: 600; line-height: 1.4; white-space: nowrap; }
+.bfep-status--pending { background: #fff4d6; border-color: #e9c46a; color: #5c4100; }
+.bfep-status--info { background: #e7f0ff; border-color: #a9c4f2; color: #133b73; }
+.bfep-status--success { background: #e2f4e7; border-color: #9fd3ae; color: #145228; }
+.bfep-status--danger { background: #fde8e8; border-color: #eeb0b0; color: #7f1d1d; }
+.bfep-status--neutral { background: #efeff2; border-color: #cfcfd6; color: #3b3b44; }
 @media (max-width: 900px) { .bfep-admin-filter { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .bfep-admin-filter { grid-template-columns: 1fr; } .bfep-admin-pager,.bfep-admin-edit-summary { align-items: stretch; flex-direction: column; } }

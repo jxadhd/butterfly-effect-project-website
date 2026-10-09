@@ -1140,3 +1140,50 @@ body:not(.path-admin) .block-search-wide .search-form__submit .icon--search {
   background-repeat: no-repeat !important;
   background-size: 1.25rem 1.25rem !important;
 }
+
+/*
+ * Search toggle: an icon-only utility control grouped with "Log in" behind a
+ * divider, instead of a boxed button floating between the nav links.
+ */
+body:not(.path-admin) .block-search-wide__button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+body:not(.path-admin) .block-search-wide__button svg {
+  display: block !important;
+  flex: none;
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  margin: 0 !important;
+}
+
+body:not(.path-admin) .block-search-wide__button:hover,
+body:not(.path-admin) .block-search-wide__button:focus-visible,
+body:not(.path-admin) .block-search-wide__button[aria-expanded="true"] {
+  border-color: transparent !important;
+  background: rgba(255, 255, 255, .08) !important;
+}
+
+body:not(.path-admin) .block-search-wide__button:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+@media (min-width: 75rem) {
+  body:not(.path-admin) .region--secondary-menu {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    margin-left: .75rem;
+    padding-left: .75rem;
+    border-left: 1px solid rgba(255, 255, 255, .14);
+  }
+
+  body:not(.path-admin) .region--secondary-menu .block-search-wide {
+    margin: 0 !important;
+  }
+}

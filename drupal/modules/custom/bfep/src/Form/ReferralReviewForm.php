@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\bfep\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -77,10 +78,12 @@ final class ReferralReviewForm extends AdminRecordFormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
+    $fields = ['verification_status' => trim((string) $form_state->getValue('verification_status'))];
     $this->bfdb()->update('referral_submissions')
-      ->fields(['verification_status' => trim((string) $form_state->getValue('verification_status'))])
+      ->fields($fields)
       ->condition('id', $this->referralId)
       ->execute();
+    $this->auditLogger->record('updated', 'referral', $this->referralId, AdminFormat::changedKeys((array) $this->referral, $fields));
     $this->messenger()->addStatus($this->t('Referral review saved.'));
     $this->redirectAfterSave($form_state, $this->referralId, 'bfep.admin_referrals');
   }

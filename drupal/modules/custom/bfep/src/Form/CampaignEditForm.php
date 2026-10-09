@@ -8,6 +8,8 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -23,12 +25,14 @@ final class CampaignEditForm extends FormBase {
   public function __construct(
     protected Connection $database,
     protected BfepCacheInvalidator $cacheInvalidator,
+    protected AuditLogger $auditLogger,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('bfep.database'),
       $container->get('bfep.cache_invalidator'),
+      $container->get('bfep.audit_logger'),
     );
   }
 
@@ -168,7 +172,7 @@ final class CampaignEditForm extends FormBase {
       throw new \RuntimeException('Selected BFEP country no longer exists.');
     }
     $values = $form_state->getValues();
-    $this->database->update('campaigns')->fields([
+    $fields = [
       'contact_name' => trim((string) $values['contact_name']),
       'country_id' => $countryId,
       'country_raw' => (string) $countryName,
@@ -179,8 +183,11 @@ final class CampaignEditForm extends FormBase {
       'vetted_by_trusted_group' => trim((string) $values['vetted_by_trusted_group']),
       'featured_self_selected' => trim((string) $values['featured_self_selected']),
       'internal_notes' => trim((string) $values['internal_notes']),
-      'updated_at' => date('c'),
-    ])->condition('id', $this->campaignId)->execute();
+    ];
+    $changed = AdminFormat::changedKeys((array) $this->campaign, $fields);
+    $fields['updated_at'] = date('c');
+    $this->database->update('campaigns')->fields($fields)->condition('id', $this->campaignId)->execute();
+    $this->auditLogger->record('updated', 'campaign', $this->campaignId, $changed);
 
     $this->cacheInvalidator->invalidateCampaign($this->campaignId);
     $this->messenger()->addStatus($this->t('Campaign saved. Public caches for this campaign, listings, countries, and the homepage were invalidated.'));

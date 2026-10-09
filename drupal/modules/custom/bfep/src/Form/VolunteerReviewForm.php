@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\bfep\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -70,14 +71,16 @@ final class VolunteerReviewForm extends AdminRecordFormBase {
       'not_accepted' => FALSE,
       default => NULL,
     };
+    $fields = [
+      'accepted' => $accepted_value,
+      'contacted' => (bool) $form_state->getValue('contacted'),
+      'onboarded' => (bool) $form_state->getValue('onboarded'),
+    ];
     $this->bfdb()->update('volunteers')
-      ->fields([
-        'accepted' => $accepted_value,
-        'contacted' => (bool) $form_state->getValue('contacted'),
-        'onboarded' => (bool) $form_state->getValue('onboarded'),
-      ])
+      ->fields($fields)
       ->condition('id', $this->volunteerId)
       ->execute();
+    $this->auditLogger->record('updated', 'volunteer', $this->volunteerId, AdminFormat::changedKeys((array) $this->volunteer, $fields));
     $this->messenger()->addStatus($this->t('Volunteer workflow saved.'));
     $this->redirectAfterSave($form_state, $this->volunteerId, 'bfep.admin_volunteers');
   }

@@ -6,6 +6,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,12 +22,14 @@ final class CampaignAddForm extends FormBase {
   public function __construct(
     protected Connection $database,
     protected BfepCacheInvalidator $cacheInvalidator,
+    protected AuditLogger $auditLogger,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('bfep.database'),
       $container->get('bfep.cache_invalidator'),
+      $container->get('bfep.audit_logger'),
     );
   }
 
@@ -622,6 +625,7 @@ final class CampaignAddForm extends FormBase {
     // caches from the pre-insert snapshot.
     unset($transaction);
     $this->cacheInvalidator->invalidateCampaign($campaign_id);
+    $this->auditLogger->record('created', 'campaign', $campaign_id, ['line_number']);
 
     $this->messenger()->addStatus($this->t(
       'Campaign @id added to BFEP as line @line with its related database records.',

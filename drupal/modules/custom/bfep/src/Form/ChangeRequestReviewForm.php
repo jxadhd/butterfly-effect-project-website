@@ -6,6 +6,7 @@ namespace Drupal\bfep\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -75,6 +76,7 @@ final class ChangeRequestReviewForm extends AdminRecordFormBase {
     }
 
     $this->bfdb()->update('info_change_requests')->fields($fields)->condition('id', $this->requestId)->execute();
+    $this->auditLogger->record('updated', 'change request', $this->requestId, AdminFormat::changedKeys((array) $this->changeRequest, $fields));
     $this->messenger()->addStatus($this->t('Change request workflow saved.'));
     $this->redirectAfterSave($form_state, $this->requestId, 'bfep.admin_changes');
   }

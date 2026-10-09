@@ -55,6 +55,9 @@ form requires Drupal's `administer site configuration` permission.
 - **Lists** have working paging with a 25, 50 or 100 per-page choice, escape
   `%` and `_` in searches, and filter referrals by "Pending (including no
   status)" and campaigns by "Sync problems".
+- **Sorting.** Click a column heading (line, name, country, email, hours,
+  status, created or updated) to sort; click again to reverse. Only listed
+  columns can be sorted, so the URL cannot inject SQL.
 - **Audit log.** Every staff create or update writes a notice to the `bfep` log
   channel (Reports > Recent log messages) with the user, record and the names
   of the fields changed. Values are not logged.

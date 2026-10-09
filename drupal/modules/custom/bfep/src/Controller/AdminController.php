@@ -6,6 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Utility\TableSort;
 use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -238,6 +239,62 @@ final class AdminController extends ControllerBase {
     ];
   }
 
+  /**
+   * Sortable columns per list: header title => SQL column.
+   *
+   * Only these columns can reach ORDER BY, so the sort query parameters
+   * cannot inject SQL.
+   */
+  private const SORTABLE = [
+    'campaigns' => ['Line' => 'line_number', 'Name' => 'contact_name', 'Country' => 'country_raw', 'Updated' => 'updated_at'],
+    'referrals' => ['Status' => 'verification_status', 'Name' => 'full_name', 'Email' => 'email', 'Created' => 'created_at'],
+    'volunteers' => ['Name' => 'full_name', 'Email' => 'email', 'Hours' => 'hours_per_week', 'Created' => 'created_at'],
+    'change_requests' => ['Status' => 'processed', 'Submitter' => 'submitter_name', 'Line ref' => 'family_line_number_raw', 'Created' => 'created_at'],
+  ];
+
+  /**
+   * Table header cells; the list's sortable titles become sort links.
+   *
+   * @param string $list
+   *   A key of self::SORTABLE.
+   * @param string[] $titles
+   *   Column titles in display order.
+   * @param string $default
+   *   The title shown as sorted (descending) before any click.
+   */
+  protected function header(string $list, array $titles, string $default): array {
+    $header = [];
+    foreach ($titles as $title) {
+      if (isset(self::SORTABLE[$list][$title])) {
+        $cell = ['data' => $title, 'field' => $title];
+        if ($title === $default) {
+          $cell['sort'] = TableSort::DESC;
+        }
+        $header[] = $cell;
+      }
+      else {
+        $header[] = $title;
+      }
+    }
+    return $header;
+  }
+
+  /**
+   * The ORDER BY for the clicked column, or $default until one is clicked.
+   */
+  protected function orderBy(Request $request, string $list, array $header, string $default): string {
+    if (!$request->query->has('order')) {
+      return $default;
+    }
+    $context = TableSort::getContextFromRequest($header, $request);
+    $column = self::SORTABLE[$list][$context['sql'] ?? ''] ?? NULL;
+    if ($column === NULL) {
+      return $default;
+    }
+    $direction = $context['sort'] === TableSort::DESC ? 'DESC' : 'ASC';
+    return "{$column} {$direction} NULLS LAST, id {$direction}";
+  }
+
   public function campaigns(Request $request): array|RedirectResponse {
     $db = $this->bfdb();
     $q = trim((string) $request->query->get('q', ''));
@@ -269,7 +326,9 @@ final class AdminController extends ControllerBase {
 
     $total = (int) $db->query("SELECT COUNT(*) FROM campaigns WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
-    $rows = $db->query("\n      SELECT id, line_number, contact_name, country_raw, featured_by_bfep, urgent_medical_needs, updated_at\n      FROM campaigns\n      WHERE {$where_sql}\n      ORDER BY updated_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    $header = $this->header('campaigns', ['Line', 'Name', 'Country', 'Featured', 'Urgent', 'Updated', 'Operations'], 'Updated');
+    $order_sql = $this->orderBy($request, 'campaigns', $header, 'updated_at DESC NULLS LAST, id DESC');
+    $rows = $db->query("\n      SELECT id, line_number, contact_name, country_raw, featured_by_bfep, urgent_medical_needs, updated_at\n      FROM campaigns\n      WHERE {$where_sql}\n      ORDER BY {$order_sql}\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
     if ($q !== '' && $total === 1 && count($rows) === 1) {
       return $this->redirect('bfep.admin_campaign_edit', ['campaign_id' => (int) $rows[0]->id]);
     }
@@ -307,7 +366,7 @@ final class AdminController extends ControllerBase {
       'campaigns',
       'bfep.admin_campaigns',
       $total,
-      ['Line', 'Name', 'Country', 'Featured', 'Urgent', 'Updated', 'Operations'],
+      $header,
       $table_rows,
       'No campaigns found.'
     );
@@ -336,7 +395,9 @@ final class AdminController extends ControllerBase {
 
     $total = (int) $db->query("SELECT COUNT(*) FROM referral_submissions WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
-    $rows = $db->query("\n      SELECT id, verification_status, email, full_name, fundraiser_url, created_at\n      FROM referral_submissions\n      WHERE {$where_sql}\n      ORDER BY created_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    $header = $this->header('referrals', ['Status', 'Name', 'Email', 'Created', 'Operations'], 'Created');
+    $order_sql = $this->orderBy($request, 'referrals', $header, 'created_at DESC NULLS LAST, id DESC');
+    $rows = $db->query("\n      SELECT id, verification_status, email, full_name, fundraiser_url, created_at\n      FROM referral_submissions\n      WHERE {$where_sql}\n      ORDER BY {$order_sql}\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
     if ($q !== '' && $total === 1 && count($rows) === 1) {
       return $this->redirect('bfep.admin_referral_review', ['referral_id' => (int) $rows[0]->id]);
     }
@@ -370,7 +431,7 @@ final class AdminController extends ControllerBase {
       'referrals',
       'bfep.admin_referrals',
       $total,
-      ['Status', 'Name', 'Email', 'Created', 'Operations'],
+      $header,
       $table_rows,
       'No referrals found.'
     );
@@ -398,7 +459,9 @@ final class AdminController extends ControllerBase {
 
     $total = (int) $db->query("SELECT COUNT(*) FROM volunteers WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
-    $rows = $db->query("\n      SELECT id, full_name, email, hours_per_week, accepted, contacted, onboarded, created_at\n      FROM volunteers\n      WHERE {$where_sql}\n      ORDER BY created_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    $header = $this->header('volunteers', ['Status', 'Name', 'Email', 'Hours', 'Contacted', 'Created', 'Operations'], 'Created');
+    $order_sql = $this->orderBy($request, 'volunteers', $header, 'created_at DESC NULLS LAST, id DESC');
+    $rows = $db->query("\n      SELECT id, full_name, email, hours_per_week, accepted, contacted, onboarded, created_at\n      FROM volunteers\n      WHERE {$where_sql}\n      ORDER BY {$order_sql}\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
     if ($q !== '' && $total === 1 && count($rows) === 1) {
       return $this->redirect('bfep.admin_volunteer_review', ['volunteer_id' => (int) $rows[0]->id]);
     }
@@ -435,7 +498,7 @@ final class AdminController extends ControllerBase {
       'volunteers',
       'bfep.admin_volunteers',
       $total,
-      ['Status', 'Name', 'Email', 'Hours', 'Contacted', 'Created', 'Operations'],
+      $header,
       $table_rows,
       'No volunteers found.'
     );
@@ -462,7 +525,9 @@ final class AdminController extends ControllerBase {
 
     $total = (int) $db->query("SELECT COUNT(*) FROM info_change_requests WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
-    $rows = $db->query("\n      SELECT id, submitter_email, submitter_type, submitter_name, family_line_number_raw, campaign_id, fields_to_change, processed, created_at\n      FROM info_change_requests\n      WHERE {$where_sql}\n      ORDER BY processed ASC, created_at DESC NULLS LAST, id DESC\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    $header = $this->header('change_requests', ['Status', 'Submitter', 'Type', 'Line ref', 'Campaign', 'Fields', 'Created', 'Operations'], 'Created');
+    $order_sql = $this->orderBy($request, 'change_requests', $header, 'processed ASC, created_at DESC NULLS LAST, id DESC');
+    $rows = $db->query("\n      SELECT id, submitter_email, submitter_type, submitter_name, family_line_number_raw, campaign_id, fields_to_change, processed, created_at\n      FROM info_change_requests\n      WHERE {$where_sql}\n      ORDER BY {$order_sql}\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
     if ($q !== '' && $total === 1 && count($rows) === 1) {
       return $this->redirect('bfep.admin_change_review', ['request_id' => (int) $rows[0]->id]);
     }
@@ -498,7 +563,7 @@ final class AdminController extends ControllerBase {
       'changes',
       'bfep.admin_changes',
       $total,
-      ['Status', 'Submitter', 'Type', 'Line ref', 'Campaign', 'Fields', 'Created', 'Operations'],
+      $header,
       $table_rows,
       'No change requests found.'
     );

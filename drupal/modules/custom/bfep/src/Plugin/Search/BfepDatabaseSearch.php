@@ -8,6 +8,8 @@ use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\OptionalBfdb;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Drupal\bfep\Service\BfepSettings;
 use Drupal\search\Attribute\Search;
@@ -36,7 +38,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    protected Connection $database,
+    protected ?Connection $database,
     protected AccountProxyInterface $currentUser,
     protected BfepSettings $settings,
     protected LoggerChannelInterface $logger,
@@ -49,7 +51,9 @@ final class BfepDatabaseSearch extends SearchPluginBase {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('bfep.database'),
+      // Menus check access to the search page on every page, which builds
+      // this plugin, so it must not need bfdb just to exist.
+      OptionalBfdb::get($container),
       $container->get('current_user'),
       $container->get('bfep.settings'),
       $container->get('logger.channel.bfep'),
@@ -61,6 +65,11 @@ final class BfepDatabaseSearch extends SearchPluginBase {
    */
   public function execute(): array {
     if (!$this->isSearchExecutable()) {
+      return [];
+    }
+    if ($this->database === NULL) {
+      $this->logger->warning('BFEP database search skipped: bfdb is unavailable.');
+      $this->mergeCacheMaxAge(0);
       return [];
     }
 
@@ -362,7 +371,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
         'title' => $title,
         'link' => Url::fromRoute('bfep.admin_referral_review', ['referral_id' => $row->id], ['absolute' => TRUE])->toString(),
         'type' => $this->t('Staff · Referral'),
-        'snippet' => $this->snippet([$row->verification_status ?: 'Pending', $row->email, $row->city_country, $row->family_description]),
+        'snippet' => $this->snippet([AdminFormat::referralStatusLabel($row->verification_status), $row->email, $row->city_country, $row->family_description]),
         '_score' => $this->score($phrase, $title, $text, 10),
       ];
     }

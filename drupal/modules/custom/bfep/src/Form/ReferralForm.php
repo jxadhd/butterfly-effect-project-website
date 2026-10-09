@@ -21,14 +21,15 @@ final class ReferralForm extends ProtectedExternalFormBase {
       '#title' => $this->t("Campaign recipient's full name"),
       '#required' => TRUE,
       '#maxlength' => 255,
-      '#autocomplete' => 'name',
+      // The recipient's name, not the visitor's: don't autofill it.
+      '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['email'] = [
       '#type' => 'email',
       '#title' => $this->t('Your email'),
       '#required' => TRUE,
       '#maxlength' => 254,
-      '#autocomplete' => 'email',
+      '#attributes' => ['autocomplete' => 'email'],
     ];
     $form['fundraiser_url'] = [
       '#type' => 'url',
@@ -146,7 +147,7 @@ final class ReferralForm extends ProtectedExternalFormBase {
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $values = $form_state->getValues();
-    $this->database->insert('referral_submissions')->fields([
+    $saved = $this->saveSubmission($form_state, fn() => $this->database->insert('referral_submissions')->fields([
       'full_name' => $this->clean($values['full_name']),
       'email' => $this->clean($values['email']),
       'fundraiser_url' => $this->clean($values['fundraiser_url']),
@@ -160,7 +161,10 @@ final class ReferralForm extends ProtectedExternalFormBase {
       'plans_to_increase_goal' => !empty($values['plans_to_increase_goal']) ? 'true' : 'false',
       'applied_previously' => !empty($values['applied_previously']) ? 'true' : 'false',
       'whatsapp_telegram' => $this->clean($values['whatsapp_telegram'] ?? ''),
-    ])->execute();
+    ])->execute());
+    if (!$saved) {
+      return;
+    }
     $this->registerSubmission();
     $this->messenger()->addStatus($this->t('Thank you. Your referral has been submitted for review.'));
     $form_state->setRedirect('bfep.refer');

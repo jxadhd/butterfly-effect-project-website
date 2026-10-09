@@ -1,43 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\bfep\Form;
 
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final class ReferralReviewForm extends FormBase {
+/**
+ * Staff review of one public referral submission.
+ */
+final class ReferralReviewForm extends AdminRecordFormBase {
 
   protected int $referralId = 0;
   protected object $referral;
-
-  public function __construct(
-    protected Connection $database,
-  ) {}
-
-  public static function create(ContainerInterface $container): static {
-    return new static($container->get('bfep.database'));
-  }
 
   public function getFormId(): string {
     return 'bfep_referral_review_form';
   }
 
-  protected function bfdb(): Connection {
-    return $this->database;
+  protected function nextPendingId(int $currentId): ?int {
+    $id = $this->bfdb()->query("
+      SELECT id FROM referral_submissions
+      WHERE (verification_status IS NULL OR TRIM(verification_status) = '' OR LOWER(verification_status) = 'pending') AND id <> :id
+      ORDER BY created_at ASC NULLS LAST, id ASC
+      LIMIT 1
+    ", [':id' => $currentId])->fetchField();
+    return $id === FALSE ? NULL : (int) $id;
   }
 
-  protected function item(string $title, $value): array {
-    $text = trim((string) ($value ?? ''));
-    return [
-      '#type' => 'item',
-      '#title' => $title,
-      '#markup' => $text === '' ? '<em>Not provided</em>' : nl2br(Html::escape($text)),
-    ];
+  protected function reviewRoute(int $id): array {
+    return ['bfep.admin_referral_review', ['referral_id' => $id]];
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $referral_id = NULL): array {
@@ -58,6 +53,7 @@ final class ReferralReviewForm extends FormBase {
       '#title' => $this->t('Submitted information'),
       '#open' => TRUE,
     ];
+    $form['submission']['created'] = $this->dateItem('Submitted', $this->referral->created_at ?? NULL);
     $form['submission']['name'] = $this->item('Campaign recipient', $this->referral->full_name ?? NULL);
     $form['submission']['email'] = $this->item('Submitter email', $this->referral->email ?? NULL);
     $form['submission']['location'] = $this->item('City / country', $this->referral->city_country ?? NULL);
@@ -69,42 +65,78 @@ final class ReferralReviewForm extends FormBase {
     $form['submission']['previous'] = $this->item('Referred previously', !empty($this->referral->applied_previously) ? 'Yes' : 'No');
     $form['submission']['goal'] = $this->item('Plans to increase goal', !empty($this->referral->plans_to_increase_goal) ? 'Yes' : 'No');
 
-    if (!empty($this->referral->fundraiser_url) && filter_var($this->referral->fundraiser_url, FILTER_VALIDATE_URL)) {
-      $form['submission']['fundraiser'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Open fundraiser'),
-        '#url' => Url::fromUri($this->referral->fundraiser_url),
-        '#attributes' => ['class' => ['button'], 'target' => '_blank', 'rel' => 'noopener'],
-      ];
+    $form['submission']['fundraiser_url'] = $this->item('Fundraiser URL', $this->referral->fundraiser_url ?? NULL);
+    if ($link = $this->externalLink($this->referral->fundraiser_url ?? NULL, (string) $this->t('Open fundraiser'))) {
+      $form['submission']['fundraiser'] = $link;
     }
+
+    $form['related'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Related records'),
+      '#open' => TRUE,
+    ];
+    $campaignLinks = [];
+    foreach ($this->campaignsWithFundraiserUrl($this->referral->fundraiser_url ?? NULL) as $campaign) {
+      $campaignLinks[] = ['label' => $campaign['label'], 'url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $campaign['id']])];
+    }
+    $form['related']['campaigns'] = $this->relatedList((string) $this->t('Campaigns already using this fundraiser'), $campaignLinks, (string) $this->t('None found'));
+
+    $referralLinks = [];
+    $urlKey = AdminFormat::urlMatchKey($this->referral->fundraiser_url ?? NULL);
+    $email = mb_strtolower(trim((string) ($this->referral->email ?? '')));
+    if ($urlKey !== '' || $email !== '') {
+      $rows = $this->optionalRows("
+        SELECT id, full_name, verification_status, created_at
+        FROM referral_submissions
+        WHERE id <> :id AND (
+          (:key <> '' AND " . $this->urlKeySql('fundraiser_url') . " = :key)
+          OR (:email <> '' AND LOWER(TRIM(email)) = :email)
+        )
+        ORDER BY created_at DESC NULLS LAST, id DESC
+        LIMIT 10
+      ", [':id' => $this->referralId, ':key' => $urlKey, ':email' => $email]);
+      foreach ($rows as $row) {
+        $referralLinks[] = [
+          'label' => trim(($row->full_name ?: 'Referral #' . $row->id) . ' · ' . ($row->verification_status ?: 'pending') . ' · ' . $this->formatDate($row->created_at)),
+          'url' => Url::fromRoute('bfep.admin_referral_review', ['referral_id' => $row->id]),
+        ];
+      }
+    }
+    $form['related']['referrals'] = $this->relatedList((string) $this->t('Other referrals with this fundraiser or email'), $referralLinks, (string) $this->t('None found'));
 
     $form['workflow'] = [
       '#type' => 'details',
       '#title' => $this->t('Review status'),
       '#open' => TRUE,
     ];
+    $existing = array_map('strval', array_column($this->optionalRows("
+      SELECT DISTINCT verification_status AS value
+      FROM referral_submissions
+      WHERE verification_status IS NOT NULL AND TRIM(verification_status) <> ''
+    ", []), 'value'));
+    $options = AdminFormat::referralStatusOptions($existing, $this->referral->verification_status ?? NULL);
     $form['workflow']['verification_status'] = [
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => $this->t('Verification status'),
-      '#default_value' => $this->referral->verification_status ?: 'pending',
+      '#options' => $options,
+      '#default_value' => AdminFormat::referralStatusKey($this->referral->verification_status ?? NULL, $options),
       '#required' => TRUE,
-      '#maxlength' => 100,
-      '#description' => $this->t('Use the status values your BFEP workflow already uses (for example pending, verified, rejected, or needs_information).'),
+      '#description' => $this->t('Statuses already used by other referrals are included, so existing workflow values are kept.'),
     ];
 
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Save review'), '#button_type' => 'primary'];
-    $form['actions']['cancel'] = ['#type' => 'link', '#title' => $this->t('Back to referrals'), '#url' => Url::fromRoute('bfep.admin_referrals'), '#attributes' => ['class' => ['button']]];
+    $this->addActions($form, (string) $this->t('Save review'), (string) $this->t('Back to referrals'), 'bfep.admin_referrals');
     return $form;
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
+    $fields = ['verification_status' => trim((string) $form_state->getValue('verification_status'))];
     $this->bfdb()->update('referral_submissions')
-      ->fields(['verification_status' => trim((string) $form_state->getValue('verification_status'))])
+      ->fields($fields)
       ->condition('id', $this->referralId)
       ->execute();
+    $this->auditLogger->record('updated', 'referral', $this->referralId, AdminFormat::changedKeys((array) $this->referral, $fields));
     $this->messenger()->addStatus($this->t('Referral review saved.'));
-    $form_state->setRedirect('bfep.admin_referral_review', ['referral_id' => $this->referralId]);
+    $this->redirectAfterSave($form_state, $this->referralId, 'bfep.admin_referrals');
   }
 
 }

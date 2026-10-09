@@ -6,6 +6,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 final class AdminFilterForm extends FormBase {
@@ -34,13 +35,17 @@ final class AdminFilterForm extends FormBase {
   }
 
   protected function referralStatusOptions(): array {
-    $options = ['' => '- Any status -'];
+    $options = ['' => '- Any status -', 'pending' => 'Pending (including no status)'];
 
     try {
       $rows = $this->bfdb()->query("\n        SELECT DISTINCT verification_status AS value\n        FROM referral_submissions\n        WHERE verification_status IS NOT NULL AND verification_status <> ''\n        ORDER BY verification_status\n      ")->fetchAll();
 
       foreach ($rows as $row) {
-        $options[(string) $row->value] = (string) $row->value;
+        $key = strtolower(trim((string) $row->value));
+        if ($key === '' || $key === 'pending' || isset($options[$key])) {
+          continue;
+        }
+        $options[$key] = AdminFormat::referralStatusLabel((string) $row->value);
       }
     }
     catch (\Throwable) {
@@ -78,6 +83,12 @@ final class AdminFilterForm extends FormBase {
         '#title' => $this->t('Urgent'),
         '#return_value' => '1',
         '#default_value' => $request->query->get('urgent') === '1',
+      ];
+      $form['sync'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Sync problems'),
+        '#return_value' => 'problem',
+        '#default_value' => $request->query->get('sync') === 'problem',
       ];
     }
     elseif ($section === 'referrals') {
@@ -146,7 +157,7 @@ final class AdminFilterForm extends FormBase {
     $values = $form_state->getValues();
     $query = [];
 
-    foreach (['q', 'status', 'featured', 'urgent', 'per_page'] as $key) {
+    foreach (['q', 'status', 'featured', 'urgent', 'sync', 'per_page'] as $key) {
       if (!array_key_exists($key, $values)) {
         continue;
       }

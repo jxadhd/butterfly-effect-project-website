@@ -21,11 +21,56 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
 - `/admin/bfep/referrals` — referral review
 - `/admin/bfep/volunteers` — volunteer workflow
 - `/admin/bfep/change-requests` — update/privacy/safety requests
+- `/admin/bfep/help` — short staff guide to the admin workflow, linking to
+  the full guide set in settings ("Full staff guide URL")
 - `/admin/config/search/bfep` — titles, contact details, indexing, caching,
   verification tokens, social profiles, and submission limits
 
 Record administration requires `administer bfep external data`. The settings
 form requires Drupal's `administer site configuration` permission.
+
+### Admin workflow
+
+- **Dashboard.** Counts come from one query. A database error shows a notice
+  instead of breaking the page. Each queue shows how many items are pending and
+  the age of the oldest one. A "Fundraiser sync problems" card appears when the
+  sync columns exist.
+- **Review forms** (referrals, volunteers, change requests) show the submitted
+  date and render external URLs as links only when they are `http(s)`. Each
+  form has a "Save and review next pending" button that opens the oldest
+  remaining pending item.
+- **Referral status** is a fixed list: pending, needs information, verified and
+  rejected. Older free-text values are matched case-insensitively and kept as
+  an extra option, so nothing is lost on save.
+- **Related records.** A referral lists campaigns and other referrals with the
+  same fundraiser URL or email. A change request with no campaign suggests
+  campaigns that use its URL. URLs are compared without scheme, `www.`, query
+  string, fragment or trailing slash.
+- **Campaign edit** covers the active fundraiser (platform, URL, currency, goal
+  and raised amounts), tags, the no-feature response and the auto-sync switch.
+  Changing the fundraiser URL deactivates the old fundraiser row and adds a new
+  one, so history is kept. If someone else saved the campaign after you opened
+  it, your save is refused with a message, rather than overwriting theirs.
+- **Campaign add** refuses a fundraiser URL that another campaign already uses,
+  with links to those campaigns, unless "Add anyway if another campaign
+  already uses this fundraiser URL" is ticked.
+- **Lists** have working paging with a 25, 50 or 100 per-page choice, escape
+  `%` and `_` in searches, and filter referrals by "Pending (including no
+  status)" and campaigns by "Sync problems".
+- **Sorting.** Click a column heading (line, name, country, email, hours,
+  status, created or updated) to sort; click again to reverse. Only listed
+  columns can be sorted, so the URL cannot inject SQL.
+- **Audit log.** Every staff create or update writes a notice to the `bfep` log
+  channel (Reports > Recent log messages) with the user, record and the names
+  of the fields changed. Values are not logged.
+
+### Search shortcuts
+
+A search that is only a campaign line number, optionally with `#` (for example
+`42` or `#42`), opens that campaign directly. So does a search with exactly one
+result. This applies to the public campaign filter (`/campaigns?q=`), the site
+search (`/search/database?keys=`) and the admin campaign list. Staff are sent
+to the edit form; visitors to the public page.
 
 ## Cache policy
 
@@ -45,6 +90,16 @@ role owns the view and may create objects. If it cannot, the update safely skips
 DDL and reports that `database-hardening.sql` should be run later by the schema
 owner. No new indexes are added because the audited database already has useful
 country, featured, line-number, updated-time, trigram, and search indexes.
+
+## Tests
+
+Unit tests live in `tests/src/Unit` and run in CI (`.github/workflows/tests.yml`).
+To run them locally from a Drupal 11 codebase with `drupal/core-dev` installed
+and this repository's `drupal/modules/custom` linked into `web/modules/custom`:
+
+```sh
+vendor/bin/phpunit -c web/core/phpunit.xml.dist web/modules/custom
+```
 
 ## Release operations
 

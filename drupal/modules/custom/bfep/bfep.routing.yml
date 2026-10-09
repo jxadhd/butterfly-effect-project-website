@@ -21,7 +21,7 @@ bfep.campaigns:
     _title: 'Campaigns'
   requirements:
     _permission: 'access content'
-    
+
 bfep.admin_campaign_add:
   path: '/admin/bfep/campaign/add'
   defaults:
@@ -167,6 +167,16 @@ bfep.admin:
   defaults:
     _controller: '\Drupal\bfep\Controller\AdminController::dashboard'
     _title: 'BFEP Admin'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_help:
+  path: '/admin/bfep/help'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\StaffGuideController::page'
+    _title: 'Staff guide'
   requirements:
     _permission: 'administer bfep external data'
   options:

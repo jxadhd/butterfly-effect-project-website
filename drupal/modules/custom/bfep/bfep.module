@@ -47,6 +47,9 @@ function bfep_theme($existing, $type, $theme, $path): array {
     'bfep_initiative_list' => [
       'variables' => ['initiatives' => []],
     ],
+    'bfep_staff_guide' => [
+      'variables' => ['guide_url' => '', 'settings_url' => '', 'links' => []],
+    ],
     'bfep_trust_page' => [
       'variables' => [
         'intro' => '',

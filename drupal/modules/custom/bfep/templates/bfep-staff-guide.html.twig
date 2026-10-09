@@ -1,0 +1,62 @@
+{#
+/**
+ * @file
+ * Staff guide: a short reference to the BFEP admin workflow.
+ *
+ * Keep this short. The full guide is linked from the top of the page.
+ *
+ * Available variables:
+ * - guide_url: HTTPS link to the full staff guide, or empty.
+ * - settings_url: link to BFEP settings when the user may edit them.
+ * - links: admin page paths keyed by name.
+ */
+#}
+<div class="bfep-staff-guide">
+  {% if guide_url %}
+    <p class="bfep-admin-notice">
+      <strong>{{ 'Full staff guide:'|t }}</strong>
+      <a href="{{ guide_url }}" target="_blank" rel="noopener">{{ 'Open the full guide on Nextcloud'|t }}</a>.
+      {{ 'This page is only the quick version.'|t }}
+    </p>
+  {% else %}
+    <p class="bfep-admin-notice">
+      {{ 'The full staff guide is not linked yet, so ask Josh if something here is unclear.'|t }}
+      {% if settings_url %}
+        <a href="{{ settings_url }}">{{ 'Add its link in BFEP settings.'|t }}</a>
+      {% endif %}
+    </p>
+  {% endif %}
+
+  <h2>{{ 'How work moves through BFEP'|t }}</h2>
+  <ol class="bfep-staff-guide__steps">
+    <li>
+      <strong><a href="{{ links.pending_referrals }}">{{ 'Review new referrals.'|t }}</a></strong>
+      {{ 'Open the oldest pending referral and check the fundraiser. Look at Related records: a campaign with the same fundraiser URL means it is already listed. Set the status to Verified, Needs information or Rejected, then use “Save and review next pending”.'|t }}
+    </li>
+    <li>
+      <strong><a href="{{ links.add_campaign }}">{{ 'Add verified fundraisers as campaigns.'|t }}</a></strong>
+      {{ 'The public description appears on the website. Anything private goes in Internal notes. If another campaign already uses the fundraiser URL, the form warns you.'|t }}
+    </li>
+    <li>
+      <strong><a href="{{ links.dashboard }}">{{ 'Keep figures up to date.'|t }}</a></strong>
+      {{ 'The sync updates raised and goal amounts automatically. Check the “Fundraiser sync problems” card on the dashboard. On a campaign, “Last sync” says what happened. If you enter amounts by hand, untick “Update raised and goal amounts automatically” so the sync does not overwrite them.'|t }}
+    </li>
+    <li>
+      <strong><a href="{{ links.pending_changes }}">{{ 'Handle change requests.'|t }}</a></strong>
+      {{ 'Open the request, make the change on the linked campaign, then tick “Mark this request processed”.'|t }}
+    </li>
+    <li>
+      <strong><a href="{{ links.pending_volunteers }}">{{ 'Respond to volunteers.'|t }}</a></strong>
+      {{ 'Record the decision, then tick Contacted and Onboarded as you go.'|t }}
+    </li>
+  </ol>
+
+  <h2>{{ 'Good to know'|t }}</h2>
+  <ul class="bfep-staff-guide__tips">
+    <li>{{ 'Type a line number (for example 142) in any search to open that campaign straight away.'|t }}</li>
+    <li>{{ 'Click a column heading to sort a list. Click it again to reverse the order.'|t }}</li>
+    <li>{{ 'If someone else saved a campaign while you had it open, your save is refused. Reload the page and make your change again.'|t }}</li>
+    <li>{{ 'Every save is logged with your name and the fields you changed.'|t }}</li>
+    <li>{{ 'Referral, volunteer and change request details are private. Never copy them into a public description.'|t }}</li>
+  </ul>
+</div>

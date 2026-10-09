@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpunit:
+    name: PHPUnit (custom modules)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-drupal11-${{ hashFiles('.github/workflows/tests.yml') }}
+
+      # A throwaway Drupal 11 codebase supplies core's test framework. Nothing
+      # is installed into a database; only unit tests run.
+      - name: Build Drupal test harness
+        run: |
+          set -euo pipefail
+          composer create-project --no-interaction --no-progress drupal/recommended-project:^11 "$RUNNER_TEMP/drupal"
+          cd "$RUNNER_TEMP/drupal"
+          composer require --dev --no-interaction --no-progress -W drupal/core-dev:^11
+          ln -s "$GITHUB_WORKSPACE/drupal/modules/custom" web/modules/custom
+
+      - name: Run unit tests
+        working-directory: ${{ runner.temp }}/drupal
+        run: vendor/bin/phpunit -c web/core/phpunit.xml.dist web/modules/custom
+
+      - name: Twig template syntax
+        run: php .github/scripts/twig-lint.php "$RUNNER_TEMP/drupal/web" drupal/modules/custom drupal/themes/custom

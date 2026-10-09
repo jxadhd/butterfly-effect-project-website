@@ -16,6 +16,9 @@ final class VolunteerForm extends ProtectedExternalFormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    if ($this->database === NULL) {
+      throw new \RuntimeException('bfdb is unavailable, so the volunteer form cannot list interest areas.');
+    }
     $options = [];
     foreach ($this->database->select('interest_areas', 'i')->fields('i', ['id', 'name'])->orderBy('id')->execute()->fetchAll() as $row) {
       $options[(int) $row->id] = (string) $row->name;
@@ -25,14 +28,14 @@ final class VolunteerForm extends ProtectedExternalFormBase {
       '#title' => $this->t('Full name'),
       '#required' => TRUE,
       '#maxlength' => 255,
-      '#autocomplete' => 'name',
+      '#attributes' => ['autocomplete' => 'name'],
     ];
     $form['email'] = [
       '#type' => 'email',
       '#title' => $this->t('Email'),
       '#required' => TRUE,
       '#maxlength' => 254,
-      '#autocomplete' => 'email',
+      '#attributes' => ['autocomplete' => 'email'],
     ];
     $form['hours_per_week'] = [
       '#type' => 'textfield',
@@ -79,29 +82,34 @@ final class VolunteerForm extends ProtectedExternalFormBase {
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $values = $form_state->getValues();
-    $transaction = $this->database->startTransaction();
-    try {
-      $volunteerId = (int) $this->database->insert('volunteers')->fields([
-        'submitted_at' => date('c'),
-        'email' => $this->clean($values['email']),
-        'full_name' => $this->clean($values['full_name']),
-        'hours_per_week' => $this->clean($values['hours_per_week']),
-        'skills_experience' => $this->clean($values['skills_experience']),
-        'vouched_for_by' => $this->clean($values['vouched_for_by']),
-        'contacted' => FALSE,
-      ])->execute();
-      foreach (array_filter($values['interests'] ?: []) as $interestId) {
-        $this->database->insert('volunteer_interests')->fields([
-          'volunteer_id' => $volunteerId,
-          'interest_area_id' => (int) $interestId,
+    $saved = $this->saveSubmission($form_state, function () use ($values): void {
+      $transaction = $this->database->startTransaction();
+      try {
+        $volunteerId = (int) $this->database->insert('volunteers')->fields([
+          'submitted_at' => date('c'),
+          'email' => $this->clean($values['email']),
+          'full_name' => $this->clean($values['full_name']),
+          'hours_per_week' => $this->clean($values['hours_per_week']),
+          'skills_experience' => $this->clean($values['skills_experience']),
+          'vouched_for_by' => $this->clean($values['vouched_for_by']),
+          'contacted' => FALSE,
         ])->execute();
+        foreach (array_filter($values['interests'] ?: []) as $interestId) {
+          $this->database->insert('volunteer_interests')->fields([
+            'volunteer_id' => $volunteerId,
+            'interest_area_id' => (int) $interestId,
+          ])->execute();
+        }
       }
+      catch (\Throwable $exception) {
+        $transaction->rollBack();
+        throw $exception;
+      }
+      unset($transaction);
+    });
+    if (!$saved) {
+      return;
     }
-    catch (\Throwable $exception) {
-      $transaction->rollBack();
-      throw $exception;
-    }
-    unset($transaction);
     $this->registerSubmission();
     $this->messenger()->addStatus($this->t('Thank you. Your volunteer application has been submitted.'));
     $form_state->setRedirect('bfep.volunteer');

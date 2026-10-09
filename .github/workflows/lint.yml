@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   syntax:
     name: PHP and YAML syntax
@@ -44,11 +48,8 @@ jobs:
           PY
 
   coding-standards:
-    name: Drupal coding standards (advisory)
+    name: Drupal coding standards
     runs-on: ubuntu-latest
-    # Advisory until the existing code has been cleaned up; remove this line
-    # to make violations block merges.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -56,7 +57,7 @@ jobs:
         with:
           php-version: '8.5'
           coverage: none
-          tools: composer
+          tools: composer, cs2pr
 
       - name: Install Drupal coder
         run: |
@@ -64,5 +65,12 @@ jobs:
           composer global require --no-interaction drupal/coder:^8.3
           echo "$(composer global config bin-dir --absolute --quiet)" >> "$GITHUB_PATH"
 
+      # The full report goes to the log. The checkstyle copy is turned into
+      # annotations, so each problem also shows next to its line in the PR's
+      # Files changed tab.
       - name: phpcs (rules in phpcs.xml.dist)
-        run: phpcs --report=full
+        run: |
+          status=0
+          phpcs --basepath=. --report-full --report-checkstyle="$RUNNER_TEMP/phpcs.xml" || status=$?
+          cs2pr "$RUNNER_TEMP/phpcs.xml" || true
+          exit "$status"

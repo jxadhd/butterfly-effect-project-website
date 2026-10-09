@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Url;
-
 /**
  * @file
  * Editable BFEP policy content and official-channel presentation.
  */
+
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Url;
 
 /**
  * Returns the supported policy page IDs and labels.

@@ -40,13 +40,13 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
       '#title' => $this->t('Your email'),
       '#required' => TRUE,
       '#maxlength' => 254,
-      '#autocomplete' => 'email',
+      '#attributes' => ['autocomplete' => 'email'],
     ];
     $form['submitter_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Your name'),
       '#maxlength' => 255,
-      '#autocomplete' => 'name',
+      '#attributes' => ['autocomplete' => 'name'],
     ];
     $form['submitter_type'] = [
       '#type' => 'select',
@@ -120,7 +120,8 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
     $campaignId = (int) $form_state->getValue('campaign_id');
-    if ($campaignId > 0 && !(int) $this->database->query(
+    // Without bfdb the save fails anyway, with a message that keeps the form.
+    if ($campaignId > 0 && $this->database !== NULL && !(int) $this->database->query(
       'SELECT CASE WHEN EXISTS (SELECT 1 FROM campaigns WHERE id = :id AND deleted_at IS NULL) THEN 1 ELSE 0 END',
       [':id' => $campaignId],
     )->fetchField()) {
@@ -144,7 +145,7 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
     ];
     $fields = '[' . ($kindLabels[$values['request_kind']] ?? 'Other') . '] ' . $this->clean($values['fields_to_change']);
     $campaignId = (int) ($values['campaign_id'] ?? 0);
-    $this->database->insert('info_change_requests')->fields([
+    $saved = $this->saveSubmission($form_state, fn() => $this->database->insert('info_change_requests')->fields([
       'submitted_at' => date('c'),
       'submitter_email' => $this->clean($values['submitter_email']),
       'submitter_type' => $values['submitter_type'],
@@ -158,7 +159,10 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
       'new_email' => $this->clean($values['new_email']),
       'new_social_media' => $this->clean($values['new_social_media']),
       'processed' => FALSE,
-    ])->execute();
+    ])->execute());
+    if (!$saved) {
+      return;
+    }
     $this->registerSubmission();
     $this->messenger()->addStatus($this->t('Thank you. Your request has been submitted for review.'));
     $form_state->setRedirect('bfep.change_request');

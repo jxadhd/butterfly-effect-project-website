@@ -6,6 +6,7 @@ namespace Drupal\bfep\Service;
 
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Url;
+use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Repository\CampaignRepository;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,8 +49,21 @@ final class CampaignListBuilder {
     }
 
     $filters = $normalized['filters'];
+
+    // A search that is only a line number ("142" or "#142") opens that
+    // campaign directly.
+    if ($filters['page'] === 1 && ($line = AdminFormat::lineNumberQuery($filters['q'])) !== NULL
+      && ($id = $this->campaigns->idForLineNumber($line)) !== NULL) {
+      return $this->detailRedirect($id);
+    }
+
     $result = $this->campaigns->list($filters);
     $total = (int) $result['total'];
+
+    // A text search with exactly one match opens it directly.
+    if ($filters['q'] !== '' && $total === 1 && $filters['page'] === 1 && isset($result['rows'][0]->id)) {
+      return $this->detailRedirect((int) $result['rows'][0]->id);
+    }
     $totalPages = max(1, (int) ceil($total / $filters['per_page']));
     if ($filters['page'] > $totalPages) {
       throw new NotFoundHttpException();
@@ -112,6 +126,10 @@ final class CampaignListBuilder {
         'max-age' => $this->settings->listingCacheMaxAge(),
       ],
     ];
+  }
+
+  private function detailRedirect(int $campaignId): RedirectResponse {
+    return new RedirectResponse(Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $campaignId])->toString(), 302);
   }
 
   /**

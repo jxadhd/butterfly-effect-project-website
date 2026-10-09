@@ -26,6 +26,7 @@ final class CampaignPresenter {
       'badges' => $this->badges($row),
       'description' => $this->excerpt((string) ($row->description ?? '')),
       'amounts' => $this->amounts($row),
+      'progress' => $this->progress($row),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
       'tags' => $this->tags($row->tags ?? NULL),
       'updated' => $this->date($row->updated_at ?? $row->created_at ?? NULL),
@@ -58,9 +59,11 @@ final class CampaignPresenter {
       'country' => trim((string) ($row->country ?? '')),
       'metadata' => $metadata,
       'amounts' => $this->amounts($row),
+      'progress' => $this->progress($row),
       'tags' => $this->tags($row->tags ?? NULL),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
       'description' => trim((string) ($row->description ?? '')),
+      'paragraphs' => $this->paragraphs((string) ($row->description ?? '')),
       'updated' => $this->date($row->updated_at ?? $row->created_at ?? NULL),
     ];
   }
@@ -68,6 +71,26 @@ final class CampaignPresenter {
   public function cleanDescription(string $description, int $length = 160): string {
     $description = trim((string) preg_replace('/\s+/u', ' ', strip_tags($description)));
     return Unicode::truncate($description, $length, TRUE, TRUE);
+  }
+
+  /**
+   * Splits plain text into paragraphs on blank lines.
+   *
+   * Single line breaks stay inside a paragraph; the template shows them.
+   *
+   * @return string[]
+   *   Non-empty paragraphs, in order.
+   */
+  public function paragraphs(string $text): array {
+    $text = str_replace(["\r\n", "\r"], "\n", trim($text));
+    if ($text === '') {
+      return [];
+    }
+    $paragraphs = preg_split('/\n[ \t]*\n\s*/u', $text) ?: [];
+    return array_values(array_filter(array_map(
+      static fn(string $paragraph): string => trim((string) preg_replace('/[ \t]+\n/u', "\n", $paragraph)),
+      $paragraphs,
+    ), static fn(string $paragraph): bool => $paragraph !== ''));
   }
 
   private function excerpt(string $description): string {
@@ -113,6 +136,25 @@ final class CampaignPresenter {
       ];
     }
     return $amounts;
+  }
+
+  /**
+   * Funding progress for the progress bar, capped at 100.
+   *
+   * @return float|null
+   *   Percent funded (0 to 100), or NULL when it is unknown.
+   */
+  public function progress(object $row): ?float {
+    $percent = $row->pct_goal_achieved ?? NULL;
+    if ($percent === NULL || !is_numeric($percent)) {
+      $goal = $row->goal_amount ?? NULL;
+      $raised = $row->donated_amount ?? NULL;
+      if (!is_numeric($goal) || !is_numeric($raised) || (float) $goal <= 0) {
+        return NULL;
+      }
+      $percent = (float) $raised / (float) $goal * 100;
+    }
+    return round(max(0.0, min(100.0, (float) $percent)), 1);
   }
 
   private function externalUrl(mixed $value): ?string {

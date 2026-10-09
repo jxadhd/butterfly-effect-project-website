@@ -8,6 +8,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\bfep\OptionalBfdb;
 use Drupal\bfep\Service\SubmissionGuard;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -17,13 +18,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class ProtectedExternalFormBase extends FormBase {
 
   public function __construct(
-    protected Connection $database,
+    protected ?Connection $database,
     protected SubmissionGuard $submissionGuard,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('bfep.database'),
+      OptionalBfdb::get($container),
       $container->get('bfep.submission_guard'),
     );
   }
@@ -52,6 +53,42 @@ abstract class ProtectedExternalFormBase extends FormBase {
     ];
     if (isset($form['actions'])) {
       $form['actions']['#weight'] = 100;
+    }
+  }
+
+  /**
+   * Runs a submission's database writes, keeping the form if they fail.
+   *
+   * On failure the visitor sees an error above their answers instead of an
+   * error page, and the failure is logged without any submitted values.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state, rebuilt on failure so the answers are kept.
+   * @param callable $write
+   *   Performs the inserts.
+   *
+   * @return bool
+   *   TRUE when the submission was saved.
+   */
+  protected function saveSubmission(FormStateInterface $form_state, callable $write): bool {
+    try {
+      if ($this->database === NULL) {
+        throw new \RuntimeException('bfdb is unavailable.');
+      }
+      $write();
+      return TRUE;
+    }
+    catch (\Throwable $exception) {
+      // Database exception messages can include the submitted values, so
+      // only the exception type and code are logged.
+      $this->getLogger('bfep')->error('Could not save a @form submission: @class (code @code).', [
+        '@form' => $this->getFormId(),
+        '@class' => get_class($exception),
+        '@code' => (string) ($exception->getPrevious()?->getCode() ?: $exception->getCode()),
+      ]);
+      $this->messenger()->addError($this->t('Sorry, your submission could not be saved just now. Your answers are still below. Please try again in a few minutes.'));
+      $form_state->setRebuild();
+      return FALSE;
     }
   }
 

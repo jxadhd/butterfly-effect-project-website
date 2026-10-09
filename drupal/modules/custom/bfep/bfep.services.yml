@@ -16,14 +16,21 @@ services:
     class: Drupal\bfep\Service\BfepCacheInvalidator
     arguments: ['@cache_tags.invalidator']
 
+  bfep.audit_logger:
+    class: Drupal\bfep\Service\AuditLogger
+    arguments: ['@logger.channel.bfep', '@current_user']
+
   bfep.submission_guard:
     class: Drupal\bfep\Service\SubmissionGuard
     arguments: ['@flood', '@request_stack', '@bfep.settings', '@string_translation']
 
+  # The repositories take bfdb as a closure, so building them (for menus, page
+  # titles or the search shortcut, on every page) never opens a connection.
+  # Only a query does, so a bfdb outage breaks only pages that need its data.
   bfep.campaign_repository:
     class: Drupal\bfep\Repository\CampaignRepository
     arguments:
-      - '@bfep.database'
+      - '@>bfep.database'
       - '@cache.default'
       - '@datetime.time'
       - '@bfep.settings'
@@ -31,7 +38,7 @@ services:
   bfep.initiative_repository:
     class: Drupal\bfep\Repository\InitiativeRepository
     arguments:
-      - '@bfep.database'
+      - '@>bfep.database'
       - '@cache.default'
       - '@datetime.time'
       - '@bfep.settings'
@@ -55,3 +62,14 @@ services:
       - '@bfep.campaign_repository'
       - '@bfep.settings'
       - '@logger.channel.bfep'
+
+  bfep.search_shortcut_subscriber:
+    class: Drupal\bfep\EventSubscriber\SearchShortcutSubscriber
+    arguments:
+      - '@current_route_match'
+      - '@entity_type.manager'
+      - '@current_user'
+      - '@bfep.campaign_repository'
+      - '@logger.channel.bfep'
+    tags:
+      - { name: event_subscriber }

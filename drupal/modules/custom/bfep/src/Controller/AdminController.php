@@ -131,11 +131,11 @@ final class AdminController extends ControllerBase {
           (SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL) AS campaigns,
           (SELECT COUNT(*) FROM referral_submissions) AS referrals,
           (SELECT COUNT(*) FROM referral_submissions
-            WHERE verification_status IS NULL OR TRIM(verification_status) = ''
-              OR LOWER(verification_status) = 'pending') AS pending_referrals,
+            WHERE verification_status IS NULL OR TRIM(CAST(verification_status AS TEXT)) = ''
+              OR LOWER(CAST(verification_status AS TEXT)) = 'pending') AS pending_referrals,
           (SELECT MIN(created_at) FROM referral_submissions
-            WHERE verification_status IS NULL OR TRIM(verification_status) = ''
-              OR LOWER(verification_status) = 'pending') AS oldest_referral,
+            WHERE verification_status IS NULL OR TRIM(CAST(verification_status AS TEXT)) = ''
+              OR LOWER(CAST(verification_status AS TEXT)) = 'pending') AS oldest_referral,
           (SELECT COUNT(*) FROM volunteers) AS volunteers,
           (SELECT COUNT(*) FROM volunteers WHERE accepted IS NULL) AS pending_volunteers,
           (SELECT MIN(created_at) FROM volunteers WHERE accepted IS NULL) AS oldest_volunteer,
@@ -148,7 +148,7 @@ final class AdminController extends ControllerBase {
       return [
         '#attached' => ['library' => ['bfep/admin']],
         'error' => [
-          '#markup' => '<div class="bfep-admin-notice bfep-admin-notice--error" role="alert"><strong>' . $this->t('bfdb is unavailable.') . '</strong> ' . $this->t('The external database could not be reached, so queue counts cannot be shown. Details are in Reports › Recent log messages.') . '</div>',
+          '#markup' => '<div class="bfep-admin-notice bfep-admin-notice--error" role="alert"><strong>' . $this->t('Queue counts are unavailable.') . '</strong> ' . $this->t('bfdb could not be reached or the dashboard query failed. Details are in Reports › Recent log messages.') . '</div>',
         ],
         '#cache' => ['max-age' => 0],
       ];
@@ -564,11 +564,11 @@ final class AdminController extends ControllerBase {
     }
     if ($status === 'pending') {
       // Matches the dashboard: no status yet counts as pending.
-      $where[] = "(verification_status IS NULL OR TRIM(verification_status) = '' OR LOWER(verification_status) = 'pending')";
+      $where[] = "(verification_status IS NULL OR TRIM(CAST(verification_status AS TEXT)) = '' OR LOWER(CAST(verification_status AS TEXT)) = 'pending')";
     }
     elseif ($status !== '') {
       // Case-insensitive, so "Verified" and "verified" filter together.
-      $where[] = 'LOWER(TRIM(verification_status)) = :status';
+      $where[] = 'LOWER(TRIM(CAST(verification_status AS TEXT))) = :status';
       $params[':status'] = strtolower($status);
     }
     $where_sql = implode(' AND ', $where);

@@ -39,7 +39,7 @@ final class AdminFilterForm extends FormBase {
     $options = ['' => '- Any status -', 'pending' => 'Pending (including no status)'];
 
     try {
-      $rows = $this->bfdb()->query("\n        SELECT DISTINCT verification_status AS value\n        FROM referral_submissions\n        WHERE verification_status IS NOT NULL AND verification_status <> ''\n        ORDER BY verification_status\n      ")->fetchAll();
+      $rows = $this->bfdb()->query("\n        SELECT DISTINCT CAST(verification_status AS TEXT) AS value\n        FROM referral_submissions\n        WHERE verification_status IS NOT NULL AND CAST(verification_status AS TEXT) <> ''\n        ORDER BY value\n      ")->fetchAll();
 
       foreach ($rows as $row) {
         $key = strtolower(trim((string) $row->value));

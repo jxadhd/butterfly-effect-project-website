@@ -21,14 +21,15 @@ final class ReferralForm extends ProtectedExternalFormBase {
       '#title' => $this->t("Campaign recipient's full name"),
       '#required' => TRUE,
       '#maxlength' => 255,
-      '#autocomplete' => 'name',
+      // The recipient's name, not the visitor's: don't autofill it.
+      '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['email'] = [
       '#type' => 'email',
       '#title' => $this->t('Your email'),
       '#required' => TRUE,
       '#maxlength' => 254,
-      '#autocomplete' => 'email',
+      '#attributes' => ['autocomplete' => 'email'],
     ];
     $form['fundraiser_url'] = [
       '#type' => 'url',

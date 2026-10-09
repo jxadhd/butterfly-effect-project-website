@@ -25,14 +25,14 @@ final class VolunteerForm extends ProtectedExternalFormBase {
       '#title' => $this->t('Full name'),
       '#required' => TRUE,
       '#maxlength' => 255,
-      '#autocomplete' => 'name',
+      '#attributes' => ['autocomplete' => 'name'],
     ];
     $form['email'] = [
       '#type' => 'email',
       '#title' => $this->t('Email'),
       '#required' => TRUE,
       '#maxlength' => 254,
-      '#autocomplete' => 'email',
+      '#attributes' => ['autocomplete' => 'email'],
     ];
     $form['hours_per_week'] = [
       '#type' => 'textfield',

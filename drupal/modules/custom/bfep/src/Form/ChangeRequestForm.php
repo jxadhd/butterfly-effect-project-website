@@ -40,13 +40,13 @@ final class ChangeRequestForm extends ProtectedExternalFormBase {
       '#title' => $this->t('Your email'),
       '#required' => TRUE,
       '#maxlength' => 254,
-      '#autocomplete' => 'email',
+      '#attributes' => ['autocomplete' => 'email'],
     ];
     $form['submitter_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Your name'),
       '#maxlength' => 255,
-      '#autocomplete' => 'name',
+      '#attributes' => ['autocomplete' => 'name'],
     ];
     $form['submitter_type'] = [
       '#type' => 'select',

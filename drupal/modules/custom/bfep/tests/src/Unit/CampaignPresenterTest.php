@@ -81,6 +81,16 @@ final class CampaignPresenterTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::shareLinks
+   */
+  public function testShareLinksEncodeTheUrlAndText(): void {
+    $links = $this->presenter()->shareLinks('https://example.org/campaigns/7', 'Family & friends');
+    $this->assertSame(['WhatsApp', 'Telegram', 'Facebook', 'X', 'Email'], array_column($links, 'label'));
+    $this->assertSame('https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.org%2Fcampaigns%2F7', $links[2]['url']);
+    $this->assertStringContainsString('text=Family%20%26%20friends', $links[1]['url']);
+  }
+
+  /**
    * @covers ::card
    */
   public function testRejectsNonHttpSchemes(): void {

@@ -26,6 +26,18 @@
     <a class="button" href="{{ campaigns_url }}">{% trans %}Back to campaigns{% endtrans %}</a>
   </div>
 
+  {% if share.links %}
+    <section class="bfep-share" aria-labelledby="bfep-share-heading" data-bfep-share data-share-url="{{ share.url }}" data-share-title="{{ share.title }}">
+      <h2 id="bfep-share-heading">{% trans %}Share this campaign{% endtrans %}</h2>
+      <div class="bfep-share__actions">
+        <button type="button" class="button" data-bfep-share-native hidden>{% trans %}Share…{% endtrans %}</button>
+        <button type="button" class="button" data-bfep-share-copy hidden>{% trans %}Copy link{% endtrans %}</button>
+        {% for link in share.links %}<a class="bfep-share__link" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}<span class="visually-hidden"> {% trans %}(opens in a new tab){% endtrans %}</span></a>{% endfor %}
+      </div>
+      <p class="bfep-share__status" data-bfep-share-status role="status" aria-live="polite"></p>
+    </section>
+  {% endif %}
+
   {% if related %}
     <section class="bfep-related" aria-labelledby="bfep-related-heading">
       <h2 id="bfep-related-heading">{% trans %}More campaigns in {{ campaign.country }}{% endtrans %}</h2>

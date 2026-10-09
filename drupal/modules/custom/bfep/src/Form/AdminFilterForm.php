@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\DataChecks;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 final class AdminFilterForm extends FormBase {
@@ -90,6 +91,13 @@ final class AdminFilterForm extends FormBase {
         '#return_value' => 'problem',
         '#default_value' => $request->query->get('sync') === 'problem',
       ];
+      $check = (string) $request->query->get('check', '');
+      $form['check'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Data check'),
+        '#options' => ['' => $this->t('- Any -')] + DataChecks::options(),
+        '#default_value' => DataChecks::get($check) !== NULL ? $check : '',
+      ];
     }
     elseif ($section === 'referrals') {
       $form['status'] = [
@@ -157,7 +165,7 @@ final class AdminFilterForm extends FormBase {
     $values = $form_state->getValues();
     $query = [];
 
-    foreach (['q', 'status', 'featured', 'urgent', 'sync', 'per_page'] as $key) {
+    foreach (['q', 'status', 'featured', 'urgent', 'sync', 'check', 'per_page'] as $key) {
       if (!array_key_exists($key, $values)) {
         continue;
       }

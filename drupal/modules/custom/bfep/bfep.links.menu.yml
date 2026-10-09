@@ -29,6 +29,13 @@ bfep.admin_changes:
   parent: bfep.admin
   weight: 3
 
+bfep.admin_checks:
+  title: 'Data checks'
+  description: 'Campaigns with missing or conflicting details'
+  route_name: bfep.admin_checks
+  parent: bfep.admin
+  weight: 4
+
 bfep.admin_help:
   title: 'Staff guide'
   description: 'Quick guide to the BFEP admin workflow'

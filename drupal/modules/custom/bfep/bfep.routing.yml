@@ -179,6 +179,25 @@ bfep.admin:
   options:
     _admin_route: TRUE
 
+bfep.admin_campaigns_export:
+  path: '/admin/bfep/campaigns/export'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::campaignsExport'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_checks:
+  path: '/admin/bfep/checks'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::checks'
+    _title: 'Data checks'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
 bfep.admin_help:
   path: '/admin/bfep/help'
   defaults:

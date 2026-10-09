@@ -71,6 +71,64 @@ final class AdminFormat {
   }
 
   /**
+   * Finds the country named in free text such as "Gaza City, Palestine".
+   *
+   * Names match as whole words, ignoring case. When several match, the
+   * longest wins, so "Juba, South Sudan" picks South Sudan over Sudan.
+   *
+   * @param string $text
+   *   Free text from a submission.
+   * @param array<int, string> $names
+   *   Country names keyed by ID.
+   *
+   * @return int|null
+   *   The matching country ID, or NULL when none or the text is blank.
+   */
+  public static function matchCountry(string $text, array $names): ?int {
+    $best = NULL;
+    $bestLength = 0;
+    foreach ($names as $id => $name) {
+      $name = trim((string) $name);
+      $length = mb_strlen($name, 'UTF-8');
+      if ($length > $bestLength && preg_match('/(?<![\pL\pN])' . preg_quote($name, '/') . '(?![\pL\pN])/iu', $text)) {
+        $best = (int) $id;
+        $bestLength = $length;
+      }
+    }
+    return $best;
+  }
+
+  /**
+   * Finds the fundraising platform a URL belongs to, from its host name.
+   *
+   * "https://www.gofundme.com/f/x" matches a platform named "GoFundMe"
+   * because one part of the host equals the name without spaces or
+   * punctuation.
+   *
+   * @param string $url
+   *   A fundraiser URL.
+   * @param array<int, string> $names
+   *   Platform names keyed by ID.
+   *
+   * @return int|null
+   *   The matching platform ID, or NULL.
+   */
+  public static function matchPlatform(string $url, array $names): ?int {
+    $host = strtolower((string) parse_url(self::externalUrl($url) ?? '', PHP_URL_HOST));
+    if ($host === '') {
+      return NULL;
+    }
+    $labels = explode('.', $host);
+    foreach ($names as $id => $name) {
+      $key = preg_replace('/[^a-z0-9]+/', '', strtolower((string) $name));
+      if ($key !== '' && in_array($key, $labels, TRUE)) {
+        return (int) $id;
+      }
+    }
+    return NULL;
+  }
+
+  /**
    * Returns the line number when a search is only a line number.
    *
    * "142", "#142" and " 142 " qualify; "142 Gaza" or "1e3" do not.
@@ -103,6 +161,41 @@ final class AdminFormat {
       'offset' => ($page - 1) * $perPage,
       'total_pages' => $totalPages,
     ];
+  }
+
+  /**
+   * Builds CSV text (with a UTF-8 byte order mark, for Excel) from rows.
+   *
+   * @param array<int, array<int, mixed>> $rows
+   *   Rows of cell values. NULL becomes an empty cell.
+   */
+  public static function csv(array $rows): string {
+    $handle = fopen('php://temp', 'r+');
+    foreach ($rows as $row) {
+      fputcsv($handle, array_map([self::class, 'csvCell'], $row), ',', '"', '');
+    }
+    rewind($handle);
+    $csv = stream_get_contents($handle);
+    fclose($handle);
+    return "\u{FEFF}" . $csv;
+  }
+
+  /**
+   * Makes one value safe for a spreadsheet cell.
+   *
+   * Text starting with =, +, -, @, tab or carriage return is prefixed with an
+   * apostrophe, so a spreadsheet shows it instead of running it as a formula.
+   * Plain numbers, including negative ones, are left alone.
+   */
+  public static function csvCell(mixed $value): string {
+    if ($value === NULL || is_bool($value)) {
+      return $value ? '1' : '';
+    }
+    $value = (string) $value;
+    if (preg_match('/^-?[0-9]+(\.[0-9]+)?$/', $value)) {
+      return $value;
+    }
+    return preg_match('/^[=+\-@\t\r]/', $value) ? "'" . $value : $value;
   }
 
   /**
@@ -172,6 +265,22 @@ final class AdminFormat {
       return self::REFERRAL_STATUSES['pending'];
     }
     return self::REFERRAL_STATUSES[strtolower($value)] ?? self::humanize($value);
+  }
+
+  /**
+   * The badge colour for a referral status.
+   *
+   * @return string
+   *   One of pending, info, success, danger or neutral (unknown values).
+   */
+  public static function referralStatusTone(?string $value): string {
+    return match (strtolower(trim((string) $value))) {
+      '', 'pending' => 'pending',
+      'needs_information' => 'info',
+      'verified' => 'success',
+      'rejected' => 'danger',
+      default => 'neutral',
+    };
   }
 
   /**

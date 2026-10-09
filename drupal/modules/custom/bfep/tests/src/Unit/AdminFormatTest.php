@@ -59,6 +59,34 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::matchCountry
+   */
+  public function testMatchCountry(): void {
+    $names = [1 => 'Sudan', 2 => 'South Sudan', 3 => 'Palestine', 4 => 'Niger', 5 => 'Nigeria'];
+    $this->assertSame(3, AdminFormat::matchCountry('Gaza City, Palestine', $names));
+    $this->assertSame(2, AdminFormat::matchCountry('Juba, south sudan', $names));
+    $this->assertSame(1, AdminFormat::matchCountry('Khartoum (Sudan)', $names));
+    $this->assertSame(5, AdminFormat::matchCountry('Lagos, Nigeria', $names));
+    $this->assertSame(4, AdminFormat::matchCountry('Niamey, Niger', $names));
+    $this->assertNull(AdminFormat::matchCountry('Somewhere else', $names));
+    $this->assertNull(AdminFormat::matchCountry('', $names));
+  }
+
+  /**
+   * @covers ::matchPlatform
+   */
+  public function testMatchPlatform(): void {
+    $names = [1 => 'GoFundMe', 2 => 'Chuffed', 3 => 'Give Send Go', 4 => 'Other'];
+    $this->assertSame(1, AdminFormat::matchPlatform('https://www.gofundme.com/f/family-1', $names));
+    $this->assertSame(1, AdminFormat::matchPlatform('https://uk.gofundme.com/f/x?utm=y', $names));
+    $this->assertSame(2, AdminFormat::matchPlatform('http://chuffed.org/project/abc', $names));
+    $this->assertSame(3, AdminFormat::matchPlatform('https://www.givesendgo.com/abc', $names));
+    $this->assertNull(AdminFormat::matchPlatform('https://example.org/gofundme', $names));
+    $this->assertNull(AdminFormat::matchPlatform('javascript:alert(1)', $names));
+    $this->assertNull(AdminFormat::matchPlatform('', $names));
+  }
+
+  /**
    * @covers ::lineNumberQuery
    */
   public function testLineNumberQuery(): void {
@@ -85,6 +113,30 @@ final class AdminFormatTest extends UnitTestCase {
     $window = AdminFormat::pageWindow('abc', '7', 0);
     $this->assertSame(['page' => 1, 'per_page' => 50, 'offset' => 0, 'total_pages' => 1], $window);
     $this->assertSame(1, AdminFormat::pageWindow('-4', 50, 500)['page']);
+  }
+
+  /**
+   * @covers ::csvCell
+   */
+  public function testCsvCell(): void {
+    $this->assertSame('', AdminFormat::csvCell(NULL));
+    $this->assertSame('Family 1', AdminFormat::csvCell('Family 1'));
+    $this->assertSame('-12.5', AdminFormat::csvCell('-12.5'));
+    $this->assertSame('42', AdminFormat::csvCell(42));
+    $this->assertSame("'=HYPERLINK(\"http://x\")", AdminFormat::csvCell('=HYPERLINK("http://x")'));
+    $this->assertSame("'+1 555", AdminFormat::csvCell('+1 555'));
+    $this->assertSame("'-cmd", AdminFormat::csvCell('-cmd'));
+    $this->assertSame("'@SUM(A1)", AdminFormat::csvCell('@SUM(A1)'));
+  }
+
+  /**
+   * @covers ::csv
+   */
+  public function testCsv(): void {
+    $csv = AdminFormat::csv([['Name', 'Note'], ['A, B', "Line \"one\"\ntwo"], ['=1+1', NULL]]);
+    $this->assertStringStartsWith("\u{FEFF}Name,Note\n", $csv);
+    $this->assertStringContainsString("\"A, B\",\"Line \"\"one\"\"\ntwo\"\n", $csv);
+    $this->assertStringEndsWith("'=1+1,\n", $csv);
   }
 
   /**
@@ -161,6 +213,18 @@ final class AdminFormatTest extends UnitTestCase {
     $this->assertSame('Needs information', AdminFormat::referralStatusLabel('needs_information'));
     $this->assertSame('Verified', AdminFormat::referralStatusLabel('VERIFIED'));
     $this->assertSame('On hold awaiting docs', AdminFormat::referralStatusLabel('on_hold-awaiting docs'));
+  }
+
+  /**
+   * @covers ::referralStatusTone
+   */
+  public function testReferralStatusTone(): void {
+    $this->assertSame('pending', AdminFormat::referralStatusTone(NULL));
+    $this->assertSame('pending', AdminFormat::referralStatusTone(' Pending '));
+    $this->assertSame('info', AdminFormat::referralStatusTone('needs_information'));
+    $this->assertSame('success', AdminFormat::referralStatusTone('VERIFIED'));
+    $this->assertSame('danger', AdminFormat::referralStatusTone('rejected'));
+    $this->assertSame('neutral', AdminFormat::referralStatusTone('on hold'));
   }
 
 }

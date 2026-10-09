@@ -50,11 +50,13 @@ final class CampaignAddForm extends FormBase {
     $db = $this->bfdb();
 
     $country_options = [];
+    $country_names = [];
     foreach ($db->query("
       SELECT id, name, global_region
       FROM countries
       ORDER BY name
     ")->fetchAll() as $row) {
+      $country_names[(int) $row->id] = (string) $row->name;
       $label = (string) $row->name;
       if (!empty($row->global_region)) {
         $label .= ' — ' . $row->global_region;
@@ -87,6 +89,18 @@ final class CampaignAddForm extends FormBase {
       '#markup' => '<p class="bfep-admin-lead">Create the campaign and its related BFEP database records in one transaction. This does not create Drupal content.</p>',
     ];
 
+    $prefill = $this->referralPrefill($country_names, array_diff_key($platform_options, ['' => '']));
+    $form['from_referral'] = ['#type' => 'value', '#value' => $prefill['referral_id'] ?? 0];
+    if (!empty($prefill['referral_id'])) {
+      $referralUrl = Url::fromRoute('bfep.admin_referral_review', ['referral_id' => $prefill['referral_id']])->toString();
+      $form['prefill_notice'] = [
+        '#markup' => '<p class="bfep-admin-notice">' . $this->t('Started from <a href=":url">referral #@id</a>. Check every field before saving. The public description is left empty on purpose, because referral details are private: write it yourself.', [
+          ':url' => $referralUrl,
+          '@id' => $prefill['referral_id'],
+        ]) . '</p>',
+      ];
+    }
+
     $form['identity'] = [
       '#type' => 'details',
       '#title' => $this->t('Campaign'),
@@ -98,6 +112,7 @@ final class CampaignAddForm extends FormBase {
       '#title' => $this->t('Contact / campaign name'),
       '#required' => TRUE,
       '#maxlength' => 500,
+      '#default_value' => $prefill['contact_name'] ?? '',
     ];
 
     $form['identity']['country_id'] = [
@@ -106,6 +121,7 @@ final class CampaignAddForm extends FormBase {
       '#options' => $country_options,
       '#required' => TRUE,
       '#empty_option' => $this->t('- Select country -'),
+      '#default_value' => $prefill['country_id'] ?? NULL,
     ];
 
     $form['identity']['career'] = [
@@ -143,12 +159,14 @@ final class CampaignAddForm extends FormBase {
       '#title' => $this->t('Fundraising platform'),
       '#options' => $platform_options,
       '#description' => $this->t('Leave as “No fundraiser yet” only when this campaign does not currently have a fundraiser.'),
+      '#default_value' => $prefill['platform_id'] ?? '',
     ];
 
     $form['fundraiser']['fundraiser_url'] = [
       '#type' => 'url',
       '#title' => $this->t('Fundraiser URL'),
       '#maxlength' => 2000,
+      '#default_value' => $prefill['fundraiser_url'] ?? '',
     ];
 
     $form['fundraiser']['allow_duplicate_url'] = [
@@ -304,6 +322,7 @@ final class CampaignAddForm extends FormBase {
       '#type' => 'textarea',
       '#title' => $this->t('Internal notes'),
       '#rows' => 6,
+      '#default_value' => $prefill['internal_notes'] ?? '',
     ];
 
     $form['actions'] = ['#type' => 'actions'];
@@ -660,9 +679,59 @@ final class CampaignAddForm extends FormBase {
       ]
     ));
 
+    $referral_id = (int) $form_state->getValue('from_referral');
+    if ($referral_id > 0) {
+      $this->messenger()->addStatus($this->t('Remember to update the status of <a href=":url">referral #@id</a>.', [
+        ':url' => Url::fromRoute('bfep.admin_referral_review', ['referral_id' => $referral_id])->toString(),
+        '@id' => $referral_id,
+      ]));
+    }
+
     $form_state->setRedirect('bfep.admin_campaign_edit', [
       'campaign_id' => $campaign_id,
     ]);
+  }
+
+  /**
+   * Default values from the referral named in ?referral=, if any.
+   *
+   * Only the recipient's name, the fundraiser URL and best guesses for the
+   * country and platform are copied. The referral's description and contact
+   * details are private, so they stay on the referral.
+   *
+   * @param array<int, string> $countryNames
+   *   Country names keyed by ID.
+   * @param array<int, string> $platformNames
+   *   Platform names keyed by ID.
+   *
+   * @return array<string, mixed>
+   *   Field defaults plus referral_id, or an empty array.
+   */
+  protected function referralPrefill(array $countryNames, array $platformNames): array {
+    $id = $this->getRequest()->query->get('referral');
+    if (!is_scalar($id) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $id)) {
+      return [];
+    }
+    try {
+      $referral = $this->bfdb()->query('SELECT id, full_name, city_country, fundraiser_url FROM referral_submissions WHERE id = :id', [':id' => (int) $id])->fetchObject();
+    }
+    catch (\Throwable $exception) {
+      $this->getLogger('bfep')->warning('Could not load referral for a new campaign: @class', ['@class' => get_class($exception)]);
+      return [];
+    }
+    if (!$referral) {
+      $this->messenger()->addWarning($this->t('Referral #@id was not found, so nothing was filled in.', ['@id' => (int) $id]));
+      return [];
+    }
+    $url = trim((string) $referral->fundraiser_url);
+    return [
+      'referral_id' => (int) $referral->id,
+      'contact_name' => trim((string) $referral->full_name),
+      'country_id' => AdminFormat::matchCountry((string) $referral->city_country, $countryNames),
+      'platform_id' => AdminFormat::matchPlatform($url, $platformNames),
+      'fundraiser_url' => AdminFormat::externalUrl($url) ?? '',
+      'internal_notes' => 'Added from referral #' . (int) $referral->id . '.',
+    ];
   }
 
   /**

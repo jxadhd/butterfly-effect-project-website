@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<ruleset name="BFEP">
+  <description>Drupal coding standards for BFEP custom code.</description>
+
+  <file>drupal/modules/custom</file>
+  <file>drupal/themes/custom</file>
+
+  <arg name="extensions" value="php,module,inc,install,theme,yml"/>
+  <arg name="colors"/>
+  <arg value="sp"/>
+
+  <rule ref="Drupal"/>
+  <rule ref="DrupalPractice"/>
+
+  <!--
+    Doc-comment completeness and long array declarations are style noise for
+    this codebase (most methods are self-describing). Everything else in the
+    Drupal standard (indentation, array layout, use statements, newline at
+    end of file, security-relevant DrupalPractice checks) stays enabled.
+  -->
+  <rule ref="Drupal.Commenting.FunctionComment.Missing"><severity>0</severity></rule>
+  <rule ref="Drupal.Commenting.ClassComment.Missing"><severity>0</severity></rule>
+  <rule ref="Drupal.Commenting.VariableComment.Missing"><severity>0</severity></rule>
+  <rule ref="Drupal.Commenting.FileComment.Missing"><severity>0</severity></rule>
+  <rule ref="Drupal.Arrays.Array.LongLineDeclaration"><severity>0</severity></rule>
+  <rule ref="Drupal.Files.LineLength"><severity>0</severity></rule>
+</ruleset>

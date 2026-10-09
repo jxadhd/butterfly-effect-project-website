@@ -9,6 +9,7 @@
       {% for amount in campaign.amounts %}<div><dt>{{ amount.label }}</dt><dd>{{ amount.value }}</dd></div>{% endfor %}
     </dl>
   {% endif %}
+  {% if campaign.progress is not null %}<progress class="bfep-progress" max="100" value="{{ campaign.progress }}" aria-label="{% trans %}Funding progress{% endtrans %}">{{ campaign.progress }}%</progress>{% endif %}
   {% if campaign.tags %}<ul class="bfep-tags" aria-label="{% trans %}Tags{% endtrans %}">{% for tag in campaign.tags %}<li class="bfep-tag">{{ tag }}</li>{% endfor %}</ul>{% endif %}
 
   <section class="bfep-description" aria-labelledby="bfep-description-heading">

@@ -26,6 +26,7 @@ final class CampaignPresenter {
       'badges' => $this->badges($row),
       'description' => $this->excerpt((string) ($row->description ?? '')),
       'amounts' => $this->amounts($row),
+      'progress' => $this->progress($row),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
       'tags' => $this->tags($row->tags ?? NULL),
       'updated' => $this->date($row->updated_at ?? $row->created_at ?? NULL),
@@ -58,6 +59,7 @@ final class CampaignPresenter {
       'country' => trim((string) ($row->country ?? '')),
       'metadata' => $metadata,
       'amounts' => $this->amounts($row),
+      'progress' => $this->progress($row),
       'tags' => $this->tags($row->tags ?? NULL),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
       'description' => trim((string) ($row->description ?? '')),
@@ -134,6 +136,25 @@ final class CampaignPresenter {
       ];
     }
     return $amounts;
+  }
+
+  /**
+   * Funding progress for the progress bar, capped at 100.
+   *
+   * @return float|null
+   *   Percent funded (0 to 100), or NULL when it is unknown.
+   */
+  public function progress(object $row): ?float {
+    $percent = $row->pct_goal_achieved ?? NULL;
+    if ($percent === NULL || !is_numeric($percent)) {
+      $goal = $row->goal_amount ?? NULL;
+      $raised = $row->donated_amount ?? NULL;
+      if (!is_numeric($goal) || !is_numeric($raised) || (float) $goal <= 0) {
+        return NULL;
+      }
+      $percent = (float) $raised / (float) $goal * 100;
+    }
+    return round(max(0.0, min(100.0, (float) $percent)), 1);
   }
 
   private function externalUrl(mixed $value): ?string {

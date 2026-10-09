@@ -103,6 +103,13 @@ form requires Drupal's `administer site configuration` permission.
 - **Audit log.** Every staff create or update writes a notice to the `bfep` log
   channel (Reports > Recent log messages) with the user, record and the names
   of the fields changed. Values are not logged.
+- **Status report.** Reports › Status report has two BFEP entries. "BFEP
+  database (bfdb)" shows the PostgreSQL version, and is an error when bfdb
+  cannot be reached or the `v_campaigns` view is missing. "BFEP fundraiser
+  sync" says when the sync last checked a fundraiser and how many have a sync
+  problem, and warns when none has been checked for 48 hours
+  (`HealthCheck::SYNC_STALE_HOURS`). Dry runs write nothing, so only
+  `--apply` runs count.
 
 ### Search shortcuts
 

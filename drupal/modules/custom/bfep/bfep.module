@@ -213,6 +213,13 @@ function bfep_form_alter(array &$form, FormStateInterface $form_state, string $f
 }
 
 /**
+ * Implements hook_runtime_requirements().
+ */
+function bfep_runtime_requirements(): array {
+  return \Drupal::service('bfep.health_check')->requirements();
+}
+
+/**
  * Implements hook_cron().
  */
 function bfep_cron(): void {

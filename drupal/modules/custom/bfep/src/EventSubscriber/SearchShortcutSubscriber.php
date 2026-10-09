@@ -78,7 +78,12 @@ final class SearchShortcutSubscriber implements EventSubscriberInterface {
         $link = (string) $results[0]['link'];
         // Result links are absolute URLs on this site; never follow others.
         if (str_starts_with($link, $request->getSchemeAndHttpHost() . '/')) {
-          $event->setResponse(new TrustedRedirectResponse($link, 302));
+          $response = new TrustedRedirectResponse($link, 302);
+          // This response is cacheable, and Dynamic Page Cache does not vary
+          // by query string here, so without max-age 0 one cached redirect
+          // would answer every later search.
+          $response->getCacheableMetadata()->setCacheMaxAge(0)->addCacheContexts(['url.query_args']);
+          $event->setResponse($response);
         }
       }
     }

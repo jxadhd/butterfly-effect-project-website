@@ -209,7 +209,7 @@ final class CampaignRepository {
     $limit = max(1, min(12, $limit));
     return $this->remember(
       'bfep:needing-help:' . $limit,
-      fn(): array => $this->database->query(<<<SQL
+      fn(): array => $this->db()->query(<<<SQL
         SELECT
           v.id,
           v.line_number,
@@ -248,7 +248,7 @@ final class CampaignRepository {
     $limit = max(1, min(100, $limit));
     return $this->remember(
       'bfep:recent:' . $limit,
-      fn(): array => $this->database->query(<<<SQL
+      fn(): array => $this->db()->query(<<<SQL
         SELECT
           v.id,
           v.line_number,
@@ -287,7 +287,7 @@ final class CampaignRepository {
     $limit = max(1, min(12, $limit));
     return $this->remember(
       'bfep:related:' . $campaignId . ':' . $limit,
-      fn(): array => $this->database->query(<<<SQL
+      fn(): array => $this->db()->query(<<<SQL
         SELECT
           v.id,
           v.line_number,

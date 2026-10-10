@@ -37,6 +37,11 @@ final class DataChecks {
         . 'SELECT 1 FROM campaign_fundraisers g JOIN campaigns c2 ON c2.id = g.campaign_id AND c2.deleted_at IS NULL '
         . "WHERE g.is_active AND g.campaign_id <> campaigns.id AND {$sameUrl}))",
       ],
+      'bad_url' => [
+        'label' => 'Fundraiser link is not a web address',
+        'help' => 'The link is empty, contains spaces or line breaks (often the fundraiser title pasted in), or has no domain. The donate button cannot work and the sync skips it. Replace it with the fundraiser address.',
+        'sql' => "EXISTS ({$active} AND (COALESCE(TRIM(f.url), '') = '' OR TRIM(f.url) ~ '\\s' OR POSITION('.' IN TRIM(f.url)) = 0))",
+      ],
       'duplicate_line' => [
         'label' => 'Line number used twice',
         'help' => 'Searching for the line number cannot open the right campaign. Give one of them a new line number.',

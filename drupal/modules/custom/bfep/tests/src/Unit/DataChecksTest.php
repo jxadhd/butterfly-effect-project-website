@@ -42,6 +42,25 @@ final class DataChecksTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::all
+   */
+  public function testSqlHasNoBrackets(): void {
+    // Drupal rewrites [ ] and { } in every query, even inside string literals.
+    foreach (DataChecks::all() as $key => $check) {
+      $this->assertDoesNotMatchRegularExpression('/[\[\]{}]/', $check['sql'], $key);
+    }
+  }
+
+  /**
+   * @covers ::all
+   */
+  public function testBadUrlCheck(): void {
+    $sql = DataChecks::get('bad_url')['sql'];
+    $this->assertStringContainsString("TRIM(f.url) ~ '\\s'", $sql);
+    $this->assertStringContainsString("POSITION('.' IN TRIM(f.url)) = 0", $sql);
+  }
+
+  /**
    * @covers ::countSql
    */
   public function testCountSqlCoversEveryCheck(): void {

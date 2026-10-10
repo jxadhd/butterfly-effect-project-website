@@ -60,7 +60,7 @@ final class AdminController extends ControllerBase {
     return Url::fromUri($value);
   }
 
-  protected function pagination(Request $request, string $route, int $total): array {
+  protected function pagination(Request $request, string $route, int $total, string $position = 'top'): array {
     $window = $this->window($request, $total);
     $page = $window['page'];
     $total_pages = $window['total_pages'];
@@ -69,7 +69,13 @@ final class AdminController extends ControllerBase {
 
     $build = [
       '#type' => 'container',
-      '#attributes' => ['class' => ['bfep-admin-pager'], 'role' => 'navigation', 'aria-label' => $this->t('Pages')],
+      // Each navigation landmark needs its own name, so screen reader users
+      // can tell the pager above the table from the one below it.
+      '#attributes' => [
+        'class' => ['bfep-admin-pager'],
+        'role' => 'navigation',
+        'aria-label' => $position === 'bottom' ? $this->t('Pages, end of list') : $this->t('Pages'),
+      ],
     ];
 
     if ($page > 1) {
@@ -792,7 +798,7 @@ final class AdminController extends ControllerBase {
         '#empty' => $empty,
         '#attributes' => ['class' => ['bfep-admin-table']],
       ],
-      'pager_bottom' => $this->pagination($request, $route, $total),
+      'pager_bottom' => $this->pagination($request, $route, $total, 'bottom'),
     ];
   }
 

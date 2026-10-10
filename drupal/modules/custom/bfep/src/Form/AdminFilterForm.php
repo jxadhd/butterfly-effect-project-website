@@ -64,6 +64,7 @@ final class AdminFilterForm extends FormBase {
     $form['#method'] = 'get';
     $form['#action'] = Url::fromRoute(self::ROUTES[$section])->toString();
     $form['#attributes']['class'][] = 'bfep-admin-filter';
+    $form['#attributes']['class'][] = 'bfep-admin-filter--' . $section;
 
     $form['q'] = [
       '#type' => 'search',

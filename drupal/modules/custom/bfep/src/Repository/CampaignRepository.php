@@ -200,6 +200,37 @@ final class CampaignRepository {
   }
 
   /**
+   * When the sync service last refreshed this campaign's raised and goal.
+   *
+   * NULL when the active fundraiser is updated by hand, has never synced, or
+   * bfdb has no sync columns (an environment without the sync service).
+   */
+  public function figuresUpdatedAt(int $campaignId): ?string {
+    $value = $this->remember(
+      'bfep:campaign-figures:' . $campaignId,
+      function () use ($campaignId): string {
+        try {
+          return (string) $this->db()->query(<<<'SQL'
+            SELECT last_success_at
+            FROM campaign_fundraisers
+            WHERE campaign_id = :id AND is_active AND auto_sync
+              AND last_success_at IS NOT NULL
+            ORDER BY last_success_at DESC
+            LIMIT 1
+            SQL, [':id' => $campaignId])->fetchField();
+        }
+        catch (\Throwable) {
+          // Cached like an empty result, so a missing column is not queried
+          // on every page view.
+          return '';
+        }
+      },
+      [BfepCacheInvalidator::CAMPAIGNS, 'bfep:campaign:' . $campaignId],
+    );
+    return $value === '' ? NULL : $value;
+  }
+
+  /**
    * Campaigns short of their goal for the homepage, neediest first.
    *
    * Urgent medical cases first, then least funded. Fully funded campaigns

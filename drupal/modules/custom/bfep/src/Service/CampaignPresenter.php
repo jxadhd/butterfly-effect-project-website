@@ -33,7 +33,15 @@ final class CampaignPresenter {
     ];
   }
 
-  public function detail(object $row): array {
+  /**
+   * Builds the campaign page view model.
+   *
+   * @param object $row
+   *   A row from CampaignRepository::find().
+   * @param string|null $figuresUpdatedAt
+   *   When the sync service last refreshed the amounts, if it does.
+   */
+  public function detail(object $row, ?string $figuresUpdatedAt = NULL): array {
     $metadata = [];
     foreach ([
       'Line number' => $row->line_number ?? NULL,
@@ -65,6 +73,7 @@ final class CampaignPresenter {
       'description' => trim((string) ($row->description ?? '')),
       'paragraphs' => $this->paragraphs((string) ($row->description ?? '')),
       'updated' => $this->date($row->updated_at ?? $row->created_at ?? NULL),
+      'figures_updated' => $this->date($figuresUpdatedAt),
     ];
   }
 

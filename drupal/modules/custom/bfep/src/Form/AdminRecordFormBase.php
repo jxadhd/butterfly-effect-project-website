@@ -192,8 +192,10 @@ abstract class AdminRecordFormBase extends FormBase {
     foreach ($links as $link) {
       $items[] = ['#type' => 'link', '#title' => $link['label'], '#url' => $link['url']];
     }
+    // A titled item_list renders an h3, which skips heading levels on review
+    // pages; a form item gives the same label without a heading.
     return $items
-      ? ['#theme' => 'item_list', '#title' => $title, '#items' => $items]
+      ? ['#type' => 'item', '#title' => $title, 'list' => ['#theme' => 'item_list', '#items' => $items]]
       : $this->item($title, $empty);
   }
 

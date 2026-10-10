@@ -10,6 +10,7 @@
     </dl>
   {% endif %}
   {% if campaign.progress is not null %}<progress class="bfep-progress" max="100" value="{{ campaign.progress }}" aria-label="{% trans %}Funding progress{% endtrans %}">{{ campaign.progress }}%</progress>{% endif %}
+  {% if campaign.amounts and campaign.figures_updated %}<p class="bfep-updated bfep-figures-updated">{% trans %}Amounts last updated from the fundraiser page on {{ campaign.figures_updated }}.{% endtrans %}</p>{% endif %}
   {% if campaign.tags %}<ul class="bfep-tags" aria-label="{% trans %}Tags{% endtrans %}">{% for tag in campaign.tags %}<li class="bfep-tag">{{ tag }}</li>{% endfor %}</ul>{% endif %}
 
   <section class="bfep-description" aria-labelledby="bfep-description-heading">

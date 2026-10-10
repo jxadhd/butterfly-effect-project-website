@@ -130,4 +130,13 @@ final class CampaignPresenterTest extends UnitTestCase {
     $this->assertNull($card['fundraiser_url']);
   }
 
+  /**
+   * @covers ::detail
+   */
+  public function testFiguresDateOnlyWhenSynced(): void {
+    $row = (object) ['id' => 3, 'contact_name' => 'Synced family', 'donated_amount' => '10'];
+    $this->assertSame('', $this->presenter()->detail($row)['figures_updated']);
+    $this->assertSame('3 September 2026', $this->presenter()->detail($row, '2026-09-03 10:00:00+00')['figures_updated']);
+  }
+
 }

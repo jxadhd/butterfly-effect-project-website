@@ -93,6 +93,30 @@ function bfep_metatags_alter(array &$metatags, array &$context): void {
     $metatags['og_image'] = $image;
     $metatags['twitter_cards_image'] = $image;
   }
+  elseif ($logo = _bfep_logo_url()) {
+    // Without a configured share image, links shared on social media and
+    // messaging apps would show no picture at all, so the site logo stands in.
+    $metatags['og_image'] = $logo;
+    $metatags['og_image_alt'] = $settings->organizationName();
+    $metatags['twitter_cards_type'] = 'summary';
+    $metatags['twitter_cards_image'] = $logo;
+    $metatags['twitter_cards_image_alt'] = $settings->organizationName();
+  }
+}
+
+/**
+ * Returns the absolute URL of the default theme's raster logo, if it has one.
+ *
+ * SVG logos are skipped because social networks do not render them.
+ */
+function _bfep_logo_url(): string {
+  $theme = (string) \Drupal::config('system.theme')->get('default');
+  $url = trim((string) theme_get_setting('logo.url', $theme));
+  $path = (string) parse_url($url, PHP_URL_PATH);
+  if ($path === '' || !preg_match('/\.(png|jpe?g|webp|gif)$/i', $path)) {
+    return '';
+  }
+  return \Drupal::service('bfep.settings')->absoluteUrl($path);
 }
 
 /**

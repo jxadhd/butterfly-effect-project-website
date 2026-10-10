@@ -1,6 +1,18 @@
 <div class="bfep-page bfep-list-page">
   {% if fixed_country %}
-    <p class="bfep-intro">{% trans %}Browse public campaigns in {{ fixed_country }}.{% endtrans %}</p>
+    {% if country_summary %}
+      {% set count = country_summary.count %}
+      {% set urgent = country_summary.urgent %}
+      {% set featured = country_summary.featured %}
+      <p class="bfep-intro">
+        {% trans %}{{ count }} public humanitarian fundraising campaign is listed for {{ fixed_country }}.{% plural count %}{{ count }} public humanitarian fundraising campaigns are listed for {{ fixed_country }}.{% endtrans %}
+        {% if urgent %}{% trans %}Of these, {{ urgent }} is for urgent medical needs.{% plural urgent %}Of these, {{ urgent }} are for urgent medical needs.{% endtrans %}{% endif %}
+        {% if featured %}{% trans %}{{ featured }} is featured by BFEP.{% plural featured %}{{ featured }} are featured by BFEP.{% endtrans %}{% endif %}
+      </p>
+      <p>{% trans %}Each record links to the organiser's own fundraiser page, and donations go directly through that platform. BFEP does not process donations.{% endtrans %} <a href="{{ verification_url }}">{% trans %}How we verify fundraisers{% endtrans %}</a>.</p>
+    {% else %}
+      <p class="bfep-intro">{% trans %}Browse public campaigns in {{ fixed_country }}.{% endtrans %}</p>
+    {% endif %}
   {% else %}
     <p class="bfep-intro">{% trans %}Browse public humanitarian fundraiser records maintained by The Butterfly Effect Project.{% endtrans %}</p>
   {% endif %}

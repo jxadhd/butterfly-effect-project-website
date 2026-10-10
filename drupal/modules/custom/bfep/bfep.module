@@ -31,6 +31,8 @@ function bfep_theme($existing, $type, $theme, $path): array {
         'previous_url' => NULL,
         'next_url' => NULL,
         'active_filters' => FALSE,
+        'country_summary' => NULL,
+        'verification_url' => '',
       ],
     ],
     'bfep_campaign_detail' => [

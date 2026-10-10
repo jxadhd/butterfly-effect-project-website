@@ -103,6 +103,8 @@ final class CampaignListBuilder {
 
     return [
       '#theme' => 'bfep_campaign_list',
+      '#country_summary' => $fixedCountry === NULL ? NULL : $this->countrySummary($fixedCountry),
+      '#verification_url' => Url::fromRoute('bfep.trust_how_we_verify')->toString(),
       '#attached' => ['library' => ['bfep/public']],
       '#campaigns' => $cards,
       '#filters' => $filters,
@@ -124,10 +126,25 @@ final class CampaignListBuilder {
       '#active_filters' => $activeFilters,
       '#cache' => [
         'contexts' => ['url.path', 'url.query_args'],
-        'tags' => [BfepCacheInvalidator::CAMPAIGNS, BfepCacheInvalidator::FORM_OPTIONS],
+        'tags' => [BfepCacheInvalidator::CAMPAIGNS, BfepCacheInvalidator::COUNTRIES, BfepCacheInvalidator::FORM_OPTIONS],
         'max-age' => $this->settings->listingCacheMaxAge(),
       ],
     ];
+  }
+
+  /**
+   * Totals one country's campaigns across its regions for the page intro.
+   */
+  private function countrySummary(string $country): ?array {
+    $summary = ['count' => 0, 'urgent' => 0, 'featured' => 0];
+    foreach ($this->campaigns->countries() as $row) {
+      if ((string) $row->country === $country) {
+        $summary['count'] += (int) $row->campaign_count;
+        $summary['urgent'] += (int) $row->urgent_count;
+        $summary['featured'] += (int) $row->featured_count;
+      }
+    }
+    return $summary['count'] > 0 ? $summary : NULL;
   }
 
   private function detailRedirect(int $campaignId): RedirectResponse {

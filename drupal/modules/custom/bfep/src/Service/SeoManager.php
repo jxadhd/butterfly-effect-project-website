@@ -135,6 +135,24 @@ final class SeoManager {
     }
     $canonical = $this->settings->absoluteUrl('/campaigns/' . $campaignId);
     $context = $this->baseContext($title, $title, $description, $canonical, $robots);
+    // Dates tell search engines and link previews how fresh the record is.
+    $published = $this->isoDate($row->created_at ?? NULL);
+    $modified = $this->isoDate($row->updated_at ?? NULL) ?? $published;
+    $context['og_type'] = 'article';
+    $context['published'] = $published;
+    $context['modified'] = $modified;
+    $context['json_ld'][] = array_filter([
+      '@context' => 'https://schema.org',
+      '@type' => 'WebPage',
+      '@id' => $canonical,
+      'url' => $canonical,
+      'name' => $title,
+      'description' => $description,
+      'inLanguage' => 'en-NZ',
+      'datePublished' => $published,
+      'dateModified' => $modified,
+      'isPartOf' => ['@id' => $this->settings->absoluteUrl('/#website')],
+    ], static fn($value): bool => $value !== NULL);
     $context['json_ld'][] = $this->breadcrumbs([
       ['name' => 'Home', 'url' => $this->settings->absoluteUrl('/')],
       ['name' => 'Campaigns', 'url' => $this->settings->absoluteUrl('/campaigns')],
@@ -222,6 +240,18 @@ final class SeoManager {
       'json_ld' => [],
       'cache_tags' => [],
     ];
+  }
+
+  private function isoDate(mixed $value): ?string {
+    if ($value === NULL || trim((string) $value) === '') {
+      return NULL;
+    }
+    try {
+      return (new \DateTimeImmutable((string) $value))->format(DATE_ATOM);
+    }
+    catch (\Throwable) {
+      return NULL;
+    }
   }
 
   private function page(): int {

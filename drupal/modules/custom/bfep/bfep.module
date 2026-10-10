@@ -31,6 +31,8 @@ function bfep_theme($existing, $type, $theme, $path): array {
         'previous_url' => NULL,
         'next_url' => NULL,
         'active_filters' => FALSE,
+        'country_summary' => NULL,
+        'verification_url' => '',
       ],
     ],
     'bfep_campaign_detail' => [
@@ -86,6 +88,13 @@ function bfep_metatags_alter(array &$metatags, array &$context): void {
   $metatags['og_title'] = $seo['title'];
   $metatags['og_description'] = $seo['description'];
   $metatags['og_url'] = $seo['canonical'];
+  if (!empty($seo['published'])) {
+    $metatags['article_published_time'] = $seo['published'];
+  }
+  if (!empty($seo['modified'])) {
+    $metatags['article_modified_time'] = $seo['modified'];
+    $metatags['og_updated_time'] = $seo['modified'];
+  }
   $metatags['twitter_cards_type'] = 'summary_large_image';
   $metatags['twitter_cards_title'] = $seo['title'];
   $metatags['twitter_cards_description'] = $seo['description'];
@@ -93,6 +102,30 @@ function bfep_metatags_alter(array &$metatags, array &$context): void {
     $metatags['og_image'] = $image;
     $metatags['twitter_cards_image'] = $image;
   }
+  elseif ($logo = _bfep_logo_url()) {
+    // Without a configured share image, links shared on social media and
+    // messaging apps would show no picture at all, so the site logo stands in.
+    $metatags['og_image'] = $logo;
+    $metatags['og_image_alt'] = $settings->organizationName();
+    $metatags['twitter_cards_type'] = 'summary';
+    $metatags['twitter_cards_image'] = $logo;
+    $metatags['twitter_cards_image_alt'] = $settings->organizationName();
+  }
+}
+
+/**
+ * Returns the absolute URL of the default theme's raster logo, if it has one.
+ *
+ * SVG logos are skipped because social networks do not render them.
+ */
+function _bfep_logo_url(): string {
+  $theme = (string) \Drupal::config('system.theme')->get('default');
+  $url = trim((string) theme_get_setting('logo.url', $theme));
+  $path = (string) parse_url($url, PHP_URL_PATH);
+  if ($path === '' || !preg_match('/\.(png|jpe?g|webp|gif)$/i', $path)) {
+    return '';
+  }
+  return \Drupal::service('bfep.settings')->absoluteUrl($path);
 }
 
 /**
@@ -151,18 +184,35 @@ function bfep_page_attachments(array &$attachments): void {
       'url' => $settings->absoluteUrl('/'),
       'description' => $seo['description'],
     ];
+    if ($logo = _bfep_logo_url()) {
+      $organization['logo'] = $logo;
+    }
     if ($sameAs = $settings->socialLinks()) {
       $organization['sameAs'] = $sameAs;
     }
-    $json = json_encode($organization, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-    if ($json !== FALSE) {
-      $attachments['#attached']['html_head'][] = [[
-        '#type' => 'html_tag',
-        '#tag' => 'script',
-        '#attributes' => ['type' => 'application/ld+json'],
-        '#value' => Markup::create($json),
-      ], 'bfep_organization_json_ld',
-      ];
+    // Google reads WebSite markup on the homepage to choose the site name it
+    // shows above each search result.
+    $website = [
+      '@context' => 'https://schema.org',
+      '@type' => 'WebSite',
+      '@id' => $settings->absoluteUrl('/#website'),
+      'name' => $settings->organizationName(),
+      'alternateName' => 'BFEP',
+      'url' => $settings->absoluteUrl('/'),
+      'inLanguage' => 'en-NZ',
+      'publisher' => ['@id' => $settings->absoluteUrl('/#organization')],
+    ];
+    foreach (['organization' => $organization, 'website' => $website] as $key => $data) {
+      $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+      if ($json !== FALSE) {
+        $attachments['#attached']['html_head'][] = [[
+          '#type' => 'html_tag',
+          '#tag' => 'script',
+          '#attributes' => ['type' => 'application/ld+json'],
+          '#value' => Markup::create($json),
+        ], 'bfep_' . $key . '_json_ld',
+        ];
+      }
     }
   }
 

@@ -86,6 +86,13 @@ function bfep_metatags_alter(array &$metatags, array &$context): void {
   $metatags['og_title'] = $seo['title'];
   $metatags['og_description'] = $seo['description'];
   $metatags['og_url'] = $seo['canonical'];
+  if (!empty($seo['published'])) {
+    $metatags['article_published_time'] = $seo['published'];
+  }
+  if (!empty($seo['modified'])) {
+    $metatags['article_modified_time'] = $seo['modified'];
+    $metatags['og_updated_time'] = $seo['modified'];
+  }
   $metatags['twitter_cards_type'] = 'summary_large_image';
   $metatags['twitter_cards_title'] = $seo['title'];
   $metatags['twitter_cards_description'] = $seo['description'];

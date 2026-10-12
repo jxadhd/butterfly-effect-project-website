@@ -23,6 +23,8 @@ final class DataChecks {
   public static function all(): array {
     $active = 'SELECT 1 FROM campaign_fundraisers f WHERE f.campaign_id = campaigns.id AND f.is_active';
     $sameUrl = AdminFormat::urlKeySql('g.url') . ' = ' . AdminFormat::urlKeySql('f.url');
+    // Text that is not a web address is "bad_url"'s job, not a shared fundraiser.
+    $address = "COALESCE(TRIM(f.url), '') <> '' AND TRIM(f.url) !~ '\\s' AND POSITION('.' IN TRIM(f.url)) > 0";
 
     return [
       'no_fundraiser' => [
@@ -33,7 +35,7 @@ final class DataChecks {
       'shared_url' => [
         'label' => 'Fundraiser shared with another campaign',
         'help' => 'Two campaigns point at the same fundraiser, which usually means one is a duplicate.',
-        'sql' => "EXISTS ({$active} AND COALESCE(TRIM(f.url), '') <> '' AND EXISTS ("
+        'sql' => "EXISTS ({$active} AND {$address} AND EXISTS ("
         . 'SELECT 1 FROM campaign_fundraisers g JOIN campaigns c2 ON c2.id = g.campaign_id AND c2.deleted_at IS NULL '
         . "WHERE g.is_active AND g.campaign_id <> campaigns.id AND {$sameUrl}))",
       ],

@@ -48,15 +48,28 @@ final class AdminFormat {
   }
 
   /**
+   * Query parameters that name the fundraiser, kept in the match key.
+   *
+   * PayPal donate links differ only here ("paypal.com/donate?campaign_id=1"),
+   * so dropping them would make every PayPal fundraiser look the same.
+   */
+  private const URL_ID_PARAMS = 'campaign_id|hosted_button_id';
+
+  /**
    * Reduces a URL to a comparable key: host and path, lower-cased.
    *
    * "https://www.GoFundMe.com/f/abc/?utm=x" and "http://gofundme.com/f/abc"
-   * give the same key. Returns '' for an empty value.
+   * give the same key. Query parameters are dropped except those that name
+   * the fundraiser (URL_ID_PARAMS), which are appended as "?name=value".
+   * Returns '' for an empty value.
    */
   public static function urlMatchKey(mixed $url): string {
     $url = strtolower(trim((string) ($url ?? '')));
-    $url = (string) preg_replace('~^https?://(www\.)?|[?#].*$~', '', $url);
-    return rtrim($url, '/');
+    $key = rtrim((string) preg_replace('~^https?://(www\.)?|[?#].*$~', '', $url), '/');
+    if (preg_match('~[?&]((?:' . self::URL_ID_PARAMS . ')=\w+)~', $url, $match)) {
+      $key .= '?' . $match[1];
+    }
+    return $key;
   }
 
   /**
@@ -67,7 +80,10 @@ final class AdminFormat {
   public static function urlKeySql(string $column): string {
     // No square brackets: Drupal turns [ and ] into identifier quotes in
     // every query, even inside string literals, so "[?#]" would break.
-    return "regexp_replace(regexp_replace(lower(trim({$column})), '^https?://(www\\.)?|(\\?|#).*$', '', 'g'), '/+$', '')";
+    $url = "lower(trim({$column}))";
+    $param = "substring({$url} from '(?:\\?|&)((?:" . self::URL_ID_PARAMS . ")=\\w+)')";
+    return "(regexp_replace(regexp_replace({$url}, '^https?://(www\\.)?|(\\?|#).*$', '', 'g'), '/+$', '')"
+      . " || COALESCE('?' || {$param}, ''))";
   }
 
   /**

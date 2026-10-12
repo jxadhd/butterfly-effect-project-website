@@ -658,7 +658,8 @@ body:not(.path-admin) .main-content .description {
 body:not(.path-admin) form.bfep-public-form {
   width: min(100%, var(--bf-polish-form)) !important;
   max-width: var(--bf-polish-form) !important;
-  margin: 0 auto !important;
+  /* Left-aligned with the page title rather than floating in the middle. */
+  margin: 0 !important;
   padding: clamp(1.25rem, 4vw, 2rem) !important;
 }
 
@@ -733,7 +734,7 @@ body:not(.path-admin)[class*="path-search"] main .search-form {
   gap: .65rem !important;
   align-items: end !important;
   width: min(100%, 48rem) !important;
-  margin: 0 auto clamp(2rem, 4vw, 3rem) !important;
+  margin: 0 0 clamp(2rem, 4vw, 3rem) !important;
   padding: .85rem !important;
   border-radius: 1rem !important;
 }
@@ -746,8 +747,8 @@ body:not(.path-admin)[class*="path-search"] main .search-form .form-actions {
 }
 
 body:not(.path-admin) .search-results {
-  width: min(100%, 64rem);
-  margin-inline: auto;
+  width: 100%;
+  margin-inline: 0;
 }
 
 body:not(.path-admin) .search-results li {

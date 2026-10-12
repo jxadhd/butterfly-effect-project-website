@@ -12,6 +12,8 @@
   --bf-polish-form: 52rem;
   --bf-polish-gutter: clamp(1rem, 4vw, 2rem);
   --bf-polish-section-gap: clamp(2.5rem, 5vw, 3.5rem);
+  --bf-polish-panel-pad: clamp(1.25rem, 3vw, 1.75rem);
+  --bf-polish-card-pad: 1.2rem;
   --bf-polish-header: 5.25rem;
   --bf-polish-control: 3rem;
   --bf-polish-radius: 1rem;
@@ -1271,4 +1273,26 @@ body:not(.path-admin).path-frontpage .bfep-home-grid {
 
 body:not(.path-admin) .bfep-detail .bfep-related {
   margin-top: var(--bf-polish-section-gap);
+}
+
+/* -------------------------------------------------------------------------
+ * Two padding sizes for boxed content: panels and cards.
+ * ---------------------------------------------------------------------- */
+
+/* Full-width panels had seven different paddings (18-36px), so their text
+ * started at a different inset in each. */
+body:not(.path-admin) .bfep-official-channel,
+body:not(.path-admin) .bfep-official-channel--footer,
+body:not(.path-admin) .bfep-section-nav,
+body:not(.path-admin) .bfep-trust-callout,
+body:not(.path-admin) .bfep-filter-form,
+body:not(.path-admin) form.bfep-public-form,
+body:not(.path-admin) .bfep-detail .bfep-description {
+  padding: var(--bf-polish-panel-pad) !important;
+}
+
+body:not(.path-admin) .bfep-campaign-card,
+body:not(.path-admin) .bfep-stat-card,
+body:not(.path-admin) .bfep-detail-meta {
+  padding: var(--bf-polish-card-pad) !important;
 }

@@ -109,6 +109,17 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::lineOrderSql
+   */
+  public function testLineOrderSqlSortsByNumber(): void {
+    $sql = AdminFormat::lineOrderSql('c.line_number', 'DESC');
+    $this->assertStringStartsWith("CAST(substring(CAST(c.line_number AS TEXT) from '\\d+') AS NUMERIC) DESC NULLS LAST", $sql);
+    // Drupal reads [..] in a query as an identifier, so the regex avoids it.
+    $this->assertStringNotContainsString('[', $sql);
+    $this->assertStringContainsString(' ASC NULLS LAST', AdminFormat::lineOrderSql('line_number', 'anything'));
+  }
+
+  /**
    * @covers ::pageWindow
    */
   public function testPageWindowClampsToLastPage(): void {

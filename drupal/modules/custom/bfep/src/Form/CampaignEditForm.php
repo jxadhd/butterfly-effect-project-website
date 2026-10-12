@@ -280,6 +280,13 @@ final class CampaignEditForm extends FormBase {
       '#url' => Url::fromRoute('bfep.admin_campaigns'),
       '#attributes' => ['class' => ['button']],
     ];
+    $form['actions']['remove'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Remove from site'),
+      '#url' => Url::fromRoute('bfep.admin_campaign_remove', ['campaign_id' => $this->campaignId]),
+      '#attributes' => ['class' => ['button', 'button--danger']],
+      '#weight' => 20,
+    ];
     return $form;
   }
 

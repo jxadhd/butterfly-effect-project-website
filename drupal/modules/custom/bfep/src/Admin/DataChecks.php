@@ -42,6 +42,11 @@ final class DataChecks {
         'help' => 'The link is empty, contains spaces or line breaks (often the fundraiser title pasted in), or has no domain. The donate button cannot work and the sync skips it. Replace it with the fundraiser address.',
         'sql' => "EXISTS ({$active} AND (COALESCE(TRIM(f.url), '') = '' OR TRIM(f.url) ~ '\\s' OR POSITION('.' IN TRIM(f.url)) = 0))",
       ],
+      'dead_link' => [
+        'label' => 'Fundraiser page not found',
+        'help' => 'The platform answered "page not found" on 3 or more nightly syncs in a row, so the fundraiser was probably removed or moved. Replace the link with the new address, or mark the fundraiser inactive.',
+        'sql' => "EXISTS ({$active} AND f.auto_sync AND CAST(f.sync_status AS TEXT) = 'not_found')",
+      ],
       'duplicate_line' => [
         'label' => 'Line number used twice',
         'help' => 'Searching for the line number cannot open the right campaign. Give one of them a new line number.',

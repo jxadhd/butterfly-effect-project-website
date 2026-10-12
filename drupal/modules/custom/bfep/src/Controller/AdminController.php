@@ -309,6 +309,11 @@ final class AdminController extends ControllerBase {
   ];
 
   /**
+   * Sortable columns holding line numbers as text, sorted by number.
+   */
+  private const LINE_COLUMNS = ['line_number', 'family_line_number_raw'];
+
+  /**
    * Table header cells; the list's sortable titles become sort links.
    *
    * @param string $list
@@ -348,6 +353,9 @@ final class AdminController extends ControllerBase {
       return $default;
     }
     $direction = $context['sort'] === TableSort::DESC ? 'DESC' : 'ASC';
+    if (in_array($column, self::LINE_COLUMNS, TRUE)) {
+      return AdminFormat::lineOrderSql($column, $direction) . ", id {$direction}";
+    }
     return "{$column} {$direction} NULLS LAST, id {$direction}";
   }
 
@@ -489,7 +497,7 @@ final class AdminController extends ControllerBase {
       ) f ON TRUE
       LEFT JOIN fundraising_platforms p ON p.id = f.platform_id
       LEFT JOIN countries co ON co.id = c.country_id
-      ORDER BY c.line_number ASC NULLS LAST, c.id ASC
+      ORDER BY " . AdminFormat::lineOrderSql('c.line_number', 'ASC') . ", c.id ASC
       LIMIT " . self::EXPORT_LIMIT, $params)->fetchAll();
 
     $lines = [['Line', 'Name', 'Country', 'Featured', 'Urgent', 'Tags', 'Platform', 'Fundraiser URL', 'Currency', 'Goal', 'Raised', 'Percent funded', 'Last edited', 'Public page', 'Edit page']];

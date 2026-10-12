@@ -7,6 +7,7 @@ namespace Drupal\bfep\Repository;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Drupal\bfep\Service\BfepSettings;
 
@@ -109,16 +110,17 @@ final class CampaignRepository {
         $where[] = 'urgent_medical_needs = TRUE';
       }
 
+      $lineDesc = AdminFormat::lineOrderSql('line_number', 'DESC');
       $sortSql = match ($filters['sort']) {
         'updated_desc' => 'updated_at DESC NULLS LAST, id DESC',
         'created_desc' => 'created_at DESC NULLS LAST, id DESC',
         'name_asc' => 'contact_name ASC NULLS LAST, id ASC',
         'country_asc' => 'country ASC NULLS LAST, contact_name ASC NULLS LAST, id ASC',
         // Campaigns without a goal have no percentage and go last.
-        'funded_asc' => 'pct_goal_achieved ASC NULLS LAST, line_number DESC NULLS LAST, id DESC',
+        'funded_asc' => 'pct_goal_achieved ASC NULLS LAST, ' . $lineDesc . ', id DESC',
         // Nearest to 100% first; fully funded campaigns after the rest.
-        'funded_desc' => 'COALESCE(pct_goal_achieved >= 100, TRUE) ASC, pct_goal_achieved DESC NULLS LAST, line_number DESC NULLS LAST, id DESC',
-        default => 'line_number DESC NULLS LAST, id DESC',
+        'funded_desc' => 'COALESCE(pct_goal_achieved >= 100, TRUE) ASC, pct_goal_achieved DESC NULLS LAST, ' . $lineDesc . ', id DESC',
+        default => $lineDesc . ', id DESC',
       };
       if ($lineNumber !== NULL) {
         // Put the exact line match first, whatever the chosen sort.

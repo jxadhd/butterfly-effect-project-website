@@ -129,6 +129,25 @@ final class AdminFormat {
   }
 
   /**
+   * SQL that sorts a line number column by its value, not its text.
+   *
+   * Line numbers are stored as text on production bfdb, so a plain ORDER BY
+   * puts "9" after "10" and "100". This orders by the first run of digits
+   * (so "#142" and "142a" sort as 142), then by the raw text, and works the
+   * same on an integer column. \d is used because Drupal turns [..] in a
+   * query into a quoted identifier.
+   *
+   * @param string $column
+   *   A trusted column expression, never user input.
+   * @param string $direction
+   *   ASC or DESC.
+   */
+  public static function lineOrderSql(string $column, string $direction): string {
+    $direction = $direction === 'DESC' ? 'DESC' : 'ASC';
+    return "CAST(substring(CAST({$column} AS TEXT) from '\\d+') AS NUMERIC) {$direction} NULLS LAST, CAST({$column} AS TEXT) {$direction} NULLS LAST";
+  }
+
+  /**
    * Returns the line number when a search is only a line number.
    *
    * "142", "#142" and " 142 " qualify; "142 Gaza" or "1e3" do not.

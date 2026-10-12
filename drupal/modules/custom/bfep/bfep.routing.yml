@@ -229,6 +229,38 @@ bfep.admin_campaign_edit:
   options:
     _admin_route: TRUE
 
+bfep.admin_campaign_remove:
+  path: '/admin/bfep/campaign/{campaign_id}/remove'
+  defaults:
+    _form: '\Drupal\bfep\Form\CampaignRemoveForm'
+    _title: 'Remove campaign'
+  requirements:
+    _permission: 'administer bfep external data'
+    campaign_id: '\d+'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_campaign_restore:
+  path: '/admin/bfep/campaign/{campaign_id}/restore'
+  defaults:
+    _form: '\Drupal\bfep\Form\CampaignRestoreForm'
+    _title: 'Restore campaign'
+  requirements:
+    _permission: 'administer bfep external data'
+    campaign_id: '\d+'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_campaigns_removed:
+  path: '/admin/bfep/campaigns/removed'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::removedCampaigns'
+    _title: 'Removed campaigns'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
 bfep.admin_referrals:
   path: '/admin/bfep/referrals'
   defaults:

@@ -8,6 +8,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\TableSort;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\CampaignRemoval;
 use Drupal\bfep\Admin\DataChecks;
 use Drupal\bfep\OptionalBfdb;
 use Drupal\bfep\Service\HealthCheck;
@@ -401,6 +402,10 @@ final class AdminController extends ControllerBase {
                 'url' => Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $row->id]),
                 'attributes' => ['target' => '_blank', 'rel' => 'noopener'],
               ],
+              'remove' => [
+                'title' => $this->t('Remove'),
+                'url' => Url::fromRoute('bfep.admin_campaign_remove', ['campaign_id' => $row->id]),
+              ],
             ],
           ],
         ],
@@ -534,6 +539,52 @@ final class AdminController extends ControllerBase {
       'Cache-Control' => 'private, no-store',
       'X-Content-Type-Options' => 'nosniff',
     ]);
+  }
+
+  /**
+   * Campaigns removed from the site, most recently removed first.
+   */
+  public function removedCampaigns(): array {
+    $rows = $this->bfdb()->query('
+      SELECT id, line_number, contact_name, country_raw, internal_notes, deleted_at
+      FROM campaigns
+      WHERE deleted_at IS NOT NULL
+      ORDER BY deleted_at DESC, id DESC
+      LIMIT 500')->fetchAll();
+    $table_rows = [];
+    foreach ($rows as $row) {
+      $table_rows[] = [
+        'line' => $row->line_number ?: '—',
+        'name' => $row->contact_name ?: 'Campaign #' . $row->id,
+        'country' => $row->country_raw ?: '—',
+        'removed' => $this->date($row->deleted_at),
+        'reason' => CampaignRemoval::lastReason($row->internal_notes) ?: '—',
+        'operations' => [
+          'data' => [
+            '#type' => 'operations',
+            '#links' => [
+              'restore' => [
+                'title' => $this->t('Restore'),
+                'url' => Url::fromRoute('bfep.admin_campaign_restore', ['campaign_id' => $row->id]),
+              ],
+            ],
+          ],
+        ],
+      ];
+    }
+    return [
+      '#attached' => ['library' => ['bfep/admin']],
+      'intro' => [
+        '#markup' => '<p>' . $this->t('These campaigns are hidden from the public site, the campaign lists, data checks and the fundraiser sync. Restoring one puts it back as it was.') . '</p>',
+      ],
+      'table' => [
+        '#type' => 'table',
+        '#header' => [$this->t('Line'), $this->t('Name'), $this->t('Country'), $this->t('Removed'), $this->t('Reason'), $this->t('Operations')],
+        '#rows' => $table_rows,
+        '#empty' => $this->t('No campaigns have been removed.'),
+        '#attributes' => ['class' => ['bfep-admin-table']],
+      ],
+    ];
   }
 
   /**

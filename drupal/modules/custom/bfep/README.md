@@ -108,6 +108,16 @@ form requires Drupal's `administer site configuration` permission.
 - **Sorting.** Click a column heading (line, name, country, email, hours,
   status, created or updated) to sort; click again to reverse. Only listed
   columns can be sorted, so the URL cannot inject SQL.
+- **Removing campaigns.** "Remove from site" (edit page) or "Remove" (list)
+  opens a confirmation that asks why (duplicate, fundraiser ended, family
+  asked, other) and warns when the fundraiser is listed on another campaign,
+  the campaign is featured or urgent, or it has pending change requests.
+  Removing sets `campaigns.deleted_at`, so the campaign leaves the public
+  site, staff lists, data checks and the fundraiser sync; nothing is deleted.
+  A dated line with the reason is added to its internal notes. "Removed
+  campaigns" lists them, newest first, and "Restore" clears `deleted_at`
+  (warning if its line number or fundraiser is now used elsewhere). The site's
+  bfdb user needs UPDATE on `campaigns.deleted_at`.
 - **Audit log.** Every staff create or update writes a notice to the `bfep` log
   channel (Reports > Recent log messages) with the user, record and the names
   of the fields changed. Values are not logged.

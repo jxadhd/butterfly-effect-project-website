@@ -5,8 +5,8 @@ body:not(.path-admin) .bfep-official-channel {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: clamp(1rem, 3vw, 2rem);
   align-items: center;
-  width: min(100%, 64rem);
-  margin: clamp(1.5rem, 4vw, 2.75rem) auto;
+  width: 100%;
+  margin: clamp(1.5rem, 4vw, 2.75rem) 0;
   padding: clamp(1.15rem, 3vw, 1.65rem);
   border: 1px solid rgba(207, 181, 255, .18);
   border-radius: var(--bf-polish-radius, 1rem);
@@ -131,8 +131,8 @@ body:not(.path-admin) .bfep-policy-body ol {
 
 /* BFEP grouped public navigation — direct update. */
 body:not(.path-admin) .bfep-section-nav {
-  width: min(100%, 64rem);
-  margin: clamp(2.5rem, 6vw, 4.5rem) auto 0;
+  width: 100%;
+  margin: clamp(2.5rem, 6vw, 4.5rem) 0 0;
   padding: clamp(1.15rem, 3vw, 1.6rem);
   border: 1px solid rgba(207, 181, 255, .16);
   border-radius: var(--bf-polish-radius, 1rem);

@@ -167,3 +167,13 @@ hooks, and tests public routes.
 The policy-page wording is an operational draft and should be reviewed whenever
 the project's real people, providers, retention practices, or contact details
 change.
+
+## Visitor IP addresses behind Cloudflare
+
+`settings/cloudflare.settings.php` adds Cloudflare's edge ranges to
+`reverse_proxy_addresses`, so Drupal records the real visitor IP instead of a
+Cloudflare address. It only takes effect when `sites/default/settings.php`
+includes it after its own `reverse_proxy` lines (the snippet is in the file's
+header). It ships with this module so `bfep deploy` keeps it up to date.
+Refresh the ranges from https://www.cloudflare.com/ips/ if Cloudflare changes
+them.

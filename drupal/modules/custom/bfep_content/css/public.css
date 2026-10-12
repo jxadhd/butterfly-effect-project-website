@@ -163,7 +163,7 @@ body:not(.path-admin) .bfep-section-nav__description {
 
 body:not(.path-admin) .bfep-section-nav__links {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: .65rem;
   margin-top: 1.1rem;
 }

@@ -843,8 +843,9 @@ body:not(.path-admin).path-frontpage .bfep-hero {
 }
 
 body:not(.path-admin).path-frontpage .bfep-hero-card {
-  width: min(100%, 52rem);
-  margin-inline: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
   padding: clamp(1.5rem, 5vw, 3rem) !important;
   border-radius: clamp(1.15rem, 3vw, 1.75rem) !important;
 }
@@ -855,10 +856,20 @@ body:not(.path-admin).path-frontpage .bfep-hero h1 {
   line-height: 1.02;
 }
 
+/* Every homepage section spans the shell, like the campaign spotlight. */
 body:not(.path-admin).path-frontpage .bfep-stats-row,
 body:not(.path-admin).path-frontpage .bfep-home-grid {
-  width: min(100%, 64rem);
-  margin-inline: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+/* Four ways to help: one row of four on wide screens instead of three and a
+ * lone card. Narrower screens keep the shared two- and one-column grid. */
+@media (min-width: 75rem) {
+  body:not(.path-admin).path-frontpage .bfep-home-grid .bfep-campaign-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
 }
 
 body:not(.path-admin).path-frontpage .bfep-stat-card {
@@ -871,8 +882,8 @@ body:not(.path-admin).path-frontpage .bfep-stat-number {
 }
 
 body:not(.path-admin).path-frontpage .bfep-trust-callout {
-  width: min(100%, 64rem);
-  margin: clamp(2.5rem, 5vw, 4rem) auto 0;
+  width: 100%;
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
   border-radius: 1rem !important;
 }
 

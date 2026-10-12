@@ -9,9 +9,11 @@
 
 :root {
   --bf-polish-shell: 74rem;
-  --bf-polish-reading: 70rem;
   --bf-polish-form: 52rem;
   --bf-polish-gutter: clamp(1rem, 4vw, 2rem);
+  --bf-polish-section-gap: clamp(2.5rem, 5vw, 3.5rem);
+  --bf-polish-panel-pad: clamp(1.25rem, 3vw, 1.75rem);
+  --bf-polish-card-pad: 1.2rem;
   --bf-polish-header: 5.25rem;
   --bf-polish-control: 3rem;
   --bf-polish-radius: 1rem;
@@ -56,7 +58,9 @@ body:not(.path-admin) .site-header__inner__container,
 body:not(.path-admin) .main-content__container,
 body:not(.path-admin) .site-footer__inner {
   width: 100% !important;
-  max-width: 80rem !important;
+  /* The shell plus its gutters, so the logo, page content and footer all
+   * start and end on the same lines. */
+  max-width: calc(var(--bf-polish-shell) + 2 * var(--bf-polish-gutter)) !important;
   margin-inline: auto !important;
   padding-inline: var(--bf-polish-gutter) !important;
 }
@@ -127,10 +131,13 @@ body:not(.path-admin) h1.page-title {
   overflow-wrap: anywhere;
 }
 
+/* Trust and campaign pages use the full shell so their content starts on the
+ * same line as the page title; prose keeps its own reading width. */
 body:not(.path-admin) .bfep-trust-page,
 body:not(.path-admin) .bfep-detail {
-  width: min(100%, var(--bf-polish-reading)) !important;
-  margin-inline: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin-inline: 0 !important;
 }
 
 body:not(.path-admin) .bfep-policy-section {
@@ -654,7 +661,8 @@ body:not(.path-admin) .main-content .description {
 body:not(.path-admin) form.bfep-public-form {
   width: min(100%, var(--bf-polish-form)) !important;
   max-width: var(--bf-polish-form) !important;
-  margin: 0 auto !important;
+  /* Left-aligned with the page title rather than floating in the middle. */
+  margin: 0 !important;
   padding: clamp(1.25rem, 4vw, 2rem) !important;
 }
 
@@ -729,7 +737,7 @@ body:not(.path-admin)[class*="path-search"] main .search-form {
   gap: .65rem !important;
   align-items: end !important;
   width: min(100%, 48rem) !important;
-  margin: 0 auto clamp(2rem, 4vw, 3rem) !important;
+  margin: 0 0 clamp(2rem, 4vw, 3rem) !important;
   padding: .85rem !important;
   border-radius: 1rem !important;
 }
@@ -742,8 +750,8 @@ body:not(.path-admin)[class*="path-search"] main .search-form .form-actions {
 }
 
 body:not(.path-admin) .search-results {
-  width: min(100%, 64rem);
-  margin-inline: auto;
+  width: 100%;
+  margin-inline: 0;
 }
 
 body:not(.path-admin) .search-results li {
@@ -826,6 +834,10 @@ body:not(.path-admin) .bfep-description {
   margin-top: 1.75rem;
 }
 
+body:not(.path-admin) .bfep-description p {
+  max-width: 72ch;
+}
+
 body:not(.path-admin) .bfep-pager {
   margin-block: 1.75rem 0;
 }
@@ -835,8 +847,9 @@ body:not(.path-admin).path-frontpage .bfep-hero {
 }
 
 body:not(.path-admin).path-frontpage .bfep-hero-card {
-  width: min(100%, 52rem);
-  margin-inline: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
   padding: clamp(1.5rem, 5vw, 3rem) !important;
   border-radius: clamp(1.15rem, 3vw, 1.75rem) !important;
 }
@@ -847,10 +860,20 @@ body:not(.path-admin).path-frontpage .bfep-hero h1 {
   line-height: 1.02;
 }
 
+/* Every homepage section spans the shell, like the campaign spotlight. */
 body:not(.path-admin).path-frontpage .bfep-stats-row,
 body:not(.path-admin).path-frontpage .bfep-home-grid {
-  width: min(100%, 64rem);
-  margin-inline: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+/* Four ways to help: one row of four on wide screens instead of three and a
+ * lone card. Narrower screens keep the shared two- and one-column grid. */
+@media (min-width: 75rem) {
+  body:not(.path-admin).path-frontpage .bfep-home-grid .bfep-campaign-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
 }
 
 body:not(.path-admin).path-frontpage .bfep-stat-card {
@@ -863,8 +886,8 @@ body:not(.path-admin).path-frontpage .bfep-stat-number {
 }
 
 body:not(.path-admin).path-frontpage .bfep-trust-callout {
-  width: min(100%, 64rem);
-  margin: clamp(2.5rem, 5vw, 4rem) auto 0;
+  width: 100%;
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
   border-radius: 1rem !important;
 }
 
@@ -1194,4 +1217,82 @@ body:not(.path-admin) .block-search-wide__button[aria-expanded="true"] svg {
 
 body:not(.path-admin) .block-search-wide__button[aria-expanded="false"] .block-search-wide__button-close {
   display: none !important;
+}
+
+/* -------------------------------------------------------------------------
+ * One vertical rhythm between page sections.
+ * ---------------------------------------------------------------------- */
+
+/* A 55vh minimum on the page body pushed the section menu far down on short
+ * pages such as /countries. The empty space now goes below the content
+ * instead, so the section menu always follows it at the usual gap. */
+body:not(.path-admin):not(.path-frontpage) .block-system-main-block {
+  min-height: 0;
+}
+
+body:not(.path-admin) .main-content {
+  min-height: 60vh;
+}
+
+/* The page body's own bottom margin and padding stacked on top of the gap
+ * below, so the space before the section menu varied from 72px to 104px. */
+body:not(.path-admin) .region--content .block-system-main-block {
+  margin-bottom: 0 !important;
+}
+
+body:not(.path-admin) .region--content .block-system-main-block > .block__content {
+  padding-bottom: 0 !important;
+}
+
+body:not(.path-admin) .bfep-page > :last-child,
+body:not(.path-admin) .bfep-trust-page > :last-child,
+body:not(.path-admin) .bfep-detail > :last-child,
+body:not(.path-admin) .bfep-page > :last-child > :last-child {
+  margin-bottom: 0;
+}
+
+body:not(.path-admin) .bfep-section-nav {
+  margin-top: var(--bf-polish-section-gap);
+}
+
+/* The content area already ends in generous padding; a footer margin on top
+ * of it left a 176px gap. */
+body:not(.path-admin) .site-footer {
+  margin-top: 0 !important;
+}
+
+body:not(.path-admin).path-frontpage .bfep-official-channel--home,
+body:not(.path-admin).path-frontpage .bfep-spotlight,
+body:not(.path-admin).path-frontpage .bfep-trust-callout {
+  margin-block: var(--bf-polish-section-gap) 0;
+}
+
+body:not(.path-admin).path-frontpage .bfep-home-grid {
+  margin-block: var(--bf-polish-section-gap) 0;
+}
+
+body:not(.path-admin) .bfep-detail .bfep-related {
+  margin-top: var(--bf-polish-section-gap);
+}
+
+/* -------------------------------------------------------------------------
+ * Two padding sizes for boxed content: panels and cards.
+ * ---------------------------------------------------------------------- */
+
+/* Full-width panels had seven different paddings (18-36px), so their text
+ * started at a different inset in each. */
+body:not(.path-admin) .bfep-official-channel,
+body:not(.path-admin) .bfep-official-channel--footer,
+body:not(.path-admin) .bfep-section-nav,
+body:not(.path-admin) .bfep-trust-callout,
+body:not(.path-admin) .bfep-filter-form,
+body:not(.path-admin) form.bfep-public-form,
+body:not(.path-admin) .bfep-detail .bfep-description {
+  padding: var(--bf-polish-panel-pad) !important;
+}
+
+body:not(.path-admin) .bfep-campaign-card,
+body:not(.path-admin) .bfep-stat-card,
+body:not(.path-admin) .bfep-detail-meta {
+  padding: var(--bf-polish-card-pad) !important;
 }

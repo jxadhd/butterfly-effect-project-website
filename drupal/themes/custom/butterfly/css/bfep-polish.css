@@ -11,6 +11,7 @@
   --bf-polish-shell: 74rem;
   --bf-polish-form: 52rem;
   --bf-polish-gutter: clamp(1rem, 4vw, 2rem);
+  --bf-polish-section-gap: clamp(2.5rem, 5vw, 3.5rem);
   --bf-polish-header: 5.25rem;
   --bf-polish-control: 3rem;
   --bf-polish-radius: 1rem;
@@ -1214,4 +1215,60 @@ body:not(.path-admin) .block-search-wide__button[aria-expanded="true"] svg {
 
 body:not(.path-admin) .block-search-wide__button[aria-expanded="false"] .block-search-wide__button-close {
   display: none !important;
+}
+
+/* -------------------------------------------------------------------------
+ * One vertical rhythm between page sections.
+ * ---------------------------------------------------------------------- */
+
+/* A 55vh minimum on the page body pushed the section menu far down on short
+ * pages such as /countries. The empty space now goes below the content
+ * instead, so the section menu always follows it at the usual gap. */
+body:not(.path-admin):not(.path-frontpage) .block-system-main-block {
+  min-height: 0;
+}
+
+body:not(.path-admin) .main-content {
+  min-height: 60vh;
+}
+
+/* The page body's own bottom margin and padding stacked on top of the gap
+ * below, so the space before the section menu varied from 72px to 104px. */
+body:not(.path-admin) .region--content .block-system-main-block {
+  margin-bottom: 0 !important;
+}
+
+body:not(.path-admin) .region--content .block-system-main-block > .block__content {
+  padding-bottom: 0 !important;
+}
+
+body:not(.path-admin) .bfep-page > :last-child,
+body:not(.path-admin) .bfep-trust-page > :last-child,
+body:not(.path-admin) .bfep-detail > :last-child,
+body:not(.path-admin) .bfep-page > :last-child > :last-child {
+  margin-bottom: 0;
+}
+
+body:not(.path-admin) .bfep-section-nav {
+  margin-top: var(--bf-polish-section-gap);
+}
+
+/* The content area already ends in generous padding; a footer margin on top
+ * of it left a 176px gap. */
+body:not(.path-admin) .site-footer {
+  margin-top: 0 !important;
+}
+
+body:not(.path-admin).path-frontpage .bfep-official-channel--home,
+body:not(.path-admin).path-frontpage .bfep-spotlight,
+body:not(.path-admin).path-frontpage .bfep-trust-callout {
+  margin-block: var(--bf-polish-section-gap) 0;
+}
+
+body:not(.path-admin).path-frontpage .bfep-home-grid {
+  margin-block: var(--bf-polish-section-gap) 0;
+}
+
+body:not(.path-admin) .bfep-detail .bfep-related {
+  margin-top: var(--bf-polish-section-gap);
 }

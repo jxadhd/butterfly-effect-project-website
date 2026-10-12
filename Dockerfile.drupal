@@ -22,6 +22,16 @@ RUN composer require \
       --optimize-autoloader \
     && composer clear-cache
 
+# The base image's opcache-recommended.ini caches at most 4000 files, but
+# Drupal core plus vendor has well over that, so scripts keep getting evicted
+# and recompiled and uncached pages render slowly. zz- sorts after it, so
+# these values win.
+RUN printf '%s\n' \
+      'opcache.memory_consumption=256' \
+      'opcache.interned_strings_buffer=32' \
+      'opcache.max_accelerated_files=30000' \
+      > /usr/local/etc/php/conf.d/zz-bfep-opcache.ini
+
 RUN printf '%s\n' 'ServerName butterfly.joshcross.co.nz' \
       > /etc/apache2/conf-available/servername.conf \
     && a2enconf servername

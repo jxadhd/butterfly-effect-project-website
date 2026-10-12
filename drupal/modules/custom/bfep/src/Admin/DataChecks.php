@@ -23,7 +23,7 @@ final class DataChecks {
   public static function all(): array {
     $active = 'SELECT 1 FROM campaign_fundraisers f WHERE f.campaign_id = campaigns.id AND f.is_active';
     $sameUrl = AdminFormat::urlKeySql('g.url') . ' = ' . AdminFormat::urlKeySql('f.url');
-    // Text that is not a web address is "bad_url"'s job, not a shared fundraiser.
+    // Text that is not a web address is left to bad_url.
     $address = "COALESCE(TRIM(f.url), '') <> '' AND TRIM(f.url) !~ '\\s' AND POSITION('.' IN TRIM(f.url)) > 0";
 
     return [

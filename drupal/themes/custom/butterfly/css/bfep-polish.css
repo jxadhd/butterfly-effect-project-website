@@ -56,7 +56,9 @@ body:not(.path-admin) .site-header__inner__container,
 body:not(.path-admin) .main-content__container,
 body:not(.path-admin) .site-footer__inner {
   width: 100% !important;
-  max-width: 80rem !important;
+  /* The shell plus its gutters, so the logo, page content and footer all
+   * start and end on the same lines. */
+  max-width: calc(var(--bf-polish-shell) + 2 * var(--bf-polish-gutter)) !important;
   margin-inline: auto !important;
   padding-inline: var(--bf-polish-gutter) !important;
 }

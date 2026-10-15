@@ -121,6 +121,12 @@ body:not(.path-admin) .breadcrumb__list {
   padding: 0 !important;
 }
 
+/* Olivero fades long breadcrumbs into white on narrow screens, which shows as
+   a light bar beside the breadcrumb on this dark theme. */
+body:not(.path-admin) .breadcrumb::after {
+  content: none !important;
+}
+
 body:not(.path-admin) .page-title,
 body:not(.path-admin) h1.page-title {
   max-width: 18ch;

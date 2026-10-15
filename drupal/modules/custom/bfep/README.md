@@ -93,7 +93,8 @@ form requires Drupal's `administer site configuration` permission.
   `/initiatives/image/{id}.{ext}` with a one-day public cache (staff can also
   see photos of initiatives that are not featured, uncached). The tables and
   the grants `bfep_app` needs are created by `sql/ground-initiative-media.sql`,
-  run once as the schema owner; until then the form hides photos and links and
+  run once as the schema owner (on butterfly, through a small Python runner,
+  since it has no psql); until then the form hides photos and links and
   says so. If `ground_initiatives` has `updated_at` (the script adds it), a
   save is refused when someone else saved first.
 - **Saving returns to the list.** After a successful save, every staff form

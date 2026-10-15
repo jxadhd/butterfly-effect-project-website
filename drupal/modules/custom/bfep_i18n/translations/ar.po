@@ -2352,3 +2352,67 @@ msgstr "إغاثة"
 msgctxt "Initiative type"
 msgid "Other"
 msgstr "أخرى"
+
+# The "Branded footer" custom block on the live site. Custom block text is
+# translated one sentence or link at a time (context "Site block text", then
+# the same English without a context, which covers its links), so the pieces
+# around a link are listed both whole and split.
+msgctxt "Site block text"
+msgid "The Butterfly Effect Project"
+msgstr "مشروع أثر الفراشة"
+
+msgctxt "Site block text"
+msgid "We help humanitarian causes through limited means."
+msgstr "نساند القضايا الإنسانية بما يتاح لنا من إمكانات محدودة."
+
+msgctxt "Site block text"
+msgid "This website was built and is hosted by Josh Cross Creative in Ōtautahi Christchurch, Aotearoa New Zealand."
+msgstr "صمّم هذا الموقع ويستضيفه Josh Cross Creative في أوتاوتاهي كرايستشيرش، أوتياروا نيوزيلندا."
+
+msgctxt "Site block text"
+msgid "This website was built and is hosted by"
+msgstr "صمّم هذا الموقع ويستضيفه"
+
+msgctxt "Site block text"
+msgid "in Ōtautahi Christchurch, Aotearoa New Zealand."
+msgstr "في أوتاوتاهي كرايستشيرش، أوتياروا نيوزيلندا."
+
+# Policy pages as edited on the live site. An edited page has no whole-page
+# translation, so it is translated a paragraph at a time: first from these
+# entries (context "Policy text"), then from the same English elsewhere in
+# this file.
+msgctxt "Policy text"
+msgid "The Butterfly Effect Project is a volunteer-led mutual aid project. We organise public fundraiser information and link people to fundraisers hosted by independent platforms."
+msgstr "مشروع أثر الفراشة مشروع تطوعي للعون المتبادل. ننظّم المعلومات العامة عن صفحات التبرع، ونوجّه الناس إلى صفحات تبرع تستضيفها منصات مستقلة."
+
+msgctxt "Policy text"
+msgid "We do not receive or distribute donations or aid. Each fundraiser’s organiser and platform controls the payment process, fees, refunds, and its own terms."
+msgstr "لا نستلم التبرعات أو المساعدات ولا نوزّعها. ويتحكم منظِّم كل صفحة تبرع ومنصتها في عملية الدفع والرسوم والمبالغ المستردة وشروطها الخاصة."
+
+msgctxt "Policy text"
+msgid "“Urgent medical needs” describes information supplied or observed during review. In humanitarian emergencies, circumstances can change rapidly, so visitors should read the current fundraiser before acting upon the information we provide."
+msgstr "«احتياجات طبية عاجلة» وصف لمعلومات قُدّمت أو لوحظت أثناء المراجعة. وفي حالات الطوارئ الإنسانية قد تتغيّر الظروف بسرعة، لذا ينبغي للزوار قراءة صفحة التبرع الحالية قبل التصرف بناءً على المعلومات التي نقدّمها."
+
+msgctxt "Policy text"
+msgid "Families, organisers, and visitors have the right to request an information update at any time. We review requests against available evidence and update or remove records where appropriate."
+msgstr "يحق للعائلات والمنظِّمين والزوار طلب تحديث المعلومات في أي وقت. ونراجع الطلبات في ضوء الأدلة المتاحة، ثم نحدّث السجلات أو نحذفها عند الاقتضاء."
+
+msgctxt "Policy text"
+msgid "External fundraiser links are controlled by third parties and may change without notice."
+msgstr "يتحكم طرف ثالث في روابط صفحات التبرع الخارجية، وقد تتغيّر دون إشعار."
+
+msgctxt "Policy text"
+msgid "The Butterfly Effect Project volunteer team operates the directory from Aotearoa New Zealand."
+msgstr "يدير فريق متطوعي مشروع أثر الفراشة الدليل من أوتياروا نيوزيلندا."
+
+msgctxt "Policy text"
+msgid "Our volunteers support research, referral review, record maintenance, translation, and amplification. They receive no benefit from working with us other than the rewarding task of helping others in need. Access to private submissions is limited to authorised accounts with a work-related need."
+msgstr "يساهم متطوعونا في البحث ومراجعة الترشيحات وتحديث السجلات والترجمة وإيصال صوت الحملات، ولا ينالون من عملهم معنا أي منفعة سوى ما يجدونه من رضا في مساعدة المحتاجين. ويقتصر الوصول إلى الطلبات الخاصة على الحسابات المخوَّلة التي يتطلب عملها ذلك."
+
+msgctxt "Policy text"
+msgid "Josh Cross Creative maintains the website and supporting infrastructure. Technical administration does not determine whether a fundraiser should be featured."
+msgstr "يتولى Josh Cross Creative صيانة الموقع والبنية التقنية الداعمة له. ولا تحدد الإدارة التقنية ما إذا كانت صفحة تبرع ما ستُميَّز."
+
+msgctxt "Policy text"
+msgid "Our group is volunteer-led and powered only by the resources our few but mighty volunteers bring to the table, so response times vary. Do not send passwords, payment-card details, identity documents, or information that is not needed for the request."
+msgstr "يقود مجموعتَنا متطوعون، ولا تعتمد إلا على ما يقدّمه متطوعونا القليلون في عددهم الكبار في عطائهم، لذا تتفاوت مدة الرد. لا ترسل كلمات مرور أو بيانات بطاقات دفع أو وثائق هوية أو أي معلومات لا يحتاجها الطلب."

@@ -32,8 +32,8 @@ RUN printf '%s\n' \
       'opcache.max_accelerated_files=30000' \
       > /usr/local/etc/php/conf.d/zz-bfep-opcache.ini
 
-RUN printf '%s\n' 'ServerName butterfly.joshcross.co.nz' \
+RUN printf '%s\n' 'ServerName bfep.org' \
       > /etc/apache2/conf-available/servername.conf \
     && a2enconf servername
 
-RUN printf '\nSitemap: https://butterfly.joshcross.co.nz/sitemap.xml\n' >> /opt/drupal/web/robots.txt
+RUN printf '\nSitemap: https://bfep.org/sitemap.xml\n' >> /opt/drupal/web/robots.txt

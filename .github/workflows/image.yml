@@ -43,7 +43,7 @@ jobs:
           docker run --rm bfep-drupal:ci php -v
           docker run --rm bfep-drupal:ci php -m | grep -qx gmp
           docker run --rm bfep-drupal:ci vendor/bin/drush --version
-          docker run --rm bfep-drupal:ci sh -c 'grep -q "^Sitemap: https://butterfly.joshcross.co.nz/sitemap.xml" web/robots.txt'
+          docker run --rm bfep-drupal:ci sh -c 'grep -q "^Sitemap: https://bfep.org/sitemap.xml" web/robots.txt'
           docker run --rm bfep-drupal:ci php -r 'exit(ini_get("opcache.max_accelerated_files") === "30000" ? 0 : 1);'
 
       # Lists what this build installed on the run's Summary page, so a

@@ -1,4 +1,12 @@
 services:
+  # Runs before the page cache (priority 200), so cached English pages still
+  # send first-time Arabic readers, and readers who picked Arabic, to /ar.
+  bfep_i18n.language_redirect:
+    class: Drupal\bfep_i18n\StackMiddleware\LanguageRedirect
+    arguments: ['@config.factory']
+    tags:
+      - { name: http_middleware, priority: 250 }
+
   bfep_i18n.translations:
     class: Drupal\bfep_i18n\Translations
     arguments:

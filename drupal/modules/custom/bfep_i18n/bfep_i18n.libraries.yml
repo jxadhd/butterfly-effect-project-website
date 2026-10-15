@@ -12,3 +12,8 @@ right-to-left:
   css:
     theme:
       css/right-to-left.css: {}
+
+preview:
+  css:
+    component:
+      css/preview.css: {}

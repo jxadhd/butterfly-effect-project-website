@@ -1,0 +1,21 @@
+/**
+ * @file
+ * The staff preview notice on pages in a language the public cannot see.
+ */
+
+.bfep-i18n-preview {
+  position: relative;
+  z-index: 1000;
+  padding: 0.5rem 1rem;
+  background: #fbbf24;
+  color: #1c1917;
+  font: 500 0.875rem/1.4 system-ui, sans-serif;
+  letter-spacing: normal;
+  text-align: center;
+}
+
+.bfep-i18n-preview a {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\bfep_i18n\Unit;
 
+use Drupal\Core\Session\SessionConfigurationInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\bfep_i18n\LanguageSettings;
 use Drupal\bfep_i18n\StackMiddleware\LanguageRedirect;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,6 +73,58 @@ final class LanguageRedirectTest extends UnitTestCase {
   }
 
   /**
+   * The Languages settings: who can see Arabic, and the automatic choice.
+   *
+   * @covers ::handle
+   * @dataProvider settingsProvider
+   */
+  public function testSettings(array $settings, bool $session, string $uri, array $headers, array $cookies, ?string $location): void {
+    $this->handled = [];
+    $request = Request::create($uri, cookies: $cookies, server: $this->server($headers));
+    $response = $this->middleware($settings, $session)->handle($request);
+    if ($location === NULL) {
+      $this->assertSame(200, $response->getStatusCode(), 'The page is shown.');
+      return;
+    }
+    $this->assertSame(302, $response->getStatusCode());
+    $this->assertSame($location, $response->headers->get('Location'));
+    $this->assertSame([], $response->headers->getCookies(), 'The choice is not stored.');
+  }
+
+  public static function settingsProvider(): array {
+    $arabic = ['Accept-Language' => self::ARABIC_BROWSER, 'User-Agent' => self::CHROME];
+    $staff = ['visibility' => ['ar' => 'staff']];
+    $off = ['visibility' => ['ar' => 'off']];
+    $manual = ['automatic_choice' => FALSE];
+    return [
+      'staff only: visitor stays on English' => [$staff, FALSE, '/campaigns', $arabic, [], NULL],
+      'staff only: visitor who chose Arabic stays on English' => [$staff, FALSE, '/campaigns', $arabic, ['bfep_lang' => 'ar'], NULL],
+      'staff only: Arabic page sends visitors to English' => [$staff, FALSE, '/ar/campaigns?page=2', $arabic, [], '/campaigns?page=2'],
+      'staff only: switch link sends visitors to English' => [$staff, FALSE, '/ar/campaigns?lang=ar', $arabic, [], '/campaigns'],
+      'staff only: staff see Arabic pages' => [$staff, TRUE, '/ar/campaigns', $arabic, [], NULL],
+      'staff only: staff get the automatic choice' => [$staff, TRUE, '/campaigns', $arabic, [], '/ar/campaigns'],
+      'off: staff are sent to English too' => [$off, TRUE, '/ar', $arabic, [], '/'],
+      'off: no automatic choice' => [$off, TRUE, '/campaigns', $arabic, ['bfep_lang' => 'ar'], NULL],
+      'automatic choice off: browser is ignored' => [$manual, FALSE, '/campaigns', $arabic, [], NULL],
+      'automatic choice off: stored choice is ignored' => [$manual, FALSE, '/countries', $arabic, ['bfep_lang' => 'ar'], NULL],
+      'automatic choice off: Arabic page stays' => [$manual, FALSE, '/ar/countries', $arabic, [], NULL],
+    ];
+  }
+
+  /**
+   * @covers ::handle
+   */
+  public function testSwitchWorksWithoutAutomaticChoice(): void {
+    $request = Request::create('/campaigns?lang=ar', server: $this->server(['Accept-Language' => self::ENGLISH_BROWSER, 'User-Agent' => self::CHROME]));
+    $response = $this->middleware(['automatic_choice' => FALSE])->handle($request);
+    $this->assertSame('/ar/campaigns', $response->headers->get('Location'));
+    $this->assertSame('ar', $response->headers->getCookies()[0]->getValue());
+
+    $response = $this->middleware(['automatic_choice' => FALSE])->handle(Request::create('/campaigns', server: $this->server(['Accept-Language' => self::ARABIC_BROWSER, 'User-Agent' => self::CHROME])));
+    $this->assertSame([], $response->getVary(), 'Nothing depends on the browser language.');
+  }
+
+  /**
    * @covers ::handle
    */
   public function testSwitchStoresTheChoice(): void {
@@ -116,9 +170,9 @@ final class LanguageRedirectTest extends UnitTestCase {
    * @covers ::handle
    */
   public function testEnglishOnlySiteIsUntouched(): void {
-    $middleware = new LanguageRedirect($this->kernel(), $this->getConfigFactoryStub([
+    $middleware = new LanguageRedirect($this->kernel(), new LanguageSettings($this->getConfigFactoryStub([
       'language.negotiation' => ['url' => ['source' => 'path_prefix', 'prefixes' => ['en' => '']]],
-    ]));
+    ])), $this->createMock(SessionConfigurationInterface::class));
     $request = Request::create('/campaigns?lang=ar', server: $this->server(['Accept-Language' => 'ar', 'User-Agent' => self::CHROME]));
     $response = $middleware->handle($request);
     $this->assertSame(200, $response->getStatusCode());
@@ -133,10 +187,22 @@ final class LanguageRedirectTest extends UnitTestCase {
     return $this->middleware()->handle(Request::create($uri, cookies: $cookies, server: $this->server($headers)));
   }
 
-  private function middleware(): LanguageRedirect {
-    return new LanguageRedirect($this->kernel(), $this->getConfigFactoryStub([
+  /**
+   * The middleware for a site with English and Arabic.
+   *
+   * @param array $settings
+   *   The bfep_i18n.settings values. Arabic is public by default.
+   * @param bool $session
+   *   Whether requests have a session, as signed-in staff do.
+   */
+  private function middleware(array $settings = [], bool $session = FALSE): LanguageRedirect {
+    $sessionConfiguration = $this->createMock(SessionConfigurationInterface::class);
+    $sessionConfiguration->method('hasSession')->willReturn($session);
+    return new LanguageRedirect($this->kernel(), new LanguageSettings($this->getConfigFactoryStub([
       'language.negotiation' => ['url' => ['source' => 'path_prefix', 'prefixes' => ['en' => '', 'ar' => 'ar']]],
-    ]));
+      'bfep_i18n.settings' => $settings,
+      'system.site' => ['default_langcode' => 'en'],
+    ])), $sessionConfiguration);
   }
 
   /**

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Url;
+use Drupal\bfep_i18n\LanguageSettings;
 
 /**
  * Implements hook_rebuild().
@@ -45,6 +46,25 @@ function _bfep_i18n_languages(): array {
     }
   }
   return $languages;
+}
+
+/**
+ * The site's languages that everyone can see, as _bfep_i18n_languages().
+ *
+ * Staff-only and switched-off languages are left out of hreflang links, the
+ * sitemap and Open Graph locales.
+ *
+ * @return array<string, array{language: \Drupal\Core\Language\LanguageInterface, prefix: string}>
+ *   Keyed by langcode, in the site's language order.
+ */
+function _bfep_i18n_public_languages(): array {
+  /** @var \Drupal\bfep_i18n\LanguageSettings $settings */
+  $settings = \Drupal::service('bfep_i18n.language_settings');
+  return array_filter(
+    _bfep_i18n_languages(),
+    static fn (string $langcode): bool => $settings->visibility($langcode) === LanguageSettings::PUBLIC,
+    ARRAY_FILTER_USE_KEY,
+  );
 }
 
 /**
@@ -86,14 +106,29 @@ function _bfep_i18n_url(string $path, string $prefix, array $query = []): string
 /**
  * Implements hook_preprocess_HOOK() for page.html.twig.
  *
- * Adds the language switch to the header of every public page.
+ * Adds the language switch to the header of every public page. It offers
+ * the languages the visitor can see, and is left out when the Languages
+ * settings turn it off.
  */
 function bfep_i18n_preprocess_page(array &$variables): void {
   if (!_bfep_i18n_is_public_page()) {
     return;
   }
-  $languages = _bfep_i18n_languages();
-  if (count($languages) < 2) {
+  /** @var \Drupal\bfep_i18n\LanguageSettings $settings */
+  $settings = \Drupal::service('bfep_i18n.language_settings');
+  $account = \Drupal::currentUser();
+  $languages = array_filter(
+    _bfep_i18n_languages(),
+    static fn (string $langcode): bool => $settings->canSee($langcode, $account),
+    ARRAY_FILTER_USE_KEY,
+  );
+  // The page changes when the settings or the visitor's permissions do.
+  $cache = [
+    'contexts' => ['url.path', 'url.query_args', 'url.path.is_front', 'languages:language_interface', 'user.permissions'],
+    'tags' => ['config:bfep_i18n.settings'],
+  ];
+  if (!$settings->showSwitch() || count($languages) < 2) {
+    $variables['page']['header']['bfep_i18n_language_switch'] = ['#cache' => $cache];
     return;
   }
   $current = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_INTERFACE)->getId();
@@ -121,9 +156,7 @@ function bfep_i18n_preprocess_page(array &$variables): void {
     '#current' => $current,
     '#weight' => 100,
     '#attached' => ['library' => ['bfep_i18n/language-switcher']],
-    '#cache' => [
-      'contexts' => ['url.path', 'url.query_args', 'url.path.is_front', 'languages:language_interface'],
-    ],
+    '#cache' => $cache,
   ];
 }
 
@@ -147,6 +180,8 @@ function bfep_i18n_theme(): array {
  */
 function bfep_i18n_page_attachments(array &$attachments): void {
   $attachments['#cache']['contexts'][] = 'languages:language_interface';
+  $attachments['#cache']['contexts'][] = 'user.permissions';
+  $attachments['#cache']['tags'][] = 'config:bfep_i18n.settings';
   $language = \Drupal::languageManager()->getCurrentLanguage();
   if ($language->getDirection() === LanguageInterface::DIRECTION_RTL && _bfep_i18n_is_public_page()) {
     // The Arabic typeface and the few theme fixes right-to-left pages need.
@@ -159,7 +194,7 @@ function bfep_i18n_page_attachments(array &$attachments): void {
   }
   /** @var \Drupal\bfep\Service\BfepSettings $settings */
   $settings = \Drupal::service('bfep.settings');
-  $languages = _bfep_i18n_languages();
+  $languages = _bfep_i18n_public_languages();
   if (count($languages) < 2) {
     return;
   }
@@ -180,6 +215,41 @@ function bfep_i18n_page_attachments(array &$attachments): void {
 }
 
 /**
+ * Implements hook_page_top().
+ *
+ * Reminds staff when the page they are looking at is in a language the
+ * public cannot see yet.
+ */
+function bfep_i18n_page_top(array &$page_top): void {
+  $cache = [
+    'contexts' => ['languages:language_interface', 'user.permissions'],
+    'tags' => ['config:bfep_i18n.settings'],
+  ];
+  $page_top['bfep_i18n_preview'] = ['#cache' => $cache];
+  $language = \Drupal::languageManager()->getCurrentLanguage();
+  /** @var \Drupal\bfep_i18n\LanguageSettings $settings */
+  $settings = \Drupal::service('bfep_i18n.language_settings');
+  if ($settings->visibility($language->getId()) === LanguageSettings::PUBLIC || !_bfep_i18n_is_public_page()) {
+    return;
+  }
+  $message = t('Staff preview: only signed-in staff can see the @language pages.', ['@language' => $language->getName()]);
+  if (\Drupal::currentUser()->hasPermission('administer bfep languages')) {
+    $message = t('Staff preview: only signed-in staff can see the @language pages. <a href=":url">Change this in Languages</a>.', [
+      '@language' => $language->getName(),
+      // Staff pages are English.
+      ':url' => Url::fromRoute('bfep_i18n.settings', [], ['language' => \Drupal::languageManager()->getDefaultLanguage()])->toString(),
+    ]);
+  }
+  $page_top['bfep_i18n_preview'] += [
+    '#type' => 'html_tag',
+    '#tag' => 'div',
+    '#attributes' => ['class' => ['bfep-i18n-preview'], 'role' => 'note', 'lang' => 'en', 'dir' => 'ltr'],
+    'message' => ['#markup' => $message],
+    '#attached' => ['library' => ['bfep_i18n/preview']],
+  ];
+}
+
+/**
  * Implements hook_metatags_alter().
  *
  * Runs after bfep_metatags_alter(), which sets the English locale.
@@ -191,7 +261,10 @@ function bfep_i18n_metatags_alter(array &$metatags, array &$context): void {
   $locales = ['en' => 'en_NZ', 'ar' => 'ar_AR'];
   $current = \Drupal::languageManager()->getCurrentLanguage()->getId();
   $metatags['og_locale'] = $locales[$current] ?? $current;
-  $alternates = array_values(array_diff_key($locales, [$current => TRUE]));
+  $alternates = array_values(array_diff_key(
+    array_intersect_key($locales, _bfep_i18n_public_languages()),
+    [$current => TRUE],
+  ));
   if ($alternates) {
     $metatags['og_locale_alternative'] = implode(',', $alternates);
   }
@@ -209,7 +282,7 @@ function bfep_i18n_simple_sitemap_arbitrary_links_alter(array &$arbitrary_links,
   }
   /** @var \Drupal\bfep\Service\BfepSettings $settings */
   $settings = \Drupal::service('bfep.settings');
-  $languages = array_keys(_bfep_i18n_languages());
+  $languages = array_keys(_bfep_i18n_public_languages());
   if (count($languages) < 2) {
     return;
   }
@@ -281,7 +354,7 @@ function bfep_i18n_preprocess_bfep_trust_page(array &$variables): void {
  */
 function bfep_i18n_preprocess_bfep_staff_guide(array &$variables): void {
   $variables['extra_tips'][] = [
-    '#markup' => t('The public site is also in Arabic, under /ar. Campaign names, descriptions and other details you enter are shown as you typed them in both languages. To change the Arabic for a label or sentence, use <a href=":interface">User interface translation</a>. For the headline, page titles, policy pages and the Instagram message, use the Translate tab on <a href=":content">Content and channels</a> or <a href=":settings">BFEP settings</a>. If a page is refused, ask a site administrator.', [
+    '#markup' => t('The public site also has an Arabic version, under /ar. A site administrator sets who can see it on the Languages tab. Campaign names, descriptions and other details you enter are shown as you typed them in both languages. To change the Arabic for a label or sentence, use <a href=":interface">User interface translation</a>. For the headline, page titles, policy pages and the Instagram message, use the Translate tab on <a href=":content">Content and channels</a> or <a href=":settings">BFEP settings</a>. If a page is refused, ask a site administrator.', [
       ':interface' => Url::fromRoute('locale.translate_page')->toString(),
       ':content' => Url::fromRoute(\Drupal::moduleHandler()->moduleExists('bfep_content') ? 'config_translation.item.overview.bfep_content.settings' : 'config_translation.item.overview.bfep.settings')->toString(),
       ':settings' => Url::fromRoute('config_translation.item.overview.bfep.settings')->toString(),

@@ -3,9 +3,19 @@ services:
   # send first-time Arabic readers, and readers who picked Arabic, to /ar.
   bfep_i18n.language_redirect:
     class: Drupal\bfep_i18n\StackMiddleware\LanguageRedirect
-    arguments: ['@config.factory']
+    arguments: ['@bfep_i18n.language_settings', '@session_configuration']
     tags:
       - { name: http_middleware, priority: 250 }
+
+  bfep_i18n.language_settings:
+    class: Drupal\bfep_i18n\LanguageSettings
+    arguments: ['@config.factory']
+
+  bfep_i18n.language_access_subscriber:
+    class: Drupal\bfep_i18n\EventSubscriber\LanguageAccessSubscriber
+    arguments: ['@bfep_i18n.language_settings', '@current_user']
+    tags:
+      - { name: event_subscriber }
 
   bfep_i18n.translations:
     class: Drupal\bfep_i18n\Translations

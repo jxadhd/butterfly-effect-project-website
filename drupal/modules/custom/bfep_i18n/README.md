@@ -10,6 +10,10 @@ stays English.
 > [Changing the Arabic](#changing-the-arabic)). It is in Modern Standard
 > Arabic throughout, not a regional dialect.
 
+Arabic starts as **staff only**: signed-in staff can review it, and everyone
+else keeps getting English until someone makes it public on the
+[Languages](#languages-settings) tab.
+
 ## What visitors get
 
 - **Arabic pages under `/ar`.** `/campaigns` is English and `/ar/campaigns`
@@ -27,6 +31,21 @@ stays English.
   pages.
 - **Staff pages are English.** `/admin`, `/user` and the like are never
   redirected, and their `/ar/...` form redirects to the English page.
+
+## Languages settings
+
+**BFEP Admin › Languages** (`/admin/bfep/languages`, permission *Control the
+site languages*) has three settings.
+
+| Setting | Choices |
+|---|---|
+| Who can see the Arabic pages | **Everyone**. **Staff only, for review** (the default): anyone with *Administer BFEP external database records*, *Control the site languages* or *Translate interface text* who is signed in sees Arabic pages, the switch and a yellow "Staff preview" bar; everyone else, search engines included, is sent to the English page. **Nobody**: `/ar` addresses lead to English for everyone, and the translations are kept. |
+| Choose the language automatically | On (default): browser language on the first visit, then the visitor's own choice. Off: every address shows its own language and nobody is redirected. |
+| Show the language switch in the header | On (default) or off. It only ever offers languages the visitor can see. |
+
+hreflang links, the sitemap and `og:locale` alternates list only languages
+everyone can see. The page also links to the Arabic homepage and to the pages
+where the wording is changed.
 
 ## What is translated
 
@@ -68,8 +87,9 @@ docker exec -u www-data -w /opt/drupal drupal vendor/bin/drush cr
 
 `drush en` also turns on Drupal's Language, Interface Translation and
 Configuration Translation modules, adds Arabic, sets up `/ar` URLs and loads
-the translations. Nothing changes for English visitors except the switch in
-the header.
+the translations. Arabic starts as staff only, so the public sees no change.
+After a native speaker has checked it, choose **Everyone** on
+**BFEP Admin › Languages**.
 
 Optional: `drush locale:check && drush locale:update` downloads Drupal's own
 Arabic translations from localize.drupal.org, which covers the occasional
@@ -81,8 +101,9 @@ which is marked as customised.
 Redirects are sent with `Cache-Control: private, no-store` and English pages
 with `Vary: Accept-Language, Cookie`. With Cloudflare's default settings
 (HTML is not cached) everything works. If a "Cache Everything" rule is ever
-added for HTML, exclude requests that have a `bfep_lang` cookie, or the
-automatic choice stops working (the pages themselves still work).
+added for HTML, exclude requests that have a `bfep_lang` cookie or a Drupal
+session cookie, or the automatic choice stops working and staff-only pages
+could be cached for the public.
 
 ## Changing the Arabic
 
@@ -143,9 +164,10 @@ and Configuration Translation stay on; uninstall them separately if wanted.
 | Piece | File |
 |---|---|
 | Install: Arabic, `/ar` prefix, URL-based language negotiation | `bfep_i18n.install` |
-| Automatic choice, the switch's `?lang=` links, English-only staff pages | `src/StackMiddleware/LanguageRedirect.php` (runs before the page cache) |
+| Automatic choice, the switch's `?lang=` links, English-only staff pages, hidden languages | `src/StackMiddleware/LanguageRedirect.php` (runs before the page cache) |
+| The Languages settings and the staff-only check | `src/LanguageSettings.php`, `src/Form/LanguageSettingsForm.php`, `src/EventSubscriber/LanguageAccessSubscriber.php` (runs once Drupal knows who the visitor is) |
 | Loading `ar.po` and the configuration translations | `src/Translations.php` (on install and every cache rebuild) |
 | Header switch | `templates/bfep-language-switch.html.twig`, `css/language-switcher.css`, `js/language-switcher.js` |
 | Removing out-of-date Arabic when staff change the English | `src/EventSubscriber/ConfigTranslationSubscriber.php` |
-| hreflang, sitemap, `og:locale`, staff guide tip | `bfep_i18n.module` |
+| hreflang, sitemap, `og:locale`, staff preview bar, staff guide tip | `bfep_i18n.module` |
 | Right-to-left fixes and the Arabic typeface | `css/right-to-left.css`, `fonts/` (SIL Open Font License, see `fonts/OFL.txt`) |

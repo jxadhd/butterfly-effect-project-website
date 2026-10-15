@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\bfep_i18n\StackMiddleware;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Session\SessionConfigurationInterface;
+use Drupal\bfep_i18n\LanguageSettings;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +30,12 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  * Staff pages (/admin, /user and so on) are always English: their prefixed
  * form redirects to the unprefixed one, and they are never redirected to
  * another language.
+ *
+ * The Languages settings in the BFEP admin decide which languages a visitor
+ * may see (pages in any other language redirect to English) and can turn the
+ * automatic choice off. A staff-only language is open to requests that have
+ * a session; LanguageAccessSubscriber then checks the account's permissions,
+ * which are not known this early.
  *
  * Search engines and link-preview bots are never redirected, so each URL
  * shows them one language and hreflang links tie the versions together.
@@ -69,7 +76,8 @@ final class LanguageRedirect implements HttpKernelInterface {
 
   public function __construct(
     private readonly HttpKernelInterface $httpKernel,
-    private readonly ConfigFactoryInterface $configFactory,
+    private readonly LanguageSettings $settings,
+    private readonly SessionConfigurationInterface $sessionConfiguration,
   ) {}
 
   public function handle(Request $request, int $type = self::MAIN_REQUEST, bool $catch = TRUE): Response {
@@ -77,19 +85,24 @@ final class LanguageRedirect implements HttpKernelInterface {
       return $this->httpKernel->handle($request, $type, $catch);
     }
 
-    $prefixes = $this->prefixes();
+    $prefixes = $this->settings->prefixes();
     if (count($prefixes) < 2) {
       return $this->httpKernel->handle($request, $type, $catch);
     }
-    [$langcode, $path] = $this->split($request->getPathInfo(), $prefixes);
+    [$langcode, $path] = LanguageSettings::split($request->getPathInfo(), $prefixes);
+    $default = LanguageSettings::localize($path, $prefixes[$this->settings->defaultLangcode()] ?? '');
+    $available = $this->available($request, $prefixes);
 
     // A choice made with the language switch: remember it, then show the
     // clean URL in that language.
-    $chosen = $request->query->all()[self::QUERY] ?? NULL;
+    $query = $request->query->all();
+    $chosen = $query[self::QUERY] ?? NULL;
     if (is_string($chosen) && isset($prefixes[$chosen])) {
-      $query = $request->query->all();
       unset($query[self::QUERY]);
-      $target = $this->staff($path) ? $path : $this->localize($path, $prefixes[$chosen]);
+      if (!isset($available[$chosen])) {
+        return $this->redirect($request, $default, $query);
+      }
+      $target = $this->staff($path) ? $path : LanguageSettings::localize($path, $available[$chosen]);
       $response = $this->redirect($request, $target, $query);
       $response->headers->setCookie(Cookie::create(
         self::COOKIE,
@@ -105,15 +118,21 @@ final class LanguageRedirect implements HttpKernelInterface {
       return $response;
     }
 
+    // A page in a language this visitor may not see is shown in the default
+    // language instead.
+    if ($langcode !== NULL && !isset($available[$langcode])) {
+      return $this->redirect($request, $default, $query);
+    }
+
     // Staff pages are English only.
     if ($langcode !== NULL && $prefixes[$langcode] !== '' && $this->staff($path)) {
-      return $this->redirect($request, $path, $request->query->all());
+      return $this->redirect($request, $path, $query);
     }
 
     $isDefault = $langcode === NULL || $prefixes[$langcode] === '';
-    $negotiable = $isDefault && $this->isPage($request, $path);
-    if ($negotiable && ($preferred = $this->preferred($request, $prefixes)) !== NULL && $prefixes[$preferred] !== '') {
-      $response = $this->redirect($request, $this->localize($path, $prefixes[$preferred]), $request->query->all());
+    $negotiable = $isDefault && count($available) > 1 && $this->settings->automaticChoice() && $this->isPage($request, $path);
+    if ($negotiable && ($preferred = $this->preferred($request, $available)) !== NULL && $available[$preferred] !== '') {
+      $response = $this->redirect($request, LanguageSettings::localize($path, $available[$preferred]), $query);
       $response->setVary(['Accept-Language', 'Cookie'], FALSE);
       return $response;
     }
@@ -125,6 +144,33 @@ final class LanguageRedirect implements HttpKernelInterface {
       $response->setVary(['Accept-Language', 'Cookie'], FALSE);
     }
     return $response;
+  }
+
+  /**
+   * The languages this request may be shown, with their path prefixes.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The incoming request.
+   * @param array<string, string> $prefixes
+   *   Path prefixes keyed by langcode.
+   *
+   * @return array<string, string>
+   *   The prefixes of the languages that are public, plus the staff-only ones
+   *   when the request has a session.
+   */
+  private function available(Request $request, array $prefixes): array {
+    $session = NULL;
+    $available = [];
+    foreach ($prefixes as $langcode => $prefix) {
+      $visibility = $this->settings->visibility($langcode);
+      if ($visibility === LanguageSettings::STAFF) {
+        $session ??= $this->sessionConfiguration->hasSession($request);
+      }
+      if ($visibility === LanguageSettings::PUBLIC || ($visibility === LanguageSettings::STAFF && $session)) {
+        $available[$langcode] = $prefix;
+      }
+    }
+    return $available;
   }
 
   /**
@@ -188,30 +234,6 @@ final class LanguageRedirect implements HttpKernelInterface {
     return FALSE;
   }
 
-  /**
-   * Splits a path into its language and the path without the prefix.
-   *
-   * @return array{0: string|null, 1: string}
-   *   The langcode whose non-empty prefix starts the path (or NULL when none
-   *   does), and the path without it.
-   */
-  private function split(string $path, array $prefixes): array {
-    $first = explode('/', ltrim($path, '/'), 2);
-    foreach ($prefixes as $langcode => $prefix) {
-      if ($prefix !== '' && $first[0] === $prefix) {
-        return [$langcode, '/' . ($first[1] ?? '')];
-      }
-    }
-    return [NULL, $path];
-  }
-
-  private function localize(string $path, string $prefix): string {
-    if ($prefix === '') {
-      return $path;
-    }
-    return '/' . $prefix . ($path === '/' ? '' : $path);
-  }
-
   private function redirect(Request $request, string $path, array $query): RedirectResponse {
     $url = $request->getBasePath() . $path;
     if ($query) {
@@ -221,20 +243,6 @@ final class LanguageRedirect implements HttpKernelInterface {
     $response->setPrivate();
     $response->headers->addCacheControlDirective('no-store');
     return $response;
-  }
-
-  /**
-   * Path prefixes keyed by langcode, from the language module's settings.
-   *
-   * @return array<string, string>
-   *   For example ['en' => '', 'ar' => 'ar'].
-   */
-  private function prefixes(): array {
-    $config = $this->configFactory->get('language.negotiation');
-    if ($config->get('url.source') !== 'path_prefix') {
-      return [];
-    }
-    return array_map('strval', (array) $config->get('url.prefixes'));
   }
 
 }

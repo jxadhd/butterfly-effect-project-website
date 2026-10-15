@@ -1,0 +1,6 @@
+# Arabic starts as staff-only, so it can be reviewed before the public sees it.
+# Make it public on the Languages tab of the BFEP admin.
+visibility:
+  ar: staff
+automatic_choice: true
+switch: true

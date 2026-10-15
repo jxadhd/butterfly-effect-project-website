@@ -1,0 +1,9 @@
+bfep_i18n.settings:
+  path: '/admin/bfep/languages'
+  defaults:
+    _form: '\Drupal\bfep_i18n\Form\LanguageSettingsForm'
+    _title: 'Languages'
+  requirements:
+    _permission: 'administer bfep languages'
+  options:
+    _admin_route: TRUE

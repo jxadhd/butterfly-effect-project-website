@@ -26,6 +26,7 @@ final class SyncPlatformsTest extends UnitTestCase {
       'https://www.paypal.com/donate/?campaign_id=ABCD1234EFGH5',
       'https://www.paypal.com/donate?locale.x=en_US&campaign_id=ABCD1234EFGH5',
       'https://chuffed.org/project/120680-a-mothers-plea',
+      'https://steunactie.be/actie/help-my-family-in-gaza-5/-38978',
     ] as $url) {
       $this->assertTrue(SyncPlatforms::supports($url), $url);
     }

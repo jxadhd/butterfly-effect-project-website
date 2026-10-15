@@ -22,6 +22,7 @@ final class SyncPlatforms {
     '~gogetfunding\.com/~i' => 'GoGetFunding',
     '~(spot\.fund|spotfund\.com)/~i' => 'Spotfund',
     '~chuffed\.org/~i' => 'Chuffed',
+    '~steunactie\.be/~i' => 'Steunactie',
     '~paypal\.com/donate/?\?(.*&)?campaign_id=~i' => 'PayPal fundraisers',
   ];
 

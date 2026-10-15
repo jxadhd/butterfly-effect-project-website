@@ -82,11 +82,23 @@ form requires Drupal's `administer site configuration` permission.
   same fundraiser URL or email. A change request with no campaign suggests
   campaigns that use its URL. URLs are compared without scheme, `www.`, query
   string, fragment or trailing slash.
-- **Campaign edit** covers the active fundraiser (platform, URL, currency, goal
-  and raised amounts), tags, the no-feature response and the auto-sync switch.
-  Changing the fundraiser URL deactivates the old fundraiser row and adds a new
-  one, so history is kept. If someone else saved the campaign after you opened
-  it, your save is refused with a message, rather than overwriting theirs.
+- **Campaign edit** covers the campaign's details, tags and the no-feature
+  response, and lists its fundraisers. If someone else saved the campaign after
+  you opened it, your save is refused with a message, rather than overwriting
+  theirs.
+- **Several fundraisers per campaign.** A campaign (a `campaigns`
+  row) can have any number of fundraisers (`campaign_fundraisers` rows). The
+  edit page's Fundraisers table shows them all, active and ended, with an Edit
+  link each and an "Add fundraiser" button. Adding one offers to end the
+  campaign's current fundraisers (ticked by default, which is how a move to a new
+  platform is recorded); untick to keep them running side by side. Each
+  fundraiser's form has the platform, URL, currency, amounts, an Active
+  checkbox and the auto-sync switch. Ended fundraisers stay as history and are
+  never deleted. The public page adds up active fundraisers that share a
+  currency, lists different currencies side by side (never converted), and
+  shows each fundraiser with its own figures and button when there is more than
+  one. The sync already works per fundraiser, so it needs no change. The data
+  check "More than one active fundraiser" lists these campaigns for review.
 - **Campaign add** refuses a fundraiser URL that another campaign already uses,
   with links to those campaigns, unless "Add anyway if another campaign
   already uses this fundraiser URL" is ticked.
@@ -101,8 +113,8 @@ form requires Drupal's `administer site configuration` permission.
   status)" and campaigns by "Sync problems".
 - **CSV export.** "Download … as CSV" under the campaign list exports the
   campaigns the list is showing, with the same search and filters (up to
-  10,000 rows): line, name, country, flags, tags, active fundraiser figures and
-  links. Internal notes and submitter details are never exported. Cells that
+  10,000 rows): line, name, country, flags, tags, the newest active
+  fundraiser's figures, any other active fundraisers' links, and links. Internal notes and submitter details are never exported. Cells that
   start with `=`, `+`, `-` or `@` get a leading apostrophe so spreadsheets do
   not run them as formulas. Each export is logged with the user and row count.
 - **Sorting.** Click a column heading (line, name, country, email, hours,

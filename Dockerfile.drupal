@@ -32,6 +32,17 @@ RUN printf '%s\n' \
       'opcache.max_accelerated_files=30000' \
       > /usr/local/etc/php/conf.d/zz-bfep-opcache.ini
 
+# PHP's defaults (8 MB per request, 2 MB per file) are too small for photo
+# uploads from phones; the admin forms shrink photos in the browser first,
+# but a browser without JavaScript sends them as taken. 256 MB of memory
+# lets GD resize a 40-megapixel photo.
+RUN printf '%s\n' \
+      'upload_max_filesize=20M' \
+      'post_max_size=90M' \
+      'max_file_uploads=30' \
+      'memory_limit=256M' \
+      > /usr/local/etc/php/conf.d/zz-bfep-uploads.ini
+
 RUN printf '%s\n' 'ServerName bfep.org' \
       > /etc/apache2/conf-available/servername.conf \
     && a2enconf servername

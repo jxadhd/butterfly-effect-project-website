@@ -7,7 +7,8 @@ stays English.
 > **The Arabic was written by Claude (an AI model) and has not been checked by
 > a native speaker.** Have someone fluent read the site before it is
 > promoted. Wording can be changed without a developer (see
-> [Changing the Arabic](#changing-the-arabic)).
+> [Changing the Arabic](#changing-the-arabic)). It is in Modern Standard
+> Arabic throughout, not a regional dialect.
 
 ## What visitors get
 

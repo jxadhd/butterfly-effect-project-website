@@ -64,7 +64,7 @@ final class TranslationFileTest extends UnitTestCase {
         // number out ("حملتان" is "two campaigns").
         $missing = array_diff($this->placeholders((string) $translation), $this->placeholders(implode(' ', $source)));
         $this->assertSame([], array_values($missing), "$label: unknown placeholder in \"$translation\".");
-        $this->assertSame($this->tags(implode(' ', $source)), $this->tags((string) $translation), "$label: same HTML tags.");
+        $this->assertSame($this->tags($source[0]), $this->tags((string) $translation), "$label: same HTML tags.");
       }
       if (!$item->isPlural()) {
         $expected = $this->placeholders($source[0]);

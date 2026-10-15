@@ -1,5 +1,9 @@
 # Arabic translation of The Butterfly Effect Project public website.
 #
+# Written in Modern Standard Arabic (الفصحى), not any regional dialect, with
+# formal second-person singular instructions ("ابحث", "تصفّح") and Western
+# digits. Keep new wording in the same register.
+#
 # Machine-written by Claude (Anthropic) in October 2026. It has not yet been
 # reviewed by a native Arabic speaker; please have it checked before launch.
 # Change wording here, or on the site under Configuration > Regional and
@@ -45,7 +49,7 @@ msgid "Ground initiatives"
 msgstr "المبادرات الميدانية"
 
 msgid "Take action"
-msgstr "شارك بالعمل"
+msgstr "ساهِم معنا"
 
 msgid "Refer a fundraiser, volunteer with BFEP, or request an information update."
 msgstr "رشّح صفحة تبرع، أو تطوّع مع BFEP، أو اطلب تحديث معلومات."
@@ -144,7 +148,7 @@ msgid "What “featured” means"
 msgstr "ماذا تعني «مميّزة»"
 
 msgid "“Featured by BFEP” is an editorial directory label. It means the team chose to give the campaign additional visibility after review; it is not a financial guarantee, audit, certification, or promise about future events."
-msgstr "«مميّزة من BFEP» تصنيف تحريري في الدليل، ويعني أن الفريق اختار منح الحملة ظهورًا إضافيًا بعد مراجعتها؛ وهو ليس ضمانًا ماليًا ولا تدقيقًا ولا شهادة ولا وعدًا بشأن ما سيحدث مستقبلًا."
+msgstr "«من اختيار BFEP» تصنيف تحريري في الدليل، ويعني أن الفريق اختار منح الحملة ظهورًا إضافيًا بعد مراجعتها؛ وهو ليس ضمانًا ماليًا ولا تدقيقًا ولا شهادة ولا وعدًا بشأن ما سيحدث مستقبلًا."
 
 msgid "“Urgent medical needs” describes information supplied or observed during review. Circumstances can change, so visitors should read the current fundraiser before acting."
 msgstr "«احتياجات طبية عاجلة» وصف لمعلومات قُدّمت أو لوحظت أثناء المراجعة. قد تتغيّر الظروف، لذا ينبغي للزوار قراءة صفحة التبرع الحالية قبل اتخاذ أي خطوة."
@@ -381,7 +385,7 @@ msgid "Status"
 msgstr "الحالة"
 
 msgid "Featured by BFEP"
-msgstr "مميّزة من BFEP"
+msgstr "من اختيار BFEP"
 
 msgid "Needs"
 msgstr "الاحتياجات"
@@ -396,7 +400,7 @@ msgid "Featured"
 msgstr "مميّزة"
 
 msgid "Raised"
-msgstr "تم جمع"
+msgstr "المبلغ المُجمَّع"
 
 msgid "Goal"
 msgstr "الهدف"
@@ -405,7 +409,7 @@ msgid "Progress"
 msgstr "التقدّم"
 
 msgid "@percent% funded"
-msgstr "تمويل @percent%"
+msgstr "تحقّق @percent% من الهدف"
 
 msgid "Email"
 msgstr "البريد الإلكتروني"
@@ -546,7 +550,7 @@ msgstr[4] "تصفّح @count حملة لجمع التبرعات الإنساني
 msgstr[5] "تصفّح @count حملة لجمع التبرعات الإنسانية في @country، بما فيها الحالات المميّزة والعاجلة."
 
 msgid "Too many submissions were received from this connection. Please wait and try again later."
-msgstr "وصلنا عدد كبير جدًا من الطلبات من هذا الاتصال. يرجى الانتظار والمحاولة لاحقًا."
+msgstr "تلقّينا عددًا كبيرًا جدًا من الطلبات من هذا الاتصال. يرجى الانتظار ثم المحاولة لاحقًا."
 
 msgid "This form is temporarily receiving too many submissions. Please try again later."
 msgstr "يستقبل هذا النموذج حاليًا عددًا كبيرًا جدًا من الطلبات. يرجى المحاولة لاحقًا."
@@ -594,7 +598,7 @@ msgid "Recipient city and country"
 msgstr "مدينة المستفيد وبلده"
 
 msgid "Do not provide a street address."
-msgstr "لا تذكر عنوان الشارع."
+msgstr "لا تذكر اسم الشارع أو رقم المنزل."
 
 msgid "Who set up the fundraiser?"
 msgstr "من أنشأ صفحة التبرع؟"
@@ -621,7 +625,7 @@ msgid "I am not sure"
 msgstr "لست متأكدًا"
 
 msgid "Other"
-msgstr "أخرى"
+msgstr "غير ذلك"
 
 msgid "Please describe who set up the fundraiser"
 msgstr "يرجى توضيح من أنشأ صفحة التبرع"
@@ -699,7 +703,7 @@ msgid "Full name"
 msgstr "الاسم الكامل"
 
 msgid "How many hours per week could you help?"
-msgstr "كم ساعة في الأسبوع يمكنك المساعدة؟"
+msgstr "كم ساعة في الأسبوع يمكنك أن تخصّصها للمساعدة؟"
 
 msgid "Which areas interest you?"
 msgstr "ما المجالات التي تهمّك؟"
@@ -762,7 +766,7 @@ msgid "Campaign organiser"
 msgstr "منظِّم الحملة"
 
 msgid "Observer"
-msgstr "مراقب"
+msgstr "متابِع"
 
 msgid "Directory campaign ID, if known"
 msgstr "رقم الحملة في الدليل، إن كان معروفًا"
@@ -852,7 +856,7 @@ msgid "Fundraisers"
 msgstr "صفحات جمع التبرعات"
 
 msgid "This campaign is raising money on more than one fundraiser. The totals above add them up where they use the same currency."
-msgstr "تجمع هذه الحملة التبرعات عبر أكثر من صفحة. تجمع المبالغ أعلاه ما بينها حين تكون بالعملة نفسها."
+msgstr "تجمع هذه الحملة التبرعات عبر أكثر من صفحة. وتضمّ المجاميع أعلاه مبالغ الصفحات التي تستخدم العملة نفسها."
 
 msgid "Amounts last updated from the fundraiser page on @fundraiser.figures_updated."
 msgstr "حُدّثت المبالغ آخر مرة من صفحة التبرع في @fundraiser.figures_updated."
@@ -914,11 +918,14 @@ msgstr "صفحة جمع التبرعات"
 msgid "Choose a country to browse its public campaign records."
 msgstr "اختر بلدًا لتصفّح سجلات حملاته العامة."
 
-msgid "campaign"
-msgstr "حملة"
-
-msgid "campaigns"
-msgstr "حملات"
+msgid "<strong>@count</strong> campaign"
+msgid_plural "<strong>@count</strong> campaigns"
+msgstr[0] "<strong>@count</strong> حملة"
+msgstr[1] "<strong>@count</strong> حملة"
+msgstr[2] "<strong>@count</strong> حملتان"
+msgstr[3] "<strong>@count</strong> حملات"
+msgstr[4] "<strong>@count</strong> حملة"
+msgstr[5] "<strong>@count</strong> حملة"
 
 msgid "featured"
 msgstr "مميّزة"
@@ -1009,12 +1016,12 @@ msgstr "آخر تحديث: @updated."
 
 msgid "@count public humanitarian fundraising campaign is listed for @fixed_country."
 msgid_plural "@count public humanitarian fundraising campaigns are listed for @fixed_country."
-msgstr[0] "لا توجد حملات عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
-msgstr[1] "توجد حملة عامة واحدة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
-msgstr[2] "توجد حملتان عامتان لجمع التبرعات الإنسانية مُدرجتان لـ @fixed_country."
-msgstr[3] "توجد @count حملات عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
-msgstr[4] "توجد @count حملة عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
-msgstr[5] "توجد @count حملة عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
+msgstr[0] "لا توجد حملات عامة لجمع التبرعات الإنسانية مُدرجة في @fixed_country."
+msgstr[1] "توجد حملة عامة واحدة لجمع التبرعات الإنسانية مُدرجة في @fixed_country."
+msgstr[2] "توجد حملتان عامتان لجمع التبرعات الإنسانية مُدرجتان في @fixed_country."
+msgstr[3] "توجد @count حملات عامة لجمع التبرعات الإنسانية مُدرجة في @fixed_country."
+msgstr[4] "توجد @count حملة عامة لجمع التبرعات الإنسانية مُدرجة في @fixed_country."
+msgstr[5] "توجد @count حملة عامة لجمع التبرعات الإنسانية مُدرجة في @fixed_country."
 
 msgid "Of these, @urgent is for urgent medical needs."
 msgid_plural "Of these, @urgent are for urgent medical needs."
@@ -1027,12 +1034,12 @@ msgstr[5] "منها @urgent حملة لاحتياجات طبية عاجلة."
 
 msgid "@featured is featured by BFEP."
 msgid_plural "@featured are featured by BFEP."
-msgstr[0] "لا توجد بينها حملات مميّزة من BFEP."
-msgstr[1] "وحملة واحدة مميّزة من BFEP."
-msgstr[2] "وحملتان مميّزتان من BFEP."
-msgstr[3] "و@featured حملات مميّزة من BFEP."
-msgstr[4] "و@featured حملة مميّزة من BFEP."
-msgstr[5] "و@featured حملة مميّزة من BFEP."
+msgstr[0] "ولا توجد بينها حملات من اختيار BFEP."
+msgstr[1] "ومنها حملة واحدة من اختيار BFEP."
+msgstr[2] "ومنها حملتان من اختيار BFEP."
+msgstr[3] "ومنها @featured حملات من اختيار BFEP."
+msgstr[4] "ومنها @featured حملة من اختيار BFEP."
+msgstr[5] "ومنها @featured حملة من اختيار BFEP."
 
 msgid "Each record links to the organiser's own fundraiser page, and donations go directly through that platform. BFEP does not process donations."
 msgstr "يرتبط كل سجل بصفحة التبرع الخاصة بالمنظِّم، وتمرّ التبرعات مباشرة عبر تلك المنصة. لا تتولّى BFEP معالجة التبرعات."
@@ -1195,7 +1202,7 @@ msgid "About & trust"
 msgstr "عن المشروع والثقة"
 
 msgid "@title sub-navigation"
-msgstr "القائمة الفرعية لـ @title"
+msgstr "القائمة الفرعية: @title"
 
 msgid "Follow"
 msgstr "تابع"
@@ -1327,7 +1334,7 @@ msgid "The URL %url is not valid."
 msgstr "الرابط %url غير صحيح."
 
 msgid "@name cannot be longer than %max characters but is currently %length characters long."
-msgstr "لا يمكن أن يزيد @name عن %max حرفًا، وطوله الحالي %length حرفًا."
+msgstr "يجب ألا يزيد @name على %max من الأحرف، وعدد أحرفه الحالي %length."
 
 msgid "An illegal choice has been detected. Please contact the site administrator."
 msgstr "تم اكتشاف اختيار غير صالح. يرجى التواصل مع مسؤول الموقع."
@@ -2108,11 +2115,11 @@ msgstr "تعليم"
 
 msgctxt "Campaign tag"
 msgid "winter"
-msgstr "الشتاء"
+msgstr "شتاء"
 
 msgctxt "Campaign tag"
 msgid "Winter"
-msgstr "الشتاء"
+msgstr "شتاء"
 
 msgctxt "Campaign tag"
 msgid "shelter"
@@ -2212,11 +2219,11 @@ msgstr "طوارئ"
 
 msgctxt "Campaign tag"
 msgid "cancer"
-msgstr "السرطان"
+msgstr "سرطان"
 
 msgctxt "Campaign tag"
 msgid "Cancer"
-msgstr "السرطان"
+msgstr "سرطان"
 
 msgctxt "Volunteer interest area"
 msgid "Research"

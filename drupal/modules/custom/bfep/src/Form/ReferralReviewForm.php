@@ -148,7 +148,10 @@ final class ReferralReviewForm extends AdminRecordFormBase {
       ->condition('id', $this->referralId)
       ->execute();
     $this->auditLogger->record('updated', 'referral', $this->referralId, AdminFormat::changedKeys((array) $this->referral, $fields));
-    $this->messenger()->addStatus($this->t('Referral review saved.'));
+    $this->messenger()->addStatus($this->t('Referral review saved for <a href=":url">@name</a>.', [
+      ':url' => $this->recordUrl($this->referralId),
+      '@name' => trim((string) ($this->referral->full_name ?? '')) ?: $this->t('referral #@id', ['@id' => $this->referralId]),
+    ]));
     $this->redirectAfterSave($form_state, $this->referralId, 'bfep.admin_referrals');
   }
 

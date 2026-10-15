@@ -27,6 +27,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class CampaignFundraiserForm extends FormBase {
 
+  use ReturnToListTrait;
   use SaveFailureTrait;
 
   protected int $campaignId = 0;
@@ -109,7 +110,7 @@ final class CampaignFundraiserForm extends FormBase {
       '#default_value' => $this->fundraiser->url ?? '',
       '#description' => $editing
         ? $this->t('Change the link only to correct it. If the campaign moved to a different fundraiser, <a href=":add">add the new fundraiser</a> instead, so this one stays in the history.', [
-          ':add' => Url::fromRoute('bfep.admin_fundraiser_add', ['campaign_id' => $this->campaignId])->toString(),
+          ':add' => Url::fromRoute('bfep.admin_fundraiser_add', ['campaign_id' => $this->campaignId], ['query' => $this->backQuery()])->toString(),
         ]) . ' ' . SyncPlatforms::help()
         : SyncPlatforms::help(),
     ];
@@ -178,7 +179,7 @@ final class CampaignFundraiserForm extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Back to campaign'),
-      '#url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId], ['fragment' => 'edit-fundraisers']),
+      '#url' => $this->campaignUrl(),
       '#attributes' => ['class' => ['button']],
     ];
     return $form;
@@ -448,7 +449,20 @@ final class CampaignFundraiserForm extends FormBase {
       (bool) $changed => $this->t('Fundraiser saved.'),
       default => $this->t('No changes to save.'),
     });
-    $form_state->setRedirect('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId], ['fragment' => 'edit-fundraisers']);
+    $form_state->setRedirectUrl($this->campaignUrl());
+  }
+
+  /**
+   * The campaign's Fundraisers table, the list a fundraiser returns to.
+   *
+   * Passes on ?back= so saving the campaign afterwards still returns to the
+   * campaign list view it was opened from.
+   */
+  private function campaignUrl(): Url {
+    return Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId], [
+      'fragment' => 'edit-fundraisers',
+      'query' => $this->backQuery(),
+    ]);
   }
 
   private function syncDate(mixed $value): string {

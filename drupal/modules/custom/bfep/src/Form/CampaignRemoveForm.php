@@ -35,7 +35,7 @@ final class CampaignRemoveForm extends CampaignVisibilityFormBase {
   }
 
   public function getCancelUrl(): Url {
-    return Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId]);
+    return Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId], ['query' => $this->backQuery()]);
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $campaign_id = NULL): array {
@@ -125,7 +125,7 @@ final class CampaignRemoveForm extends CampaignVisibilityFormBase {
       '@campaign' => $this->label($this->campaign),
       ':restore' => Url::fromRoute('bfep.admin_campaign_restore', ['campaign_id' => $this->campaignId])->toString(),
     ]));
-    $form_state->setRedirect('bfep.admin_campaigns');
+    $form_state->setRedirectUrl($this->listUrl('bfep.admin_campaigns'));
   }
 
 }

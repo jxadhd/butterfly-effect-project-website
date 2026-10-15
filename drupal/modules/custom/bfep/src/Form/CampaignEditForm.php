@@ -20,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class CampaignEditForm extends FormBase {
 
+  use ReturnToListTrait;
   use SaveFailureTrait;
 
   protected int $campaignId = 0;
@@ -195,13 +196,13 @@ final class CampaignEditForm extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Back to campaigns'),
-      '#url' => Url::fromRoute('bfep.admin_campaigns'),
+      '#url' => $this->listUrl('bfep.admin_campaigns'),
       '#attributes' => ['class' => ['button']],
     ];
     $form['actions']['remove'] = [
       '#type' => 'link',
       '#title' => $this->t('Remove from site'),
-      '#url' => Url::fromRoute('bfep.admin_campaign_remove', ['campaign_id' => $this->campaignId]),
+      '#url' => Url::fromRoute('bfep.admin_campaign_remove', ['campaign_id' => $this->campaignId], ['query' => $this->backQuery()]),
       '#attributes' => ['class' => ['button', 'button--danger']],
       '#weight' => 20,
     ];
@@ -212,7 +213,7 @@ final class CampaignEditForm extends FormBase {
     $current = $this->database->query('SELECT updated_at FROM campaigns WHERE id = :id', [':id' => $this->campaignId])->fetchField();
     if ((string) ($current ?? '') !== (string) $form_state->getValue('loaded_updated_at')) {
       $form_state->setErrorByName('', $this->t('This campaign was changed by someone else after you opened it. <a href=":url">Reload the campaign</a> to see the latest version, then make your changes again.', [
-        ':url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId])->toString(),
+        ':url' => $this->campaignUrl(),
       ]));
     }
     $countryId = (int) $form_state->getValue('country_id');
@@ -258,8 +259,18 @@ final class CampaignEditForm extends FormBase {
     $this->auditLogger->record('updated', 'campaign', $this->campaignId, $changed);
 
     $this->cacheInvalidator->invalidateCampaign($this->campaignId);
-    $this->messenger()->addStatus($this->t('Campaign saved. Public caches for this campaign, listings, countries, and the homepage were invalidated.'));
-    $form_state->setRedirect('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId]);
+    $this->messenger()->addStatus($this->t('Campaign <a href=":url">@name</a> saved. Public caches for this campaign, listings, countries, and the homepage were invalidated.', [
+      ':url' => $this->campaignUrl(),
+      '@name' => $fields['contact_name'] !== '' ? $fields['contact_name'] : $this->t('#@id', ['@id' => $this->campaignId]),
+    ]));
+    $form_state->setRedirectUrl($this->listUrl('bfep.admin_campaigns'));
+  }
+
+  /**
+   * This campaign's edit page, keeping the list view to return to.
+   */
+  private function campaignUrl(): string {
+    return Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId], ['query' => $this->backQuery()])->toString();
   }
 
   /**
@@ -304,7 +315,7 @@ final class CampaignEditForm extends FormBase {
         'data' => [
           '#type' => 'link',
           '#title' => $this->t('Edit'),
-          '#url' => Url::fromRoute('bfep.admin_fundraiser_edit', ['campaign_id' => $this->campaignId, 'fundraiser_id' => (int) $row->id]),
+          '#url' => Url::fromRoute('bfep.admin_fundraiser_edit', ['campaign_id' => $this->campaignId, 'fundraiser_id' => (int) $row->id], ['query' => $this->backQuery()]),
         ],
       ];
       $tableRows[] = ['data' => $cells, 'class' => [$active ? 'bfep-fundraiser-active' : 'bfep-fundraiser-ended']];
@@ -318,7 +329,7 @@ final class CampaignEditForm extends FormBase {
     $section['add'] = [
       '#type' => 'link',
       '#title' => $this->t('Add fundraiser'),
-      '#url' => Url::fromRoute('bfep.admin_fundraiser_add', ['campaign_id' => $this->campaignId]),
+      '#url' => Url::fromRoute('bfep.admin_fundraiser_add', ['campaign_id' => $this->campaignId], ['query' => $this->backQuery()]),
       '#attributes' => ['class' => ['button', 'button--small']],
     ];
     return $section;

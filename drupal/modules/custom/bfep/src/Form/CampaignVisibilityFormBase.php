@@ -23,6 +23,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 abstract class CampaignVisibilityFormBase extends ConfirmFormBase {
 
+  use ReturnToListTrait;
+
   protected int $campaignId = 0;
   protected object $campaign;
 

@@ -1,4 +1,4 @@
-<div class="bfep-page bfep-list-page">
+<div class="bfep-page bfep-list-page"{% if total_pages > 1 %} data-bfep-infinite data-bfep-total="{{ total }}" data-bfep-page="{{ filters.page }}"{% endif %}>
   {% if fixed_country %}
     {% if country_summary %}
       {% set count = country_summary.count %}
@@ -75,16 +75,16 @@
   </form>
 
   <div class="bfep-results-bar">
-    <p role="status">
+    <p role="status" data-bfep-infinite-summary>
       {% set shown = campaigns|length %}{% if total == 1 %}{% trans %}Showing 1 of 1 campaign{% endtrans %}{% else %}{% trans %}Showing {{ shown }} of {{ total }} campaigns{% endtrans %}{% endif %}
       {% if total_pages > 1 %} · {% trans %}Page {{ filters.page }} of {{ total_pages }}{% endtrans %}{% endif %}
     </p>
   </div>
 
   {% if campaigns %}
-    <div class="bfep-campaign-grid">
+    <div class="bfep-campaign-grid" data-bfep-infinite-items>
       {% for campaign in campaigns %}
-        <article class="bfep-campaign-card">
+        <article class="bfep-campaign-card" data-bfep-page="{{ filters.page }}">
           <div class="bfep-card-heading">
             <h2><a class="bfep-campaign-title" href="{{ campaign.detail_url }}"><bdi>{{ campaign.name }}</bdi></a></h2>
             {% if campaign.line_number %}<span class="bfep-line">{% trans %}Line #{{ campaign.line_number }}{% endtrans %}</span>{% endif %}
@@ -107,7 +107,7 @@
   {% endif %}
 
   {% if previous_url or next_url %}
-    <nav class="bfep-pager" aria-label="{% trans %}Campaign pages{% endtrans %}">
+    <nav class="bfep-pager" data-bfep-infinite-pager aria-label="{% trans %}Campaign pages{% endtrans %}">
       <span>{% if previous_url %}<a class="button" rel="prev" href="{{ previous_url }}">{% trans %}Previous{% endtrans %}</a>{% endif %}</span>
       <span>{% trans %}Page {{ filters.page }} of {{ total_pages }}{% endtrans %}</span>
       <span>{% if next_url %}<a class="button" rel="next" href="{{ next_url }}">{% trans %}Next{% endtrans %}</a>{% endif %}</span>

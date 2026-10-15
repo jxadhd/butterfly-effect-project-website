@@ -24,6 +24,15 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
 
 - **Sorting by need.** The campaign list can sort "Least funded first" or
   "Closest to goal" (fully funded campaigns last).
+- **Infinite scroll.** `/campaigns` and the country pages load the next page
+  of cards as the visitor nears the bottom (`js/infinite-scroll.js`). After
+  four automatic loads it waits for the "Load more campaigns" button, so the
+  footer stays reachable; the button is always there for keyboards and older
+  browsers. The address bar follows the page being read (`?p=3`), so
+  refresh, Back and shared links return to the same place, and a page opened
+  at `?p=3` offers "Show earlier campaigns". The numbered `?p=` pages and the
+  Previous / Next pager are unchanged underneath, for search engines and
+  visitors without JavaScript.
 - **Homepage spotlight.** "Campaigns that need help now" shows three
   campaigns short of their goal, urgent medical cases first.
 - **Related campaigns.** Each campaign page suggests up to three more

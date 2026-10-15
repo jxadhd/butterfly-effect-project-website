@@ -20,3 +20,11 @@ cards:
   css:
     theme:
       css/public.css: {}
+
+infinite-scroll:
+  js:
+    js/infinite-scroll.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupalSettings

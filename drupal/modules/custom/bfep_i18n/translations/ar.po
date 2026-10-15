@@ -2353,6 +2353,65 @@ msgctxt "Initiative type"
 msgid "Other"
 msgstr "أخرى"
 
+# Infinite scroll on the campaign lists (bfep/js/infinite-scroll.js).
+
+msgid "Load more campaigns"
+msgstr "عرض مزيد من الحملات"
+
+msgid "Show earlier campaigns"
+msgstr "عرض الحملات السابقة"
+
+msgid "Loading more campaigns…"
+msgstr "جارٍ تحميل مزيد من الحملات…"
+
+msgid "Loading earlier campaigns…"
+msgstr "جارٍ تحميل الحملات السابقة…"
+
+msgid "Showing @shown of 1 campaign"
+msgid_plural "Showing @shown of @count campaigns"
+msgstr[0] "الحملات المعروضة: @shown من أصل @count"
+msgstr[1] "الحملات المعروضة: @shown من أصل حملة واحدة"
+msgstr[2] "الحملات المعروضة: @shown من أصل حملتين"
+msgstr[3] "الحملات المعروضة: @shown من أصل @count حملات"
+msgstr[4] "الحملات المعروضة: @shown من أصل @count حملة"
+msgstr[5] "الحملات المعروضة: @shown من أصل @count حملة"
+
+msgid "All 1 campaign is shown."
+msgid_plural "All @count campaigns are shown."
+msgstr[0] "لا توجد حملات لعرضها."
+msgstr[1] "تم عرض الحملة الوحيدة."
+msgstr[2] "تم عرض الحملتين كلتيهما."
+msgstr[3] "تم عرض الحملات الـ@count كلها."
+msgstr[4] "تم عرض جميع الحملات، وعددها @count حملة."
+msgstr[5] "تم عرض جميع الحملات، وعددها @count حملة."
+
+msgid "You have reached the end of the list."
+msgstr "وصلت إلى نهاية القائمة."
+
+msgid "Could not load more campaigns. Check your connection and try again."
+msgstr "تعذّر تحميل مزيد من الحملات. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى."
+
+msgid "Could not load earlier campaigns. Check your connection and try again."
+msgstr "تعذّر تحميل الحملات السابقة. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى."
+
+msgid "1 more campaign loaded."
+msgid_plural "@count more campaigns loaded."
+msgstr[0] "لم تُحمَّل حملات إضافية."
+msgstr[1] "حُمّلت حملة إضافية واحدة."
+msgstr[2] "حُمّلت حملتان إضافيتان."
+msgstr[3] "حُمّلت @count حملات إضافية."
+msgstr[4] "حُمّلت @count حملة إضافية."
+msgstr[5] "حُمّلت @count حملة إضافية."
+
+msgid "1 earlier campaign loaded."
+msgid_plural "@count earlier campaigns loaded."
+msgstr[0] "لم تُحمَّل حملات سابقة."
+msgstr[1] "حُمّلت حملة سابقة واحدة."
+msgstr[2] "حُمّلت حملتان سابقتان."
+msgstr[3] "حُمّلت @count حملات سابقة."
+msgstr[4] "حُمّلت @count حملة سابقة."
+msgstr[5] "حُمّلت @count حملة سابقة."
+
 # The "Branded footer" custom block on the live site. Custom block text is
 # translated one sentence or link at a time (context "Site block text", then
 # the same English without a context, which covers its links), so the pieces

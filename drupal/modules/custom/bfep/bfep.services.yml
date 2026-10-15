@@ -39,6 +39,11 @@ services:
       - '@datetime.time'
       - '@bfep.settings'
 
+  bfep.initiative_media:
+    class: Drupal\bfep\Repository\InitiativeMedia
+    arguments:
+      - '@>bfep.database'
+
   bfep.initiative_repository:
     class: Drupal\bfep\Repository\InitiativeRepository
     arguments:

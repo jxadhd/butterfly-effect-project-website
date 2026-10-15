@@ -80,6 +80,23 @@ form requires Drupal's `administer site configuration` permission.
   date and render external URLs as links only when they are `http(s)`. Each
   form has a "Save and review next pending" button that opens the oldest
   remaining pending item.
+- **Ground initiatives** (`/admin/bfep/initiatives`, tab "Initiatives") lists
+  every row of bfdb `ground_initiatives` with search, a Featured filter and
+  sorting, and has Add and Edit forms: name, country, category
+  (`initiative_type`; a select when it is a Postgres enum), an "About the
+  initiative" paragraph, photos, fundraising links and Featured. Only featured
+  initiatives appear on the public `/initiatives` page, which now shows the
+  full paragraph, the photos and a donate button per link. Photos and links
+  live in bfdb tables `ground_initiative_images` (resized to 1600 px, re-encoded
+  to WebP or JPEG, which also drops EXIF location data, stored as `bytea`) and
+  `ground_initiative_links`. Photos are served from
+  `/initiatives/image/{id}.{ext}` with a one-day public cache (staff can also
+  see photos of initiatives that are not featured, uncached). The tables and
+  the grants `bfep_app` needs are created by `sql/ground-initiative-media.sql`,
+  run once as the schema owner (on butterfly, through a small Python runner,
+  since it has no psql); until then the form hides photos and links and
+  says so. If `ground_initiatives` has `updated_at` (the script adds it), a
+  save is refused when someone else saved first.
 - **Saving returns to the list.** After a successful save, every staff form
   goes back to the list it was opened from, with the same search, filters,
   sort and page, and shows the confirmation there, naming the record with a

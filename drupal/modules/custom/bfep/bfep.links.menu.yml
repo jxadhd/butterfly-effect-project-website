@@ -29,6 +29,13 @@ bfep.admin_changes:
   parent: bfep.admin
   weight: 3
 
+bfep.admin_initiatives:
+  title: 'Ground initiatives'
+  description: 'Add and edit the initiatives on the public Ground initiatives page'
+  route_name: bfep.admin_initiatives
+  parent: bfep.admin
+  weight: 3
+
 bfep.admin_checks:
   title: 'Data checks'
   description: 'Campaigns with missing or conflicting details'

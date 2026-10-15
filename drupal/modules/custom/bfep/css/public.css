@@ -112,3 +112,9 @@ form.bfep-public-form .bfep-form-notice .form-type-radio label { margin: 0; }
 .bfep-fundraiser { border: 1px solid var(--bf-border, rgba(0,0,0,.15)); border-radius: var(--bf-radius-sm, .75rem); padding: 1rem; }
 .bfep-fundraiser h3 { margin: 0; }
 .bfep-fundraiser .bfep-amounts { grid-template-columns: repeat(2,minmax(0,1fr)); }
+/* Ground initiatives: photo strip (scrolls sideways when there are several) and donate buttons. */
+.bfep-initiative-card { gap: .75rem; }
+.bfep-initiative-photos { display: flex; gap: .5rem; overflow-x: auto; scroll-snap-type: x mandatory; margin: -1.35rem -1.35rem .25rem; border-radius: inherit; }
+.bfep-initiative-photos img { flex: 0 0 100%; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; scroll-snap-align: start; }
+.bfep-initiative-description { line-height: 1.55; margin: 0; }
+.bfep-initiative-card .bfep-card-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: auto; }

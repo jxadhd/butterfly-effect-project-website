@@ -242,6 +242,7 @@ final class AdminController extends ControllerBase {
         'referrals' => $this->queueCard('Referrals', $pending_referrals . ' pending of ' . $referrals . $this->oldest($counts->oldest_referral), 'Review submitted fundraiser referrals and update verification status.', 'bfep.admin_referrals'),
         'volunteers' => $this->queueCard('Volunteers', $pending_volunteers . ' pending of ' . $volunteers . $this->oldest($counts->oldest_volunteer), 'Accept, decline, contact, and onboard volunteer applicants.', 'bfep.admin_volunteers'),
         'changes' => $this->queueCard('Change requests', $changes . ' pending' . $this->oldest($counts->oldest_change), 'Review requests to correct existing campaign information.', 'bfep.admin_changes'),
+        'initiatives' => $this->queueCard('Ground initiatives', $this->initiativeCounts($db), 'Add and edit the initiatives on the public Ground initiatives page.', 'bfep.admin_initiatives'),
       ],
       'health' => [
         '#markup' => '<div class="bfep-admin-health">' . $health . '</div>',
@@ -307,6 +308,7 @@ final class AdminController extends ControllerBase {
     'campaigns' => ['Line' => 'line_number', 'Name' => 'contact_name', 'Country' => 'country_raw', 'Updated' => 'updated_at'],
     'referrals' => ['Status' => 'verification_status', 'Name' => 'full_name', 'Email' => 'email', 'Created' => 'created_at'],
     'volunteers' => ['Name' => 'full_name', 'Email' => 'email', 'Hours' => 'hours_per_week', 'Created' => 'created_at'],
+    'initiatives' => ['Name' => 'contact_name', 'Country' => 'country_raw', 'Category' => 'initiative_type', 'Created' => 'created_at'],
     'change_requests' => ['Status' => 'processed', 'Submitter' => 'submitter_name', 'Line ref' => 'family_line_number_raw', 'Created' => 'created_at'],
   ];
 
@@ -852,6 +854,89 @@ final class AdminController extends ControllerBase {
       '#markup' => '<p class="bfep-admin-notice"><strong>Staff only:</strong> this page contains private submitter and workflow information.</p>',
     ];
     return $build;
+  }
+
+  /**
+   * Ground initiatives, newest first.
+   */
+  public function initiatives(Request $request): array|RedirectResponse {
+    $db = $this->bfdb();
+    $q = trim((string) $request->query->get('q', ''));
+    $where = ['id IS NOT NULL'];
+    $params = [];
+    if ($q !== '') {
+      $where[] = "(contact_name ILIKE :q OR country_raw ILIKE :q OR project_description ILIKE :q OR CAST(initiative_type AS TEXT) ILIKE :q)";
+      $params[':q'] = $this->like($q);
+    }
+    if ($request->query->get('featured') === '1') {
+      $where[] = 'featured_by_bfep = true';
+    }
+    $where_sql = implode(' AND ', $where);
+
+    $total = (int) $db->query("SELECT COUNT(*) FROM ground_initiatives WHERE {$where_sql}", $params)->fetchField();
+    ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
+    $header = $this->header('initiatives', ['Name', 'Country', 'Category', 'Featured', 'Created', 'Operations'], 'Created');
+    $order_sql = $this->orderBy($request, 'initiatives', $header, 'created_at DESC NULLS LAST, id DESC');
+    $rows = $db->query("\n      SELECT id, contact_name, country_raw, initiative_type, featured_by_bfep, created_at\n      FROM ground_initiatives\n      WHERE {$where_sql}\n      ORDER BY {$order_sql}\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    if ($q !== '' && $total === 1 && count($rows) === 1) {
+      return $this->redirect('bfep.admin_initiative_edit', ['initiative_id' => (int) $rows[0]->id]);
+    }
+
+    // Edit links carry this view of the list, so saving returns to it.
+    $back = ListReturn::linkQuery($request->query->all());
+    $table_rows = [];
+    foreach ($rows as $row) {
+      $featured = AdminFormat::truthy($row->featured_by_bfep);
+      $links = [
+        'edit' => [
+          'title' => $this->t('Edit'),
+          'url' => Url::fromRoute('bfep.admin_initiative_edit', ['initiative_id' => $row->id], ['query' => $back]),
+        ],
+      ];
+      if ($featured) {
+        $links['view'] = [
+          'title' => $this->t('View public page'),
+          'url' => Url::fromRoute('bfep.initiatives', [], ['fragment' => 'initiative-' . $row->id]),
+          'attributes' => ['target' => '_blank', 'rel' => 'noopener'],
+        ];
+      }
+      $table_rows[] = [
+        'name' => $row->contact_name ?: 'Initiative #' . $row->id,
+        'country' => $row->country_raw ?: '—',
+        'type' => $row->initiative_type ?: '—',
+        'featured' => $featured ? $this->badge('Featured', 'success') : $this->badge('Not shown', 'neutral'),
+        'created' => $this->date($row->created_at),
+        'operations' => ['data' => ['#type' => 'operations', '#links' => $links]],
+      ];
+    }
+
+    $build = $this->adminListBuild(
+      $request,
+      'initiatives',
+      'bfep.admin_initiatives',
+      $total,
+      $header,
+      $table_rows,
+      'No ground initiatives found.'
+    );
+    $build['intro'] = [
+      '#weight' => -20,
+      '#markup' => '<p>' . $this->t('Only featured initiatives are listed on the public <a href=":url">Ground initiatives</a> page.', [':url' => Url::fromRoute('bfep.initiatives')->toString()]) . '</p>',
+    ];
+    return $build;
+  }
+
+  /**
+   * The dashboard card line for ground initiatives, e.g. "4 featured of 9".
+   */
+  protected function initiativeCounts(Connection $db): string {
+    try {
+      $row = $db->query('SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE featured_by_bfep) AS featured FROM ground_initiatives')->fetchObject();
+      return (int) $row->featured . ' featured of ' . (int) $row->total;
+    }
+    catch (\Throwable) {
+      return 'Count unavailable';
+    }
   }
 
   protected function adminListBuild(Request $request, string $section, string $route, int $total, array $header, array $rows, string $empty): array {

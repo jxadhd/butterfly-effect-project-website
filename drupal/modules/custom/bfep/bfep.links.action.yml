@@ -9,3 +9,9 @@ bfep.admin_campaigns_removed_action:
   title: 'Removed campaigns'
   appears_on:
     - bfep.admin_campaigns
+
+bfep.admin_initiative_add_action:
+  route_name: bfep.admin_initiative_add
+  title: 'Add ground initiative'
+  appears_on:
+    - bfep.admin_initiatives

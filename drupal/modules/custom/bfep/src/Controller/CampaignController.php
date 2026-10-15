@@ -99,7 +99,11 @@ final class CampaignController extends ControllerBase {
         'title' => $shareText,
         'links' => $this->presenter->shareLinks($shareUrl, $shareText),
       ],
-      '#campaign' => $this->presenter->detail($row, $this->campaigns->figuresUpdatedAt($campaignId)),
+      '#campaign' => $this->presenter->detail(
+        $row,
+        $this->campaigns->figuresUpdatedAt($campaignId),
+        (int) ($row->fundraiser_count ?? 0) > 1 ? $this->campaigns->fundraisers($campaignId) : [],
+      ),
       '#change_url' => Url::fromRoute('bfep.change_request', [], [
         'query' => ['campaign_id' => $campaignId],
       ])->toString(),

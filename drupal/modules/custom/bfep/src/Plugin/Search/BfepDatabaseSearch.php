@@ -256,6 +256,10 @@ final class BfepDatabaseSearch extends SearchPluginBase {
 
     $results = [];
     foreach ($rows as $row) {
+      // v_campaigns has a row per active fundraiser; list each campaign once.
+      if (isset($results[(int) $row->id])) {
+        continue;
+      }
       $title = trim((string) ($row->contact_name ?: 'Campaign #' . $row->id));
       $text = implode(' ', [
         $row->line_number,
@@ -272,7 +276,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
         ? Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $row->id], ['absolute' => TRUE])
         : Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $row->id], ['absolute' => TRUE]);
 
-      $results[] = [
+      $results[(int) $row->id] = [
         'title' => $title,
         'link' => $url->toString(),
         'type' => $this->t('Campaign'),
@@ -287,7 +291,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
       ];
     }
 
-    return $results;
+    return array_values($results);
   }
 
   protected function countryResults(array $tokens, string $phrase): array {
@@ -297,7 +301,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
       "COALESCE(v.global_region, '')",
     ], $tokens, 'country', $params);
 
-    $rows = $this->rows("\n      SELECT v.country, v.global_region, COUNT(*) AS campaign_count\n      FROM v_campaigns v\n      INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL\n      WHERE v.country IS NOT NULL AND v.country <> '' AND {$where}\n      GROUP BY v.country, v.global_region\n      ORDER BY campaign_count DESC, v.country ASC\n      LIMIT 30", $params, 'countries');
+    $rows = $this->rows("\n      SELECT v.country, v.global_region, COUNT(DISTINCT v.id) AS campaign_count\n      FROM v_campaigns v\n      INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL\n      WHERE v.country IS NOT NULL AND v.country <> '' AND {$where}\n      GROUP BY v.country, v.global_region\n      ORDER BY campaign_count DESC, v.country ASC\n      LIMIT 30", $params, 'countries');
 
     $results = [];
     foreach ($rows as $row) {

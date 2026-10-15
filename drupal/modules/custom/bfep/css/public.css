@@ -99,3 +99,9 @@ form.bfep-public-form .bfep-form-notice .fieldset__label { padding: 0; font-size
 form.bfep-public-form .bfep-form-notice .fieldset__wrapper { margin: .5rem 0 0; padding: 0; border: 0; }
 form.bfep-public-form .bfep-form-notice .form-type-radio { display: flex; align-items: center; gap: .75rem; margin: .4rem 0; }
 form.bfep-public-form .bfep-form-notice .form-type-radio label { margin: 0; }
+/* Campaigns with more than one active fundraiser. */
+.bfep-more-fundraisers { margin: .25rem 0 0; font-size: .9rem; font-weight: 700; }
+.bfep-fundraiser-list { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit,minmax(16rem,1fr)); }
+.bfep-fundraiser { border: 1px solid var(--bf-border, rgba(0,0,0,.15)); border-radius: var(--bf-radius-sm, .75rem); padding: 1rem; }
+.bfep-fundraiser h3 { margin: 0; }
+.bfep-fundraiser .bfep-amounts { grid-template-columns: repeat(2,minmax(0,1fr)); }

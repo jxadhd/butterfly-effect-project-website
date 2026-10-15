@@ -28,6 +28,7 @@ final class CampaignPresenter {
       'amounts' => $this->amounts($row),
       'progress' => $this->progress($row),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
+      'more_fundraisers' => max(0, (int) ($row->fundraiser_count ?? 0) - 1),
       'tags' => $this->tags($row->tags ?? NULL),
       'updated' => $this->date($row->updated_at ?? $row->created_at ?? NULL),
     ];
@@ -40,14 +41,19 @@ final class CampaignPresenter {
    *   A row from CampaignRepository::find().
    * @param string|null $figuresUpdatedAt
    *   When the sync service last refreshed the amounts, if it does.
+   * @param object[] $fundraisers
+   *   The campaign's active fundraisers from
+   *   CampaignRepository::fundraisers(), newest first. Listed one by one
+   *   when there is more than one.
    */
-  public function detail(object $row, ?string $figuresUpdatedAt = NULL): array {
+  public function detail(object $row, ?string $figuresUpdatedAt = NULL, array $fundraisers = []): array {
+    $platforms = $this->platforms($row);
     $metadata = [];
     foreach ([
       'Line number' => $row->line_number ?? NULL,
       'Country' => $row->country ?? NULL,
       'Region' => $row->global_region ?? NULL,
-      'Platform' => $row->platform ?? NULL,
+      (count($platforms) > 1 ? 'Platforms' : 'Platform') => implode(', ', $platforms),
       'Career/background' => $row->career ?? NULL,
     ] as $label => $value) {
       if (trim((string) ($value ?? '')) !== '') {
@@ -70,6 +76,7 @@ final class CampaignPresenter {
       'progress' => $this->progress($row),
       'tags' => $this->tags($row->tags ?? NULL),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
+      'fundraisers' => count($fundraisers) > 1 ? $this->fundraiserList($fundraisers) : [],
       'description' => trim((string) ($row->description ?? '')),
       'paragraphs' => $this->paragraphs((string) ($row->description ?? '')),
       'updated' => $this->date($row->updated_at ?? $row->created_at ?? NULL),
@@ -117,13 +124,66 @@ final class CampaignPresenter {
     if ($this->truthy($row->urgent_medical_needs ?? NULL)) {
       $badges[] = 'Urgent medical needs';
     }
-    if (trim((string) ($row->platform ?? '')) !== '') {
-      $badges[] = (string) $row->platform;
+    foreach ($this->platforms($row) as $platform) {
+      $badges[] = $platform;
     }
     return $badges;
   }
 
+  /**
+   * The platforms of the campaign's active fundraisers, newest first.
+   *
+   * @return string[]
+   *   Platform names without duplicates.
+   */
+  private function platforms(object $row): array {
+    $platforms = [trim((string) ($row->platform ?? ''))];
+    $all = $row->platforms ?? NULL;
+    $platforms = array_merge($platforms, is_array($all) ? array_map('trim', $all) : $this->tags($all));
+    return array_values(array_unique(array_filter($platforms, static fn(string $name): bool => $name !== '')));
+  }
+
+  /**
+   * View models for each of a campaign's active fundraisers.
+   *
+   * @param object[] $fundraisers
+   *   Rows from CampaignRepository::fundraisers().
+   *
+   * @return array<int, array{platform: string, url: string|null, amounts: array, progress: float|null, figures_updated: string}>
+   *   One entry per fundraiser, in the given order.
+   */
+  public function fundraiserList(array $fundraisers): array {
+    $list = [];
+    foreach ($fundraisers as $fundraiser) {
+      $list[] = [
+        'platform' => trim((string) ($fundraiser->platform ?? '')),
+        'url' => $this->externalUrl($fundraiser->url ?? NULL),
+        'amounts' => $this->amounts($fundraiser),
+        'progress' => $this->progress($fundraiser),
+        'figures_updated' => $this->date($fundraiser->figures_updated_at ?? NULL),
+      ];
+    }
+    return $list;
+  }
+
   private function amounts(object $row): array {
+    $byCurrency = $this->currencyTotals($row->currency_totals ?? NULL);
+    if ($byCurrency) {
+      // Different currencies are listed side by side, never added up.
+      $amounts = [];
+      foreach (['raised' => 'Raised', 'goal' => 'Goal'] as $key => $label) {
+        $parts = [];
+        foreach ($byCurrency as $total) {
+          if (is_numeric($total[$key] ?? NULL)) {
+            $parts[] = trim(($total['currency'] ?? '') . ' ' . number_format((float) $total[$key]));
+          }
+        }
+        if ($parts) {
+          $amounts[] = ['label' => $label, 'value' => implode(' + ', $parts)];
+        }
+      }
+      return $amounts;
+    }
     $currency = trim((string) ($row->currency_code ?? ''));
     $amounts = [];
     if (($row->donated_amount ?? NULL) !== NULL) {
@@ -145,6 +205,22 @@ final class CampaignPresenter {
       ];
     }
     return $amounts;
+  }
+
+  /**
+   * Decodes the per-currency totals of a campaign with mixed currencies.
+   *
+   * @return array<int, array{currency: string|null, raised: mixed, goal: mixed}>
+   *   One entry per currency, or an empty array.
+   */
+  private function currencyTotals(mixed $json): array {
+    if (is_string($json) && $json !== '') {
+      $json = json_decode($json, TRUE);
+    }
+    if (!is_array($json) || count($json) < 2) {
+      return [];
+    }
+    return array_values(array_filter($json, 'is_array'));
   }
 
   /**

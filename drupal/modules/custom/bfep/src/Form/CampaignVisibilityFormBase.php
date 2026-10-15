@@ -27,9 +27,11 @@ abstract class CampaignVisibilityFormBase extends ConfirmFormBase {
   protected object $campaign;
 
   /**
-   * The campaign's active fundraiser URL, or '' when it has none.
+   * The campaign's active fundraiser URLs, newest first.
+   *
+   * @var string[]
    */
-  protected string $fundraiserUrl = '';
+  protected array $fundraiserUrls = [];
 
   public function __construct(
     protected Connection $database,
@@ -55,10 +57,10 @@ abstract class CampaignVisibilityFormBase extends ConfirmFormBase {
       FROM campaigns
       WHERE id = :id AND deleted_at IS ' . ($removed ? 'NOT NULL' : 'NULL'), [':id' => $this->campaignId])->fetchObject()
       ?: throw new NotFoundHttpException();
-    $this->fundraiserUrl = trim((string) $this->database->query(
-      'SELECT url FROM campaign_fundraisers WHERE campaign_id = :id AND is_active ORDER BY id DESC LIMIT 1',
+    $this->fundraiserUrls = array_values(array_filter(array_map('trim', $this->database->query(
+      'SELECT url FROM campaign_fundraisers WHERE campaign_id = :id AND is_active ORDER BY id DESC',
       [':id' => $this->campaignId],
-    )->fetchField());
+    )->fetchCol())));
   }
 
   /**
@@ -70,24 +72,24 @@ abstract class CampaignVisibilityFormBase extends ConfirmFormBase {
   }
 
   /**
-   * Other live campaigns whose active fundraiser is this campaign's one.
+   * Other live campaigns with an active fundraiser this campaign also has.
    *
    * @return object[]
    *   Rows with id, line_number and contact_name.
    */
   protected function campaignsSharingFundraiser(): array {
-    $key = AdminFormat::urlMatchKey($this->fundraiserUrl);
-    if ($key === '') {
+    $keys = array_values(array_unique(array_filter(array_map([AdminFormat::class, 'urlMatchKey'], $this->fundraiserUrls))));
+    if (!$keys) {
       return [];
     }
     return $this->database->query('
       SELECT DISTINCT c.id, c.line_number, c.contact_name
       FROM campaign_fundraisers cf
       INNER JOIN campaigns c ON c.id = cf.campaign_id AND c.deleted_at IS NULL
-      WHERE cf.is_active AND c.id <> :id AND ' . AdminFormat::urlKeySql('cf.url') . ' = :key
+      WHERE cf.is_active AND c.id <> :id AND ' . AdminFormat::urlKeySql('cf.url') . ' IN (:keys[])
       ORDER BY c.id
       LIMIT 10
-    ', [':id' => $this->campaignId, ':key' => $key])->fetchAll();
+    ', [':id' => $this->campaignId, ':keys[]' => $keys])->fetchAll();
   }
 
   /**
@@ -112,7 +114,10 @@ abstract class CampaignVisibilityFormBase extends ConfirmFormBase {
     $rows = [
       [$this->t('Campaign'), $this->label($this->campaign)],
       [$this->t('Country'), (string) ($this->campaign->country_raw ?: '—')],
-      [$this->t('Fundraiser'), $this->fundraiserUrl !== '' ? $this->fundraiserUrl : $this->t('None')],
+      [
+        count($this->fundraiserUrls) > 1 ? $this->t('Fundraisers') : $this->t('Fundraiser'),
+        $this->fundraiserUrls ? ['data' => ['#theme' => 'item_list', '#items' => $this->fundraiserUrls]] : $this->t('None'),
+      ],
     ];
     return [
       '#type' => 'table',

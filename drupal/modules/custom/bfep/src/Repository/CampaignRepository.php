@@ -30,13 +30,116 @@ final class CampaignRepository {
     return ($this->connection)();
   }
 
+  /**
+   * One row per public campaign, with its active fundraisers combined.
+   *
+   * A campaign can have several active fundraisers, and
+   * v_campaigns has one row per active fundraiser. This takes one row per
+   * campaign from the view and replaces its fundraiser columns:
+   * - fundraiser_url and platform are the newest active fundraiser's;
+   * - platforms lists every active fundraiser's platform;
+   * - currency_code, goal_amount, donated_amount and pct_goal_achieved are
+   *   the totals when all active fundraisers use one currency, and NULL when
+   *   currencies differ (amounts in different currencies are not added up;
+   *   currency_totals then has the totals per currency, as JSON);
+   * - fundraiser_count is the number of active fundraisers.
+   * A campaign with one active fundraiser keeps the view's values unchanged.
+   *
+   * Written without square brackets or braces, which Drupal rewrites.
+   *
+   * @return string
+   *   A parenthesised subquery; alias it, as in "FROM {$sql} v".
+   */
+  private function publicCampaigns(): string {
+    return <<<'SQL'
+      (
+        SELECT
+          base.id,
+          base.line_number,
+          base.contact_name,
+          base.country,
+          base.global_region,
+          base.description,
+          base.featured_by_bfep,
+          base.urgent_medical_needs,
+          base.career,
+          base.tags,
+          base.created_at,
+          base.updated_at,
+          COALESCE(totals.fundraiser_count, 0) AS fundraiser_count,
+          CASE WHEN COALESCE(totals.fundraiser_count, 0) <= 1 THEN base.fundraiser_url ELSE newest.url END AS fundraiser_url,
+          CASE WHEN COALESCE(totals.fundraiser_count, 0) <= 1 THEN base.platform ELSE newest.platform END AS platform,
+          totals.platforms,
+          CASE
+            WHEN COALESCE(totals.fundraiser_count, 0) <= 1 THEN base.currency_code
+            WHEN totals.currency_count = 1 THEN totals.currency_code
+          END AS currency_code,
+          CASE
+            WHEN COALESCE(totals.fundraiser_count, 0) <= 1 THEN base.goal_amount
+            WHEN totals.currency_count = 1 THEN totals.goal_amount
+          END AS goal_amount,
+          CASE
+            WHEN COALESCE(totals.fundraiser_count, 0) <= 1 THEN base.donated_amount
+            WHEN totals.currency_count = 1 THEN totals.donated_amount
+          END AS donated_amount,
+          CASE
+            WHEN COALESCE(totals.fundraiser_count, 0) <= 1 THEN base.pct_goal_achieved
+            WHEN totals.currency_count = 1 AND totals.goal_amount > 0 THEN totals.donated_amount / totals.goal_amount * 100
+          END AS pct_goal_achieved,
+          CASE WHEN totals.currency_count > 1 THEN by_currency.totals END AS currency_totals
+        FROM (
+          SELECT DISTINCT ON (vc.id)
+            vc.id, vc.line_number, vc.contact_name, vc.country, vc.global_region,
+            vc.description, vc.featured_by_bfep, vc.urgent_medical_needs, vc.career,
+            vc.fundraiser_url, vc.platform, vc.currency_code, vc.goal_amount,
+            vc.donated_amount, vc.pct_goal_achieved, vc.tags, vc.created_at, vc.updated_at
+          FROM v_campaigns vc
+          INNER JOIN campaigns source ON source.id = vc.id AND source.deleted_at IS NULL
+          WHERE vc.id IS NOT NULL
+          ORDER BY vc.id
+        ) base
+        LEFT JOIN (
+          SELECT
+            cf.campaign_id,
+            COUNT(*) AS fundraiser_count,
+            array_agg(DISTINCT fp.name) FILTER (WHERE fp.name IS NOT NULL AND fp.name <> '') AS platforms,
+            COUNT(DISTINCT COALESCE(UPPER(TRIM(cf.currency_code)), '')) AS currency_count,
+            MAX(UPPER(TRIM(cf.currency_code))) AS currency_code,
+            SUM(cf.goal_amount) AS goal_amount,
+            SUM(cf.donated_amount) AS donated_amount
+          FROM campaign_fundraisers cf
+          LEFT JOIN fundraising_platforms fp ON fp.id = cf.platform_id
+          WHERE cf.is_active
+          GROUP BY cf.campaign_id
+        ) totals ON totals.campaign_id = base.id
+        LEFT JOIN (
+          SELECT DISTINCT ON (cf.campaign_id) cf.campaign_id, cf.url, fp.name AS platform
+          FROM campaign_fundraisers cf
+          LEFT JOIN fundraising_platforms fp ON fp.id = cf.platform_id
+          WHERE cf.is_active
+          ORDER BY cf.campaign_id, cf.id DESC
+        ) newest ON newest.campaign_id = base.id
+        LEFT JOIN (
+          SELECT c.campaign_id, json_agg(json_build_object('currency', c.currency, 'raised', c.raised, 'goal', c.goal) ORDER BY c.currency) AS totals
+          FROM (
+            SELECT cf.campaign_id, UPPER(TRIM(cf.currency_code)) AS currency, SUM(cf.donated_amount) AS raised, SUM(cf.goal_amount) AS goal
+            FROM campaign_fundraisers cf
+            WHERE cf.is_active
+            GROUP BY cf.campaign_id, UPPER(TRIM(cf.currency_code))
+          ) c
+          GROUP BY c.campaign_id
+        ) by_currency ON by_currency.campaign_id = base.id
+      )
+      SQL;
+  }
+
   public function stats(): array {
     return $this->remember('bfep:stats', function (): array {
       $row = $this->db()->query(<<<'SQL'
         SELECT
-          COUNT(*) FILTER (WHERE id IS NOT NULL) AS total_campaigns,
-          COUNT(*) FILTER (WHERE id IS NOT NULL AND featured_by_bfep = TRUE) AS featured_campaigns,
-          COUNT(*) FILTER (WHERE id IS NOT NULL AND urgent_medical_needs = TRUE) AS urgent_campaigns,
+          COUNT(DISTINCT id) AS total_campaigns,
+          COUNT(DISTINCT id) FILTER (WHERE featured_by_bfep = TRUE) AS featured_campaigns,
+          COUNT(DISTINCT id) FILTER (WHERE urgent_medical_needs = TRUE) AS urgent_campaigns,
           COUNT(DISTINCT country) FILTER (WHERE country IS NOT NULL AND country <> '') AS countries
         FROM v_campaigns
         WHERE id IN (SELECT source.id FROM campaigns source WHERE source.deleted_at IS NULL)
@@ -71,7 +174,10 @@ final class CampaignRepository {
           OR description ILIKE :q
           OR country ILIKE :q
           OR global_region ILIKE :q
-          OR platform ILIKE :q
+          OR EXISTS (
+            SELECT 1 FROM unnest(platforms) AS p
+            WHERE p ILIKE :q
+          )
           OR EXISTS (
             SELECT 1 FROM unnest(tags) AS t
             WHERE t ILIKE :q
@@ -91,7 +197,6 @@ final class CampaignRepository {
       foreach ([
         'country' => 'country',
         'region' => 'global_region',
-        'platform' => 'platform',
       ] as $filter => $column) {
         if ($filters[$filter] !== '') {
           $where[] = $column . ' = :' . $filter;
@@ -99,6 +204,11 @@ final class CampaignRepository {
         }
       }
 
+      if ($filters['platform'] !== '') {
+        // Any of the campaign's active fundraisers.
+        $where[] = 'EXISTS (SELECT 1 FROM unnest(platforms) AS p WHERE p = :platform)';
+        $params[':platform'] = $filters['platform'];
+      }
       if ($filters['tag'] !== '') {
         $where[] = 'EXISTS (SELECT 1 FROM unnest(tags) AS t WHERE t = :tag)';
         $params[':tag'] = $filters['tag'];
@@ -130,8 +240,9 @@ final class CampaignRepository {
       $limit = (int) $filters['per_page'];
       $offset = ((int) $filters['page'] - 1) * $limit;
 
+      $campaigns = $this->publicCampaigns();
       $total = (int) $this->db()->query(
-        "SELECT COUNT(*) FROM v_campaigns WHERE {$whereSql}",
+        "SELECT COUNT(*) FROM {$campaigns} v WHERE {$whereSql}",
         $params,
       )->fetchField();
 
@@ -152,10 +263,13 @@ final class CampaignRepository {
           goal_amount,
           donated_amount,
           pct_goal_achieved,
+          fundraiser_count,
+          platforms,
+          currency_totals,
           tags,
           created_at,
           updated_at
-        FROM v_campaigns
+        FROM {$campaigns} v
         WHERE {$whereSql}
         ORDER BY {$sortSql}
         LIMIT {$limit}
@@ -170,7 +284,7 @@ final class CampaignRepository {
     $result = $this->remember(
       'bfep:campaign:' . $campaignId,
       function () use ($campaignId): object|false {
-        return $this->db()->query(<<<'SQL'
+        return $this->db()->query(<<<SQL
           SELECT
             v.id,
             v.line_number,
@@ -187,11 +301,13 @@ final class CampaignRepository {
             v.goal_amount,
             v.donated_amount,
             v.pct_goal_achieved,
+            v.fundraiser_count,
+            v.platforms,
+            v.currency_totals,
             v.tags,
             v.created_at,
             v.updated_at
-          FROM v_campaigns v
-          INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+          FROM {$this->publicCampaigns()} v
           WHERE v.id = :id
           SQL, [':id' => $campaignId])->fetchObject();
       },
@@ -199,6 +315,45 @@ final class CampaignRepository {
     );
 
     return $result === FALSE ? NULL : $result;
+  }
+
+  /**
+   * The campaign's active fundraisers, newest first.
+   *
+   * @return object[]
+   *   Rows with id, url, platform, currency_code, goal_amount,
+   *   donated_amount, pct_goal_achieved and figures_updated_at (when the sync last refreshed
+   *   that fundraiser's amounts, or NULL when it is updated by hand or bfdb
+   *   has no sync columns).
+   */
+  public function fundraisers(int $campaignId): array {
+    return $this->remember(
+      'bfep:campaign-fundraisers:' . $campaignId,
+      function () use ($campaignId): array {
+        $select = <<<'SQL'
+          SELECT cf.id, cf.url, fp.name AS platform, UPPER(TRIM(cf.currency_code)) AS currency_code,
+            cf.goal_amount, cf.donated_amount,
+            CASE WHEN cf.goal_amount > 0 THEN cf.donated_amount / cf.goal_amount * 100 END AS pct_goal_achieved,
+            %s AS figures_updated_at
+          FROM campaign_fundraisers cf
+          INNER JOIN campaigns source ON source.id = cf.campaign_id AND source.deleted_at IS NULL
+          LEFT JOIN fundraising_platforms fp ON fp.id = cf.platform_id
+          WHERE cf.campaign_id = :id AND cf.is_active
+          ORDER BY cf.id DESC
+          SQL;
+        try {
+          return $this->db()->query(
+            sprintf($select, 'CASE WHEN cf.auto_sync THEN cf.last_success_at END'),
+            [':id' => $campaignId],
+          )->fetchAll();
+        }
+        catch (\Throwable) {
+          // No sync columns in this bfdb.
+          return $this->db()->query(sprintf($select, 'NULL'), [':id' => $campaignId])->fetchAll();
+        }
+      },
+      [BfepCacheInvalidator::CAMPAIGNS, 'bfep:campaign:' . $campaignId],
+    );
   }
 
   /**
@@ -258,11 +413,12 @@ final class CampaignRepository {
           v.goal_amount,
           v.donated_amount,
           v.pct_goal_achieved,
+          v.fundraiser_count,
+          v.currency_totals,
           v.tags,
           v.created_at,
           v.updated_at
-        FROM v_campaigns v
-        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        FROM {$this->publicCampaigns()} v
         WHERE v.pct_goal_achieved < 100
         ORDER BY
           COALESCE(v.urgent_medical_needs, FALSE) DESC,
@@ -295,10 +451,11 @@ final class CampaignRepository {
           v.goal_amount,
           v.donated_amount,
           v.pct_goal_achieved,
+          v.fundraiser_count,
+          v.currency_totals,
           v.created_at,
           v.updated_at
-        FROM v_campaigns v
-        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        FROM {$this->publicCampaigns()} v
         ORDER BY v.created_at DESC NULLS LAST, v.id DESC
         LIMIT {$limit}
         SQL)->fetchAll(),
@@ -336,11 +493,12 @@ final class CampaignRepository {
           v.goal_amount,
           v.donated_amount,
           v.pct_goal_achieved,
+          v.fundraiser_count,
+          v.currency_totals,
           v.tags,
           v.created_at,
           v.updated_at
-        FROM v_campaigns v
-        INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
+        FROM {$this->publicCampaigns()} v
         WHERE v.country = :country AND v.id <> :id
         ORDER BY
           COALESCE(v.urgent_medical_needs, FALSE) DESC,
@@ -362,7 +520,7 @@ final class CampaignRepository {
     $ids = $this->remember(
       'bfep:line-number:' . $lineNumber,
       fn(): array => $this->db()->query(<<<'SQL'
-        SELECT v.id
+        SELECT DISTINCT v.id
         FROM v_campaigns v
         INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
         WHERE v.line_number = :line
@@ -377,7 +535,7 @@ final class CampaignRepository {
     return (int) $this->remember(
       'bfep:country-count:' . hash('sha256', mb_strtolower($country)),
       fn(): int => (int) $this->db()->query(
-        'SELECT COUNT(*) FROM v_campaigns v INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL WHERE v.country = :country',
+        'SELECT COUNT(DISTINCT v.id) FROM v_campaigns v INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL WHERE v.country = :country',
         [':country' => $country],
       )->fetchField(),
       [BfepCacheInvalidator::CAMPAIGNS, BfepCacheInvalidator::COUNTRIES],
@@ -389,9 +547,9 @@ final class CampaignRepository {
       SELECT
         v.country,
         v.global_region,
-        COUNT(*) AS campaign_count,
-        COUNT(*) FILTER (WHERE v.featured_by_bfep = TRUE) AS featured_count,
-        COUNT(*) FILTER (WHERE v.urgent_medical_needs = TRUE) AS urgent_count
+        COUNT(DISTINCT v.id) AS campaign_count,
+        COUNT(DISTINCT v.id) FILTER (WHERE v.featured_by_bfep = TRUE) AS featured_count,
+        COUNT(DISTINCT v.id) FILTER (WHERE v.urgent_medical_needs = TRUE) AS urgent_count
       FROM v_campaigns v
       INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
       WHERE v.country IS NOT NULL AND v.country <> ''
@@ -411,7 +569,7 @@ final class CampaignRepository {
           AND v.country <> ''
           AND LOWER(v.country) = LOWER(:country)
         GROUP BY v.country
-        ORDER BY COUNT(*) DESC, v.country ASC
+        ORDER BY COUNT(DISTINCT v.id) DESC, v.country ASC
         LIMIT 1
         SQL, [':country' => $country])->fetchField(),
       [BfepCacheInvalidator::COUNTRIES, BfepCacheInvalidator::CAMPAIGNS],
@@ -448,7 +606,7 @@ final class CampaignRepository {
    */
   public function sitemapCampaigns(): array {
     return $this->db()->query(<<<'SQL'
-      SELECT v.id, COALESCE(v.updated_at, v.created_at) AS lastmod
+      SELECT DISTINCT v.id, COALESCE(v.updated_at, v.created_at) AS lastmod
       FROM v_campaigns v
       INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL
       WHERE v.id IS NOT NULL

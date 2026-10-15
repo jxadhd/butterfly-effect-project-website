@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\SyncPlatforms;
 use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -170,6 +171,7 @@ final class CampaignEditForm extends FormBase {
       '#title' => $this->t('Fundraiser URL'),
       '#maxlength' => 2000,
       '#default_value' => $this->fundraiser->url ?? '',
+      '#description' => SyncPlatforms::help(),
     ];
     $form['fundraiser']['currency_code'] = [
       '#type' => 'textfield',
@@ -195,14 +197,24 @@ final class CampaignEditForm extends FormBase {
     ];
 
     $this->syncState = $this->loadSyncState();
-    if ($this->syncState !== NULL) {
+    if ($this->syncState !== NULL && !SyncPlatforms::supports($this->fundraiser->url ?? NULL)) {
+      $form['fundraiser']['sync_unavailable'] = [
+        '#type' => 'item',
+        '#title' => $this->t('Automatic updates'),
+        '#markup' => $this->t('Not available for this platform, so keep the amounts up to date by hand.'),
+      ];
+    }
+    elseif ($this->syncState !== NULL) {
+      $status = trim((string) ($this->syncState->sync_status ?? ''));
+      $turnedOff = $status === 'not_found' && !AdminFormat::truthy($this->syncState->auto_sync);
       $form['fundraiser']['auto_sync'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Update raised and goal amounts automatically'),
         '#default_value' => AdminFormat::truthy($this->syncState->auto_sync),
-        '#description' => $this->t('The fundraiser sync service refreshes these figures from the platform. Untick to keep manually entered amounts.'),
+        '#description' => $turnedOff
+          ? $this->t('Turned off by the sync because the fundraiser page was not found 3 nights in a row. Fix the URL, or tick this to try the page again.')
+          : $this->t('The fundraiser sync service refreshes these figures from the platform. Untick to keep manually entered amounts.'),
       ];
-      $status = trim((string) ($this->syncState->sync_status ?? ''));
       $form['fundraiser']['sync_state'] = [
         '#type' => 'item',
         '#title' => $this->t('Last sync'),
@@ -443,8 +455,14 @@ final class CampaignEditForm extends FormBase {
       return [];
     }
     $wanted = !empty($values['auto_sync']);
+    $fields = ['auto_sync' => $wanted ? 'true' : 'false'];
+    if ($wanted && !AdminFormat::truthy($this->syncState->auto_sync)) {
+      // Turning sync back on gives a dead link another 3 nights before the
+      // sync turns it off again.
+      $fields['consecutive_failures'] = 0;
+    }
     $this->database->update('campaign_fundraisers')
-      ->fields(['auto_sync' => $wanted ? 'true' : 'false'])
+      ->fields($fields)
       ->condition('campaign_id', $this->campaignId)
       ->condition('is_active', TRUE)
       ->execute();

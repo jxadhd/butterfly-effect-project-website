@@ -46,8 +46,9 @@ final class DataChecks {
       ],
       'dead_link' => [
         'label' => 'Fundraiser page not found',
-        'help' => 'The platform answered "page not found" on 3 or more nightly syncs in a row, so the fundraiser was probably removed or moved. Replace the link with the new address, or mark the fundraiser inactive.',
-        'sql' => "EXISTS ({$active} AND f.auto_sync AND CAST(f.sync_status AS TEXT) = 'not_found')",
+        'help' => 'The platform answered "page not found" on 3 nightly syncs in a row, so the fundraiser was probably removed or moved, and the sync stopped updating it. Replace the link with the new address, or mark the fundraiser inactive.',
+        // The sync turns auto_sync off for these rows, so it is not part of the check.
+        'sql' => "EXISTS ({$active} AND CAST(f.sync_status AS TEXT) = 'not_found')",
       ],
       'duplicate_line' => [
         'label' => 'Line number used twice',

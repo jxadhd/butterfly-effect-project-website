@@ -48,6 +48,97 @@ function _bfep_i18n_languages(): array {
 }
 
 /**
+ * The current page's path without its language prefix, and its query.
+ *
+ * Read from the main request, so error pages switch to the page that was
+ * asked for rather than to /system/404.
+ *
+ * @return array{0: string, 1: array}
+ *   The path (such as /campaigns/42) and the query arguments.
+ */
+function _bfep_i18n_current_path(): array {
+  $request = \Drupal::requestStack()->getMainRequest();
+  $path = $request?->getPathInfo() ?? '/';
+  $first = explode('/', ltrim($path, '/'), 2);
+  foreach (_bfep_i18n_languages() as $info) {
+    if ($info['prefix'] !== '' && $first[0] === $info['prefix']) {
+      $path = '/' . ($first[1] ?? '');
+      break;
+    }
+  }
+  if (\Drupal::service('path.matcher')->isFrontPage()) {
+    $path = '/';
+  }
+  $query = $request?->query->all() ?? [];
+  unset($query['lang']);
+  return [$path, $query];
+}
+
+/**
+ * A site-relative URL for a path in a language.
+ */
+function _bfep_i18n_url(string $path, string $prefix, array $query = []): string {
+  $url = \Drupal::request()->getBasePath()
+    . ($prefix !== '' ? '/' . $prefix . ($path === '/' ? '' : $path) : $path);
+  return $query ? $url . '?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986) : $url;
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page.html.twig.
+ *
+ * Adds the language switch to the header of every public page.
+ */
+function bfep_i18n_preprocess_page(array &$variables): void {
+  if (!_bfep_i18n_is_public_page()) {
+    return;
+  }
+  $languages = _bfep_i18n_languages();
+  if (count($languages) < 2) {
+    return;
+  }
+  $current = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_INTERFACE)->getId();
+  [$path, $query] = _bfep_i18n_current_path();
+
+  // Short labels, each written in its own language.
+  $labels = ['en' => 'EN', 'ar' => 'عربي'];
+  $options = [];
+  foreach ($languages as $langcode => $info) {
+    $options[] = [
+      'langcode' => $langcode,
+      'label' => $labels[$langcode] ?? strtoupper($langcode),
+      'name' => $info['language']->getName() === 'Arabic' ? 'العربية' : ($langcode === 'en' ? 'English' : $info['language']->getName()),
+      // LanguageRedirect stores ?lang= as the visitor's choice. Without it
+      // the link still leads to the page in that language.
+      'url' => _bfep_i18n_url($path, $info['prefix'], [...$query, 'lang' => $langcode]),
+      'active' => $langcode === $current,
+      'direction' => $info['language']->getDirection(),
+    ];
+  }
+
+  $variables['page']['header']['bfep_i18n_language_switch'] = [
+    '#theme' => 'bfep_language_switch',
+    '#options' => $options,
+    '#current' => $current,
+    '#weight' => 100,
+    '#attached' => ['library' => ['bfep_i18n/language-switcher']],
+    '#cache' => [
+      'contexts' => ['url.path', 'url.query_args', 'url.path.is_front', 'languages:language_interface'],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme().
+ */
+function bfep_i18n_theme(): array {
+  return [
+    'bfep_language_switch' => [
+      'variables' => ['options' => [], 'current' => ''],
+    ],
+  ];
+}
+
+/**
  * Implements hook_page_attachments().
  *
  * Adds the right-to-left styles to Arabic pages, and links each public page

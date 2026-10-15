@@ -1,0 +1,4 @@
+right-to-left:
+  css:
+    theme:
+      css/right-to-left.css: {}

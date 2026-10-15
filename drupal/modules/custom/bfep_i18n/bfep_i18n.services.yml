@@ -1,0 +1,21 @@
+services:
+  bfep_i18n.translations:
+    class: Drupal\bfep_i18n\Translations
+    arguments:
+      - '@extension.list.module'
+      - '@language_manager'
+      - '@config.factory'
+      - '@state'
+      - '@module_handler'
+      - '@logger.channel.bfep'
+      - '@locale.storage'
+      - '@locale.plural.formula'
+      - '@class_resolver'
+      - '@string_translation'
+      - '@language.config_factory_override'
+
+  bfep_i18n.config_translation_subscriber:
+    class: Drupal\bfep_i18n\EventSubscriber\ConfigTranslationSubscriber
+    arguments: ['@bfep_i18n.translations']
+    tags:
+      - { name: event_subscriber }

@@ -1,0 +1,10 @@
+name: 'BFEP Arabic and other languages'
+type: module
+description: 'Arabic version of the public site: /ar URLs, browser-language preselection, the header language switch, hreflang, and the Arabic translations.'
+package: Custom
+core_version_requirement: ^11
+dependencies:
+  - bfep:bfep
+  - drupal:language
+  - drupal:locale
+  - drupal:config_translation

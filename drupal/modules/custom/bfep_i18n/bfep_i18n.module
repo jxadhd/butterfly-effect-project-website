@@ -1,0 +1,199 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Arabic version of the public site: language switch, hreflang, sitemap.
+ */
+
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_rebuild().
+ *
+ * `bfep deploy` runs drush cr, so a changed .po file is loaded on deploy.
+ */
+function bfep_i18n_rebuild(): void {
+  \Drupal::service('bfep_i18n.translations')->sync();
+}
+
+/**
+ * Whether the current page is a public (non-admin) page.
+ */
+function _bfep_i18n_is_public_page(): bool {
+  $route = \Drupal::routeMatch()->getRouteObject();
+  if ($route === NULL || $route->getOption('_admin_route')) {
+    return FALSE;
+  }
+  return !\Drupal::service('router.admin_context')->isAdminRoute($route);
+}
+
+/**
+ * The site's languages with their URL path prefixes.
+ *
+ * @return array<string, array{language: \Drupal\Core\Language\LanguageInterface, prefix: string}>
+ *   Keyed by langcode, in the site's language order.
+ */
+function _bfep_i18n_languages(): array {
+  $prefixes = (array) \Drupal::config('language.negotiation')->get('url.prefixes');
+  $languages = [];
+  foreach (\Drupal::languageManager()->getLanguages() as $langcode => $language) {
+    if (array_key_exists($langcode, $prefixes)) {
+      $languages[$langcode] = ['language' => $language, 'prefix' => trim((string) $prefixes[$langcode], '/')];
+    }
+  }
+  return $languages;
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Adds the right-to-left styles to Arabic pages, and links each public page
+ * to its versions in the other languages, so search engines show people the
+ * version in their language.
+ */
+function bfep_i18n_page_attachments(array &$attachments): void {
+  $attachments['#cache']['contexts'][] = 'languages:language_interface';
+  $language = \Drupal::languageManager()->getCurrentLanguage();
+  if ($language->getDirection() === LanguageInterface::DIRECTION_RTL && _bfep_i18n_is_public_page()) {
+    // The Arabic typeface and the few theme fixes right-to-left pages need.
+    $attachments['#attached']['library'][] = 'bfep_i18n/right-to-left';
+  }
+
+  $seo = \Drupal::service('bfep.seo_manager')->context();
+  if ($seo === NULL || !isset($seo['path'])) {
+    return;
+  }
+  /** @var \Drupal\bfep\Service\BfepSettings $settings */
+  $settings = \Drupal::service('bfep.settings');
+  $languages = _bfep_i18n_languages();
+  if (count($languages) < 2) {
+    return;
+  }
+  $default = \Drupal::languageManager()->getDefaultLanguage()->getId();
+  $links = [];
+  foreach (array_keys($languages) as $langcode) {
+    $links[$langcode] = $settings->localizedUrl($seo['path'], $langcode);
+  }
+  $links['x-default'] = $links[$default] ?? $settings->absoluteUrl($seo['path']);
+  foreach ($links as $hreflang => $href) {
+    $attachments['#attached']['html_head_link'][] = [[
+      'rel' => 'alternate',
+      'hreflang' => $hreflang,
+      'href' => $href,
+    ], FALSE,
+    ];
+  }
+}
+
+/**
+ * Implements hook_metatags_alter().
+ *
+ * Runs after bfep_metatags_alter(), which sets the English locale.
+ */
+function bfep_i18n_metatags_alter(array &$metatags, array &$context): void {
+  if (\Drupal::service('bfep.seo_manager')->context() === NULL) {
+    return;
+  }
+  $locales = ['en' => 'en_NZ', 'ar' => 'ar_AR'];
+  $current = \Drupal::languageManager()->getCurrentLanguage()->getId();
+  $metatags['og_locale'] = $locales[$current] ?? $current;
+  $alternates = array_values(array_diff_key($locales, [$current => TRUE]));
+  if ($alternates) {
+    $metatags['og_locale_alternative'] = implode(',', $alternates);
+  }
+}
+
+/**
+ * Implements hook_simple_sitemap_arbitrary_links_alter().
+ *
+ * Runs after bfep's, which adds the English URLs. Each gets its Arabic
+ * version, and both list the other as an alternate.
+ */
+function bfep_i18n_simple_sitemap_arbitrary_links_alter(array &$arbitrary_links, $sitemap): void {
+  if ($sitemap->id() !== 'default') {
+    return;
+  }
+  /** @var \Drupal\bfep\Service\BfepSettings $settings */
+  $settings = \Drupal::service('bfep.settings');
+  $languages = array_keys(_bfep_i18n_languages());
+  if (count($languages) < 2) {
+    return;
+  }
+  $base = $settings->baseUrl();
+  $links = [];
+  foreach ($arbitrary_links as $link) {
+    $url = (string) ($link['url'] ?? '');
+    if (!str_starts_with($url, $base . '/')) {
+      $links[] = $link;
+      continue;
+    }
+    $path = substr($url, strlen($base)) ?: '/';
+    $alternates = [];
+    foreach ($languages as $langcode) {
+      $alternates[$langcode] = $settings->localizedUrl($path, $langcode);
+    }
+    foreach ($alternates as $localized) {
+      $links[] = ['url' => $localized, 'alternate_urls' => $alternates] + $link;
+    }
+  }
+  $arbitrary_links = $links;
+}
+
+/**
+ * Implements hook_config_translation_info_alter().
+ */
+function bfep_i18n_config_translation_info_alter(array &$info): void {
+  // The content settings form only exists while bfep_content is enabled.
+  if (!\Drupal::moduleHandler()->moduleExists('bfep_content')) {
+    unset($info['bfep_i18n.bfep_content_settings']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for bfep_trust_page.html.twig.
+ *
+ * Runs after bfep_content's preprocess, which loads the edited policy text.
+ * Text that has no translation yet is shown in English, marked as English so
+ * it reads left to right and screen readers pronounce it correctly.
+ */
+function bfep_i18n_preprocess_bfep_trust_page(array &$variables): void {
+  $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+  if ($langcode === 'en' || !\Drupal::moduleHandler()->moduleExists('bfep_content')) {
+    return;
+  }
+  $page = (string) (\Drupal::routeMatch()->getRouteObject()?->getDefault('page') ?? '');
+  if ($page === '') {
+    return;
+  }
+  /** @var \Drupal\language\ConfigurableLanguageManagerInterface $manager */
+  $manager = \Drupal::languageManager();
+  $override = $manager->getLanguageConfigOverride($langcode, 'bfep_content.settings');
+  $english = ['lang' => 'en', 'dir' => 'ltr'];
+  if (!empty($variables['body']) && trim((string) $override->get('policies.' . $page . '.body.value')) === '') {
+    $variables['body'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => $english,
+      'body' => $variables['body'],
+    ];
+  }
+  if (($variables['intro'] ?? '') !== '' && trim((string) $override->get('policies.' . $page . '.intro')) === '') {
+    $variables['intro_attributes'] = $english;
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for bfep_staff_guide.html.twig.
+ */
+function bfep_i18n_preprocess_bfep_staff_guide(array &$variables): void {
+  $variables['extra_tips'][] = [
+    '#markup' => t('The public site is also in Arabic, under /ar. Campaign names, descriptions and other details you enter are shown as you typed them in both languages. To change the Arabic for a label or sentence, use <a href=":interface">User interface translation</a>. For the headline, page titles, policy pages and the Instagram message, use the Translate tab on <a href=":content">Content and channels</a> or <a href=":settings">BFEP settings</a>. If a page is refused, ask a site administrator.', [
+      ':interface' => Url::fromRoute('locale.translate_page')->toString(),
+      ':content' => Url::fromRoute(\Drupal::moduleHandler()->moduleExists('bfep_content') ? 'config_translation.item.overview.bfep_content.settings' : 'config_translation.item.overview.bfep.settings')->toString(),
+      ':settings' => Url::fromRoute('config_translation.item.overview.bfep.settings')->toString(),
+    ]),
+  ];
+}

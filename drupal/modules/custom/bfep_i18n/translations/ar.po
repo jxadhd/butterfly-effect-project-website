@@ -1,0 +1,2347 @@
+# Arabic translation of The Butterfly Effect Project public website.
+#
+# Machine-written by Claude (Anthropic) in October 2026. It has not yet been
+# reviewed by a native Arabic speaker; please have it checked before launch.
+# Change wording here, or on the site under Configuration > Regional and
+# language > User interface translation (changes made there are kept when this
+# file is re-imported).
+msgid ""
+msgstr ""
+"Project-Id-Version: bfep_i18n\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=((n==0) ? 0 : ((n==1) ? 1 : ((n==2) ? 2 : ((((n%100)>=3) && ((n%100)<=10)) ? 3 : ((((n%100)>=11) && ((n%100)<=99)) ? 4 : 5)))));\n"
+
+msgid "New campaigns"
+msgstr "حملات جديدة"
+
+msgid "Official communication channel"
+msgstr "قناة التواصل الرسمية"
+
+msgid "Follow us on Instagram"
+msgstr "تابعونا على إنستغرام"
+
+msgid "Follow @handle"
+msgstr "تابع @handle"
+
+msgid "Follow @handle on Instagram (opens in a new tab)"
+msgstr "تابع @handle على إنستغرام (يُفتح في تبويب جديد)"
+
+msgid "Discover ways to help"
+msgstr "اكتشف طرق المساعدة"
+
+msgid "Browse the directory by fundraiser, country, or ground initiative."
+msgstr "تصفّح الدليل حسب صفحة التبرع أو البلد أو المبادرة الميدانية."
+
+msgid "Campaigns"
+msgstr "الحملات"
+
+msgid "Countries"
+msgstr "البلدان"
+
+msgid "Ground initiatives"
+msgstr "المبادرات الميدانية"
+
+msgid "Take action"
+msgstr "شارك بالعمل"
+
+msgid "Refer a fundraiser, volunteer with BFEP, or request an information update."
+msgstr "رشّح صفحة تبرع، أو تطوّع مع BFEP، أو اطلب تحديث معلومات."
+
+msgid "Submit a referral"
+msgstr "رشّح حملة"
+
+msgid "Volunteer with us"
+msgstr "تطوّع معنا"
+
+msgid "Request an update"
+msgstr "اطلب تحديثًا"
+
+msgid "About, trust, and policy"
+msgstr "عن المشروع والثقة والسياسات"
+
+msgid "Understand the project, its verification standard, and its public policies."
+msgstr "تعرّف على المشروع ومعيار التحقق الذي يتبعه وسياساته المعلنة."
+
+msgid "About the project"
+msgstr "عن المشروع"
+
+msgid "Transparency"
+msgstr "الشفافية"
+
+msgid "How we verify"
+msgstr "كيف نتحقق"
+
+msgid "Our team"
+msgstr "فريقنا"
+
+msgid "Editorial policy"
+msgstr "السياسة التحريرية"
+
+msgid "Privacy notice"
+msgstr "إشعار الخصوصية"
+
+msgid "Safeguarding"
+msgstr "الحماية"
+
+msgid "Contact"
+msgstr "تواصل معنا"
+
+msgid "Explore this section"
+msgstr "استكشف هذا القسم"
+
+msgid "The Butterfly Effect Project is a volunteer-led directory that helps humanitarian fundraisers be found, reviewed, and kept current."
+msgstr "مشروع أثر الفراشة دليل يديره متطوعون، يساعد حملات جمع التبرعات الإنسانية على أن تُكتشف وتُراجَع وتبقى معلوماتها محدّثة."
+
+msgid "Our purpose"
+msgstr "هدفنا"
+
+msgid "We organise selected public fundraiser information into a searchable directory so people can discover campaigns by country, urgency, and other useful signals."
+msgstr "ننظّم مجموعة مختارة من المعلومات العامة عن صفحات التبرع في دليل قابل للبحث، ليتمكن الناس من اكتشاف الحملات حسب البلد ودرجة الإلحاح ومؤشرات مفيدة أخرى."
+
+msgid "We do not collect donations through this website. Supporters follow an external link and decide for themselves whether to donate on the fundraiser’s own platform."
+msgstr "لا نجمع التبرعات عبر هذا الموقع. يتبع الداعمون رابطًا خارجيًا ويقررون بأنفسهم ما إذا كانوا سيتبرعون على منصة صفحة التبرع نفسها."
+
+msgid "Keeping records useful"
+msgstr "إبقاء السجلات مفيدة"
+
+msgid "Campaign information changes. Referral and update forms let families, organisers, and community members alert the team to new or inaccurate information."
+msgstr "تتغيّر معلومات الحملات باستمرار. تتيح نماذج الترشيح والتحديث للعائلات والمنظِّمين وأفراد المجتمع تنبيه الفريق إلى معلومات جديدة أو غير دقيقة."
+
+msgid "A listing is not a guarantee of future conduct or outcomes. Read the fundraiser, platform terms, and available evidence before donating."
+msgstr "إدراج حملة في الدليل ليس ضمانًا لسلوك أو نتائج مستقبلية. اقرأ صفحة التبرع وشروط المنصة والأدلة المتاحة قبل أن تتبرع."
+
+msgid "Browse campaigns"
+msgstr "تصفّح الحملات"
+
+msgid "How verification works"
+msgstr "كيف يعمل التحقق"
+
+msgid "New campaigns · @organization"
+msgstr "حملات جديدة · @organization"
+
+msgid "Humanitarian fundraisers recently added to the @organization directory."
+msgstr "حملات جمع تبرعات إنسانية أُضيفت مؤخرًا إلى دليل @organization."
+
+msgid "Ground initiative #@id"
+msgstr "المبادرة الميدانية رقم @id"
+
+msgid "What this directory does, what its labels mean, and where its limits are."
+msgstr "ما يقدّمه هذا الدليل، وما تعنيه تصنيفاته، وأين تقف حدوده."
+
+msgid "Our role"
+msgstr "دورنا"
+
+msgid "@organization is a volunteer-led discovery and information project. We organise public fundraiser information and link people to fundraisers hosted by independent platforms."
+msgstr "@organization مشروع يديره متطوعون للتعريف بالحملات وتوفير المعلومات عنها. ننظّم المعلومات العامة عن صفحات التبرع ونوجّه الناس إلى صفحات تستضيفها منصات مستقلة."
+
+msgid "We do not receive or distribute donations made through those links. A fundraiser’s platform controls the payment process, fees, refunds, and its own terms."
+msgstr "لا نستلم التبرعات التي تتم عبر هذه الروابط ولا نوزّعها. منصة صفحة التبرع هي التي تتحكم في عملية الدفع والرسوم والمبالغ المستردة وشروطها الخاصة."
+
+msgid "What “featured” means"
+msgstr "ماذا تعني «مميّزة»"
+
+msgid "“Featured by BFEP” is an editorial directory label. It means the team chose to give the campaign additional visibility after review; it is not a financial guarantee, audit, certification, or promise about future events."
+msgstr "«مميّزة من BFEP» تصنيف تحريري في الدليل، ويعني أن الفريق اختار منح الحملة ظهورًا إضافيًا بعد مراجعتها؛ وهو ليس ضمانًا ماليًا ولا تدقيقًا ولا شهادة ولا وعدًا بشأن ما سيحدث مستقبلًا."
+
+msgid "“Urgent medical needs” describes information supplied or observed during review. Circumstances can change, so visitors should read the current fundraiser before acting."
+msgstr "«احتياجات طبية عاجلة» وصف لمعلومات قُدّمت أو لوحظت أثناء المراجعة. قد تتغيّر الظروف، لذا ينبغي للزوار قراءة صفحة التبرع الحالية قبل اتخاذ أي خطوة."
+
+msgid "Corrections and accountability"
+msgstr "التصحيحات والمساءلة"
+
+msgid "Families, organisers, and visitors can request a correction. We review requests against available evidence and update or remove records where appropriate."
+msgstr "يمكن للعائلات والمنظِّمين والزوار طلب تصحيح. نراجع الطلبات في ضوء الأدلة المتاحة، ونحدّث السجلات أو نحذفها عند الاقتضاء."
+
+msgid "External fundraiser links are marked as user-generated and nofollowed. Their content is controlled by third parties and may change without notice."
+msgstr "تُعلَّم روابط صفحات التبرع الخارجية على أنها من إنشاء المستخدمين ولا تتبعها محركات البحث. يتحكم طرف ثالث في محتواها، وقد يتغيّر دون إشعار."
+
+msgid "Request a correction"
+msgstr "اطلب تصحيحًا"
+
+msgid "All of the campaigns we list publicly undergo a strict vetting and verification process. BFEP only marks a campaign as verified when we have established and continue to maintain direct contact with the beneficiary, and the beneficiary confirms that they are receiving funds from the fundraiser organiser."
+msgstr "تخضع جميع الحملات التي ندرجها علنًا لعملية تدقيق وتحقق صارمة. لا تصف BFEP حملةً بأنها موثّقة إلا بعد أن نقيم تواصلًا مباشرًا مع المستفيد ونحافظ عليه، ويؤكد المستفيد أنه يتلقى الأموال من منظِّم صفحة التبرع."
+
+msgid "What verification means"
+msgstr "ماذا يعني التوثيق"
+
+msgid "We establish and confirm direct contact with the beneficiary before a campaign is marked as verified."
+msgstr "نقيم تواصلًا مباشرًا مع المستفيد ونتأكد منه قبل وصف الحملة بأنها موثّقة."
+
+msgid "We maintain that contact and confirm with the beneficiary that they are receiving funds from the fundraiser organiser."
+msgstr "نحافظ على هذا التواصل ونتأكد من المستفيد أنه يتلقى الأموال من منظِّم صفحة التبرع."
+
+msgid "Limits of review"
+msgstr "حدود المراجعة"
+
+msgid "Verification reflects these conditions at the time of our most recent contact. It is not a financial audit or a guarantee of future transfers, conduct, or outcomes."
+msgstr "يعكس التوثيق هذه الشروط كما كانت عند آخر تواصل لنا. وهو ليس تدقيقًا ماليًا ولا ضمانًا لتحويلات أو سلوك أو نتائج في المستقبل."
+
+msgid "Before donating, check the latest fundraiser updates and use the platform’s protected payment flow. We advise that you do not send money through an unexpected private channel."
+msgstr "قبل التبرع، راجِع آخر تحديثات صفحة التبرع واستخدم وسيلة الدفع المحمية التي توفرها المنصة. ننصحك بعدم إرسال المال عبر قناة خاصة غير متوقعة."
+
+msgid "The people and responsibilities behind the website."
+msgstr "الأشخاص والمسؤوليات وراء هذا الموقع."
+
+msgid "Project team"
+msgstr "فريق المشروع"
+
+msgid "@operator operates the directory from @location."
+msgstr "يدير @operator الدليل من @location."
+
+msgid "@organization volunteer team"
+msgstr "فريق متطوعي @organization"
+
+msgid "Aotearoa New Zealand"
+msgstr "أوتياروا نيوزيلندا"
+
+msgid "Our volunteers support research, referral review, record maintenance, translation, and amplification. They receive no financial benefits from working with us. Access to private submissions is limited to authorised accounts with a work-related need."
+msgstr "يساهم متطوعونا في البحث ومراجعة الترشيحات وتحديث السجلات والترجمة وإيصال صوت الحملات، ولا يحصلون على أي مقابل مادي من عملهم معنا. ويقتصر الوصول إلى الطلبات الخاصة على الحسابات المخوَّلة التي يتطلب عملها ذلك."
+
+msgid "Technical operation"
+msgstr "التشغيل التقني"
+
+msgid "@operator maintains the website and supporting infrastructure. Technical administration does not determine whether a fundraiser should be featured."
+msgstr "يتولى @operator صيانة الموقع والبنية التقنية الداعمة له. ولا تحدد الإدارة التقنية ما إذا كانت صفحة تبرع ما ستُميَّز."
+
+msgid "The project’s technical volunteer"
+msgstr "المتطوع التقني في المشروع"
+
+msgid "Join the work"
+msgstr "انضم إلى العمل"
+
+msgid "Volunteer applications are reviewed before access is granted. Applying does not guarantee selection or access to private records."
+msgstr "تُراجَع طلبات التطوع قبل منح أي صلاحيات. ولا يضمن تقديم الطلب القبول أو الوصول إلى السجلات الخاصة."
+
+msgid "How public descriptions, labels, corrections, and removals should be handled."
+msgstr "كيف نتعامل مع الأوصاف العامة والتصنيفات والتصحيحات والحذف."
+
+msgid "Accuracy and dignity"
+msgstr "الدقة والكرامة"
+
+msgid "Use clear, factual language and avoid unnecessary graphic or identifying detail."
+msgstr "استخدم لغة واضحة وواقعية، وتجنّب التفاصيل الصادمة أو التي تكشف الهوية دون داعٍ."
+
+msgid "Keep internal review notes out of public descriptions."
+msgstr "أبقِ ملاحظات المراجعة الداخلية خارج الأوصاف العامة."
+
+msgid "Attribute uncertain claims and avoid presenting them as independently established facts."
+msgstr "انسب الادعاءات غير المؤكدة إلى أصحابها، وتجنّب تقديمها على أنها حقائق ثابتة تحقّقنا منها بشكل مستقل."
+
+msgid "Correct material errors promptly when credible evidence is available."
+msgstr "صحّح الأخطاء الجوهرية فورًا متى توفرت أدلة موثوقة."
+
+msgid "Remove or restrict information when continued publication creates disproportionate privacy or safety risk."
+msgstr "احذف المعلومات أو قيّد عرضها إذا كان استمرار نشرها يشكّل خطرًا غير متناسب على الخصوصية أو السلامة."
+
+msgid "Independence and conflicts"
+msgstr "الاستقلالية وتضارب المصالح"
+
+msgid "A personal connection, volunteer relationship, or request for amplification should be disclosed internally and should not bypass review."
+msgstr "ينبغي الإفصاح داخليًا عن أي صلة شخصية أو علاقة تطوعية أو طلب لنشر حملة، ولا يجوز أن يتجاوز ذلك عملية المراجعة."
+
+msgid "No payment buys a listing or featured status. If that ever changes, the relationship must be clearly disclosed on the affected page."
+msgstr "لا يمكن شراء إدراج حملة أو تمييزها بأي مبلغ. وإن تغيّر ذلك يومًا، فيجب الإفصاح عن هذه العلاقة بوضوح على الصفحة المعنية."
+
+msgid "Appeals and updates"
+msgstr "الاعتراضات والتحديثات"
+
+msgid "Anyone can submit an update request. The team may ask for supporting information and will record the outcome in its internal workflow."
+msgstr "يمكن لأي شخص تقديم طلب تحديث. وقد يطلب الفريق معلومات داعمة، وسيسجّل النتيجة ضمن سير عمله الداخلي."
+
+msgid "This notice explains what information the website collects, why it is used, and how to ask for access or correction."
+msgstr "يوضح هذا الإشعار المعلومات التي يجمعها الموقع، وسبب استخدامها، وكيفية طلب الاطلاع عليها أو تصحيحها."
+
+msgid "Information we collect"
+msgstr "المعلومات التي نجمعها"
+
+msgid "Referral, volunteer, and update forms collect the details shown on each form. These can include names, email addresses, contact details, public profile links, fundraiser information, skills, and the content of your request."
+msgstr "تجمع نماذج الترشيح والتطوع والتحديث البيانات الظاهرة في كل نموذج، وقد تشمل الأسماء وعناوين البريد الإلكتروني وبيانات التواصل وروابط الحسابات العامة ومعلومات صفحات التبرع والمهارات ومحتوى طلبك."
+
+msgid "The server may also record technical information such as time, requested page, browser details, and IP address for security, reliability, and abuse prevention. Submission rate limits use a one-way hash derived from the connecting address."
+msgstr "قد يسجّل الخادم أيضًا معلومات تقنية مثل الوقت والصفحة المطلوبة وبيانات المتصفح وعنوان IP، وذلك لأغراض الأمان والموثوقية ومنع إساءة الاستخدام. وتعتمد حدود عدد الطلبات المسموح بها على بصمة أحادية الاتجاه مشتقة من عنوان الاتصال."
+
+msgid "Why we use it"
+msgstr "لماذا نستخدمها"
+
+msgid "Review referrals and maintain the public campaign directory."
+msgstr "مراجعة الترشيحات وتحديث دليل الحملات العام."
+
+msgid "Respond to corrections, privacy requests, and volunteer applications."
+msgstr "الرد على طلبات التصحيح وطلبات الخصوصية وطلبات التطوع."
+
+msgid "Protect forms and infrastructure from abuse and investigate technical problems."
+msgstr "حماية النماذج والبنية التقنية من إساءة الاستخدام، والتحقيق في المشكلات التقنية."
+
+msgid "Meet legal obligations and protect the safety of people involved in the project."
+msgstr "الوفاء بالالتزامات القانونية وحماية سلامة الأشخاص المعنيين بالمشروع."
+
+msgid "Access, sharing, and retention"
+msgstr "الوصول والمشاركة والاحتفاظ"
+
+msgid "Authorised volunteers and technical administrators can access information only where their role requires it. Hosting, email, authentication, and other service providers may process information on our behalf."
+msgstr "لا يصل المتطوعون المخوَّلون والمسؤولون التقنيون إلى المعلومات إلا حيث تتطلب أدوارهم ذلك. وقد يعالج مزوّدو خدمات الاستضافة والبريد الإلكتروني والمصادقة وغيرها المعلومات نيابةً عنا."
+
+msgid "We keep personal information only for as long as it is reasonably needed for the purpose collected, security, dispute handling, or legal obligations. Public fundraiser information may remain listed while it is relevant and safe to publish."
+msgstr "نحتفظ بالمعلومات الشخصية فقط للمدة اللازمة بشكل معقول للغرض الذي جُمعت من أجله، أو للأمان، أو لمعالجة النزاعات، أو للالتزامات القانونية. وقد تبقى المعلومات العامة عن صفحات التبرع مُدرجة ما دامت ذات صلة وآمنة للنشر."
+
+msgid "Your choices and rights"
+msgstr "خياراتك وحقوقك"
+
+msgid "Submitting a form is optional, but we may be unable to review or respond without the required details. You can ask what personal information we hold about you and request a correction."
+msgstr "تقديم أي نموذج أمر اختياري، لكننا قد لا نتمكن من المراجعة أو الرد دون البيانات المطلوبة. ويمكنك أن تسأل عن المعلومات الشخصية التي نحتفظ بها عنك وأن تطلب تصحيحها."
+
+msgid "For an access, correction, deletion, or privacy concern, use the contact details below or the information-update form. We may need to verify your identity before disclosing or changing private information."
+msgstr "لطلبات الاطلاع أو التصحيح أو الحذف أو أي مخاوف تتعلق بالخصوصية، استخدم بيانات التواصل أدناه أو نموذج تحديث المعلومات. وقد نحتاج إلى التحقق من هويتك قبل الإفصاح عن معلومات خاصة أو تغييرها."
+
+msgid "Make a privacy or update request"
+msgstr "قدّم طلب خصوصية أو تحديث"
+
+msgid "Contact the project"
+msgstr "تواصل مع المشروع"
+
+msgid "Humanitarian information can create real-world privacy and safety risks. These principles guide what we publish and how volunteers should work."
+msgstr "قد تترتب على المعلومات الإنسانية مخاطر حقيقية على الخصوصية والسلامة. وتوجّه هذه المبادئ ما ننشره وطريقة عمل المتطوعين."
+
+msgid "Do no additional harm"
+msgstr "لا تُلحق ضررًا إضافيًا"
+
+msgid "Publish only information needed to understand and locate a fundraiser."
+msgstr "انشر فقط المعلومات اللازمة لفهم صفحة التبرع والوصول إليها."
+
+msgid "Do not expose private contact details, identity documents, precise locations, or internal notes."
+msgstr "لا تكشف بيانات التواصل الخاصة أو وثائق الهوية أو المواقع الدقيقة أو الملاحظات الداخلية."
+
+msgid "Avoid graphic detail and language that removes a person’s dignity or agency."
+msgstr "تجنّب التفاصيل الصادمة واللغة التي تنتقص من كرامة الإنسان أو من قدرته على تقرير شؤونه."
+
+msgid "Escalate credible threats, coercion, exploitation, or child-safety concerns to the project lead."
+msgstr "أحِل التهديدات الجدية أو حالات الإكراه أو الاستغلال أو المخاوف المتعلقة بسلامة الأطفال إلى مسؤول المشروع."
+
+msgid "Restrict or remove content when safety or privacy risk outweighs the public benefit."
+msgstr "قيّد المحتوى أو احذفه حين يفوق خطره على السلامة أو الخصوصية فائدتَه العامة."
+
+msgid "Safe contact"
+msgstr "التواصل الآمن"
+
+msgid "Volunteers should use approved project accounts and should not pressure families for sensitive evidence. Unexpected requests to move payment or communication off-platform should be treated cautiously."
+msgstr "ينبغي للمتطوعين استخدام حسابات المشروع المعتمدة، وعدم الضغط على العائلات لتقديم أدلة حساسة. ويجب التعامل بحذر مع أي طلبات غير متوقعة لنقل الدفع أو التواصل إلى خارج المنصة."
+
+msgid "Report a concern"
+msgstr "أبلغ عن مخاوف"
+
+msgid "Choose the route that best matches what you need so it reaches the right review queue."
+msgstr "اختر المسار الأنسب لما تحتاجه ليصل طلبك إلى جهة المراجعة الصحيحة."
+
+msgid "Campaign enquiries"
+msgstr "الاستفسارات عن الحملات"
+
+msgid "Submit a new fundraiser through the referral form."
+msgstr "أرسل صفحة تبرع جديدة عبر نموذج الترشيح."
+
+msgid "Use the update form for corrections, removals, safety concerns, or privacy requests about an existing record."
+msgstr "استخدم نموذج التحديث للتصحيحات أو طلبات الحذف أو المخاوف المتعلقة بالسلامة أو طلبات الخصوصية الخاصة بسجل موجود."
+
+msgid "Use the volunteer form if you want to help maintain the directory."
+msgstr "استخدم نموذج التطوع إن كنت ترغب في المساعدة في تحديث الدليل."
+
+msgid "Response expectations"
+msgstr "ما يمكن توقعه بشأن الرد"
+
+msgid "The project is volunteer-led, so response times vary. Do not send passwords, payment-card details, identity documents, or information that is not needed for the request."
+msgstr "يدير المشروعَ متطوعون، لذا تتفاوت مدة الرد. لا ترسل كلمات مرور أو بيانات بطاقات دفع أو وثائق هوية أو أي معلومات لا يحتاجها الطلب."
+
+msgid "Volunteer"
+msgstr "تطوّع"
+
+msgid "The campaign directory is temporarily unavailable. Please try again in a few minutes."
+msgstr "دليل الحملات غير متاح مؤقتًا. يرجى المحاولة مرة أخرى بعد بضع دقائق."
+
+msgid "Line number"
+msgstr "رقم السطر"
+
+msgid "Country"
+msgstr "البلد"
+
+msgid "Region"
+msgstr "المنطقة"
+
+msgid "Platforms"
+msgstr "المنصات"
+
+msgid "Platform"
+msgstr "المنصة"
+
+msgid "Career/background"
+msgstr "المهنة / الخلفية"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Featured by BFEP"
+msgstr "مميّزة من BFEP"
+
+msgid "Needs"
+msgstr "الاحتياجات"
+
+msgid "Urgent medical needs"
+msgstr "احتياجات طبية عاجلة"
+
+msgid "Campaign #@id"
+msgstr "الحملة رقم @id"
+
+msgid "Featured"
+msgstr "مميّزة"
+
+msgid "Raised"
+msgstr "تم جمع"
+
+msgid "Goal"
+msgstr "الهدف"
+
+msgid "Progress"
+msgstr "التقدّم"
+
+msgid "@percent% funded"
+msgstr "تمويل @percent%"
+
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+msgid "Newest line number"
+msgstr "أحدث رقم سطر"
+
+msgid "Recently updated"
+msgstr "المحدَّثة مؤخرًا"
+
+msgid "Recently added"
+msgstr "المضافة مؤخرًا"
+
+msgid "Name A–Z"
+msgstr "الاسم (أ–ي)"
+
+msgid "Country A–Z"
+msgstr "البلد (أ–ي)"
+
+msgid "Least funded first"
+msgstr "الأقل تمويلًا أولًا"
+
+msgid "Closest to goal"
+msgstr "الأقرب إلى الهدف"
+
+msgid "About"
+msgstr "عن المشروع"
+
+msgid "About @organization"
+msgstr "عن @organization"
+
+msgid "Learn how The Butterfly Effect Project organises and maintains a public directory of humanitarian fundraiser information."
+msgstr "تعرّف على الطريقة التي ينظّم بها مشروع أثر الفراشة دليلًا عامًا لمعلومات حملات جمع التبرعات الإنسانية ويحافظ عليه."
+
+msgid "Campaigns by Country"
+msgstr "الحملات حسب البلد"
+
+msgid "Browse humanitarian fundraising campaigns by country, including featured campaigns and urgent medical cases."
+msgstr "تصفّح حملات جمع التبرعات الإنسانية حسب البلد، بما فيها الحملات المميّزة والحالات الطبية العاجلة."
+
+msgid "Ground Initiatives"
+msgstr "المبادرات الميدانية"
+
+msgid "Explore humanitarian ground initiatives listed by The Butterfly Effect Project."
+msgstr "استكشف المبادرات الإنسانية الميدانية التي يُدرجها مشروع أثر الفراشة."
+
+msgid "Submit a Referral"
+msgstr "رشّح حملة"
+
+msgid "Refer a humanitarian fundraising campaign to The Butterfly Effect Project for review."
+msgstr "رشّح حملة جمع تبرعات إنسانية ليراجعها فريق مشروع أثر الفراشة."
+
+msgid "Volunteer with The Butterfly Effect Project"
+msgstr "تطوّع مع مشروع أثر الفراشة"
+
+msgid "Apply to help review, organise, translate, and maintain humanitarian fundraiser information."
+msgstr "قدّم طلبًا للمساعدة في مراجعة معلومات حملات جمع التبرعات الإنسانية وتنظيمها وترجمتها وتحديثها."
+
+msgid "Information or Privacy Request"
+msgstr "طلب معلومات أو خصوصية"
+
+msgid "Request an Information Update"
+msgstr "اطلب تحديث المعلومات"
+
+msgid "Request a correction, removal, privacy response, or other update to information held by The Butterfly Effect Project."
+msgstr "اطلب تصحيح معلومات يحتفظ بها مشروع أثر الفراشة، أو حذفها، أو ردًّا بشأن الخصوصية، أو أي تحديث آخر لها."
+
+msgid "Search Humanitarian Fundraisers"
+msgstr "ابحث في حملات جمع التبرعات الإنسانية"
+
+msgid "Humanitarian Fundraising Campaigns"
+msgstr "حملات جمع التبرعات الإنسانية"
+
+msgid "Search and filter humanitarian fundraising campaigns by country, urgency, platform, tags, and featured status."
+msgstr "ابحث في حملات جمع التبرعات الإنسانية وصفِّها حسب البلد ودرجة الإلحاح والمنصة والوسوم والتمييز."
+
+msgid "Browse humanitarian fundraising campaigns, urgent medical cases, and public fundraiser information maintained by The Butterfly Effect Project."
+msgstr "تصفّح حملات جمع التبرعات الإنسانية والحالات الطبية العاجلة ومعلومات صفحات التبرع العامة التي يحتفظ بها مشروع أثر الفراشة."
+
+msgid "Search"
+msgstr "بحث"
+
+msgid "Search the public Butterfly Effect Project campaign and initiative directory."
+msgstr "ابحث في الدليل العام لحملات مشروع أثر الفراشة ومبادراته."
+
+msgid "View @name's humanitarian fundraising campaign in @country, listed by The Butterfly Effect Project."
+msgstr "اطّلع على حملة جمع التبرعات الإنسانية الخاصة بـ @name في @country، المُدرجة لدى مشروع أثر الفراشة."
+
+msgid "View @name's humanitarian fundraising campaign, listed by The Butterfly Effect Project."
+msgstr "اطّلع على حملة جمع التبرعات الإنسانية الخاصة بـ @name، المُدرجة لدى مشروع أثر الفراشة."
+
+msgid "Home"
+msgstr "الرئيسية"
+
+msgid "Understand what The Butterfly Effect Project does, what its directory labels mean, and the limits of fundraiser review."
+msgstr "افهم ما يقوم به مشروع أثر الفراشة، ومعنى التصنيفات في دليله، وحدود مراجعة صفحات التبرع."
+
+msgid "How We Verify Fundraisers"
+msgstr "كيف نتحقق من صفحات التبرع"
+
+msgid "Learn what BFEP verification means: ongoing direct contact with the beneficiary and confirmation that they receive funds from the fundraiser organiser."
+msgstr "تعرّف على معنى التوثيق لدى BFEP: تواصل مباشر ومستمر مع المستفيد، وتأكيد أنه يتلقى الأموال من منظِّم صفحة التبرع."
+
+msgid "Our Team"
+msgstr "فريقنا"
+
+msgid "Learn who operates The Butterfly Effect Project and how volunteer and technical responsibilities are separated."
+msgstr "تعرّف على من يدير مشروع أثر الفراشة وكيف تُفصل مسؤوليات المتطوعين عن المسؤوليات التقنية."
+
+msgid "Editorial Policy"
+msgstr "السياسة التحريرية"
+
+msgid "Read the standards for public descriptions, featured labels, corrections, removals, and conflicts of interest."
+msgstr "اقرأ المعايير الخاصة بالأوصاف العامة، وتصنيف الحملات المميّزة، والتصحيحات، والحذف، وتضارب المصالح."
+
+msgid "Privacy Notice"
+msgstr "إشعار الخصوصية"
+
+msgid "Learn what information The Butterfly Effect Project collects, why it is used, and how to request access or correction."
+msgstr "تعرّف على المعلومات التي يجمعها مشروع أثر الفراشة، وسبب استخدامها، وكيفية طلب الاطلاع عليها أو تصحيحها."
+
+msgid "Read the privacy, dignity, and safety principles applied to humanitarian campaign information."
+msgstr "اقرأ مبادئ الخصوصية والكرامة والسلامة المطبّقة على معلومات الحملات الإنسانية."
+
+msgid "Contact The Butterfly Effect Project about a referral, correction, privacy concern, or volunteering."
+msgstr "تواصل مع مشروع أثر الفراشة بشأن ترشيح أو تصحيح أو مخاوف تتعلق بالخصوصية أو التطوع."
+
+msgid "@title – Page @page"
+msgstr "@title – الصفحة @page"
+
+msgid "Browse 1 humanitarian fundraising campaign in @country, including featured and urgent cases."
+msgid_plural "Browse @count humanitarian fundraising campaigns in @country, including featured and urgent cases."
+msgstr[0] "تصفّح حملات جمع التبرعات الإنسانية في @country."
+msgstr[1] "تصفّح حملة جمع تبرعات إنسانية واحدة في @country."
+msgstr[2] "تصفّح حملتَي جمع تبرعات إنسانية في @country، بما فيهما الحالات المميّزة والعاجلة."
+msgstr[3] "تصفّح @count حملات لجمع التبرعات الإنسانية في @country، بما فيها الحالات المميّزة والعاجلة."
+msgstr[4] "تصفّح @count حملة لجمع التبرعات الإنسانية في @country، بما فيها الحالات المميّزة والعاجلة."
+msgstr[5] "تصفّح @count حملة لجمع التبرعات الإنسانية في @country، بما فيها الحالات المميّزة والعاجلة."
+
+msgid "Too many submissions were received from this connection. Please wait and try again later."
+msgstr "وصلنا عدد كبير جدًا من الطلبات من هذا الاتصال. يرجى الانتظار والمحاولة لاحقًا."
+
+msgid "This form is temporarily receiving too many submissions. Please try again later."
+msgstr "يستقبل هذا النموذج حاليًا عددًا كبيرًا جدًا من الطلبات. يرجى المحاولة لاحقًا."
+
+msgid "Please provide only information needed for this request. See our <a href=\":privacy\">privacy notice</a>."
+msgstr "يرجى تقديم المعلومات اللازمة لهذا الطلب فقط. راجع <a href=\":privacy\">إشعار الخصوصية</a>."
+
+msgid "I have read the privacy notice and consent to this information being used to handle my submission."
+msgstr "قرأتُ إشعار الخصوصية وأوافق على استخدام هذه المعلومات لمعالجة طلبي."
+
+msgid "Sorry, your submission could not be saved just now. Your answers are still below. Please try again in a few minutes."
+msgstr "عذرًا، تعذّر حفظ طلبك الآن. إجاباتك ما زالت أدناه. يرجى المحاولة مرة أخرى بعد بضع دقائق."
+
+msgid "Campaign recipient's full name"
+msgstr "الاسم الكامل للمستفيد من الحملة"
+
+msgid "Your email"
+msgstr "بريدك الإلكتروني"
+
+msgid "Link to the fundraiser"
+msgstr "رابط صفحة التبرع"
+
+msgid "Provide the public fundraiser page that you want the team to review."
+msgstr "أدخل رابط صفحة التبرع العامة التي تريد أن يراجعها الفريق."
+
+msgid "<strong>This fundraiser may already be listed.</strong> <a href=\":url\" target=\"_blank\" rel=\"noopener\">@name</a> uses the same fundraiser link. The link opens in a new tab, so your answers here are kept."
+msgstr "<strong>قد تكون صفحة التبرع هذه مُدرجة بالفعل.</strong> الحملة <a href=\":url\" target=\"_blank\" rel=\"noopener\">@name</a> تستخدم رابط صفحة التبرع نفسه. يُفتح الرابط في تبويب جديد، لذا ستبقى إجاباتك هنا محفوظة."
+
+msgid "Is this the fundraiser you are referring?"
+msgstr "هل هذه هي صفحة التبرع التي ترشّحها؟"
+
+msgid "Yes, it is the same fundraiser"
+msgstr "نعم، إنها صفحة التبرع نفسها"
+
+msgid "No, it is a different fundraiser"
+msgstr "لا، إنها صفحة تبرع مختلفة"
+
+msgid "Public social media accounts or usernames"
+msgstr "حسابات التواصل الاجتماعي العامة أو أسماء المستخدمين"
+
+msgid "Optional. Include only public accounts relevant to verification."
+msgstr "اختياري. أدرج فقط الحسابات العامة المفيدة في التحقق."
+
+msgid "Recipient city and country"
+msgstr "مدينة المستفيد وبلده"
+
+msgid "Do not provide a street address."
+msgstr "لا تذكر عنوان الشارع."
+
+msgid "Who set up the fundraiser?"
+msgstr "من أنشأ صفحة التبرع؟"
+
+msgid "- Select -"
+msgstr "- اختر -"
+
+msgid "The recipient"
+msgstr "المستفيد نفسه"
+
+msgid "A family member"
+msgstr "أحد أفراد العائلة"
+
+msgid "A friend or trusted supporter"
+msgstr "صديق أو داعم موثوق"
+
+msgid "A community volunteer or mutual-aid organiser"
+msgstr "متطوع مجتمعي أو منظِّم مبادرة للعون المتبادل"
+
+msgid "A social-media supporter"
+msgstr "داعم على وسائل التواصل الاجتماعي"
+
+msgid "I am not sure"
+msgstr "لست متأكدًا"
+
+msgid "Other"
+msgstr "أخرى"
+
+msgid "Please describe who set up the fundraiser"
+msgstr "يرجى توضيح من أنشأ صفحة التبرع"
+
+msgid "Tell us about the recipient and their current situation"
+msgstr "أخبرنا عن المستفيد ووضعه الحالي"
+
+msgid "Share only what is relevant and safe for the team to review. This is not automatically published."
+msgstr "شارك فقط ما هو مفيد وآمن ليراجعه الفريق. لا يُنشر هذا تلقائيًا."
+
+msgid "Which service is used to receive or transfer funds?"
+msgstr "ما الخدمة المستخدمة لاستلام الأموال أو تحويلها؟"
+
+msgid "Western Union"
+msgstr "ويسترن يونيون"
+
+msgid "PayPal"
+msgstr "باي بال"
+
+msgid "Bank transfer"
+msgstr "تحويل بنكي"
+
+msgid "MoneyGram"
+msgstr "موني غرام"
+
+msgid "Mobile wallet"
+msgstr "محفظة إلكترونية على الهاتف"
+
+msgid "Cash pickup service"
+msgstr "خدمة استلام نقدي"
+
+msgid "Please name the service"
+msgstr "يرجى ذكر اسم الخدمة"
+
+msgid "There are current plans to increase the fundraising goal."
+msgstr "توجد خطط حالية لرفع هدف جمع التبرعات."
+
+msgid "This fundraiser or recipient has been referred before."
+msgstr "سبق ترشيح صفحة التبرع هذه أو هذا المستفيد."
+
+msgid "WhatsApp, Telegram, or Signal contact number"
+msgstr "رقم للتواصل عبر واتساب أو تيليغرام أو سيغنال"
+
+msgid "Optional. Provide this only with the contact person’s permission."
+msgstr "اختياري. لا تُدخله إلا بإذن صاحب الرقم."
+
+msgid "Submit referral"
+msgstr "أرسل الترشيح"
+
+msgid "Please describe who set up the fundraiser."
+msgstr "يرجى توضيح من أنشأ صفحة التبرع."
+
+msgid "Please name the service being used."
+msgstr "يرجى ذكر اسم الخدمة المستخدمة."
+
+msgid "Enter a valid public http:// or https:// fundraiser URL."
+msgstr "أدخل رابطًا عامًا صحيحًا لصفحة التبرع يبدأ بـ http:// أو https://."
+
+msgid "Please answer the question under the fundraiser link, then submit again."
+msgstr "يرجى الإجابة عن السؤال الموجود تحت رابط صفحة التبرع، ثم الإرسال مرة أخرى."
+
+msgid "Thank you for checking. That fundraiser is already listed, so it does not need a new referral. If something on its page is wrong or out of date, you can tell us below."
+msgstr "شكرًا لتحققك. صفحة التبرع هذه مُدرجة بالفعل، فلا حاجة إلى ترشيح جديد. وإن كان في صفحتها شيء غير صحيح أو قديم، يمكنك إخبارنا أدناه."
+
+msgid "Thank you. Your referral has been submitted for review."
+msgstr "شكرًا لك. تم إرسال ترشيحك للمراجعة."
+
+msgid "Campaign @id"
+msgstr "الحملة @id"
+
+msgid "@name (line @line)"
+msgstr "@name (السطر @line)"
+
+msgid "Full name"
+msgstr "الاسم الكامل"
+
+msgid "How many hours per week could you help?"
+msgstr "كم ساعة في الأسبوع يمكنك المساعدة؟"
+
+msgid "Which areas interest you?"
+msgstr "ما المجالات التي تهمّك؟"
+
+msgid "Select all that apply."
+msgstr "اختر كل ما ينطبق."
+
+msgid "Skills and experience"
+msgstr "المهارات والخبرات"
+
+msgid "Tell us about relevant skills and how you hope to help. Do not include identity documents."
+msgstr "أخبرنا عن مهاراتك ذات الصلة وكيف تأمل أن تساعد. لا ترفق وثائق هوية."
+
+msgid "Can anyone vouch for you?"
+msgstr "هل يمكن لأحد أن يزكّيك؟"
+
+msgid "Optional. Name a person, group, or community connection only with their permission."
+msgstr "اختياري. اذكر شخصًا أو مجموعة أو جهة مجتمعية تعرفك، بإذنهم فقط."
+
+msgid "Submit volunteer application"
+msgstr "أرسل طلب التطوع"
+
+msgid "Select at least one area of interest."
+msgstr "اختر مجالًا واحدًا على الأقل."
+
+msgid "Thank you. Your volunteer application has been submitted."
+msgstr "شكرًا لك. تم إرسال طلب التطوع."
+
+msgid "What kind of request is this?"
+msgstr "ما نوع هذا الطلب؟"
+
+msgid "Correct or update a campaign"
+msgstr "تصحيح حملة أو تحديثها"
+
+msgid "Remove public information"
+msgstr "حذف معلومات عامة"
+
+msgid "Access my personal information"
+msgstr "الاطلاع على معلوماتي الشخصية"
+
+msgid "Correct my personal information"
+msgstr "تصحيح معلوماتي الشخصية"
+
+msgid "Report a safety concern"
+msgstr "الإبلاغ عن مخاوف تتعلق بالسلامة"
+
+msgid "Your name"
+msgstr "اسمك"
+
+msgid "Your relationship to the record"
+msgstr "صلتك بالسجل"
+
+msgid "Family member"
+msgstr "أحد أفراد العائلة"
+
+msgid "Family friend"
+msgstr "صديق للعائلة"
+
+msgid "Campaign organiser"
+msgstr "منظِّم الحملة"
+
+msgid "Observer"
+msgstr "مراقب"
+
+msgid "Directory campaign ID, if known"
+msgstr "رقم الحملة في الدليل، إن كان معروفًا"
+
+msgid "Family/campaign line number, if known"
+msgstr "رقم سطر العائلة أو الحملة، إن كان معروفًا"
+
+msgid "Fundraiser URL, if relevant"
+msgstr "رابط صفحة التبرع، إن وُجد"
+
+msgid "What information or issue does this concern?"
+msgstr "ما المعلومات أو المسألة التي يتعلق بها الطلب؟"
+
+msgid "For example: fundraiser link, country, description, name, removal, privacy access, or safety."
+msgstr "مثلًا: رابط صفحة التبرع، أو البلد، أو الوصف، أو الاسم، أو الحذف، أو الاطلاع على البيانات الخاصة، أو السلامة."
+
+msgid "Describe the request"
+msgstr "صِف الطلب"
+
+msgid "Include enough detail to identify and assess the request, but do not send passwords, payment details, or identity documents."
+msgstr "أضف تفاصيل كافية لتحديد الطلب وتقييمه، لكن لا ترسل كلمات مرور أو بيانات دفع أو وثائق هوية."
+
+msgid "This request concerns a family/campaign already listed."
+msgstr "يتعلق هذا الطلب بعائلة أو حملة مُدرجة بالفعل."
+
+msgid "Corrected contact email, if relevant"
+msgstr "البريد الإلكتروني المصحَّح للتواصل، إن وُجد"
+
+msgid "Corrected public social-media details, if relevant"
+msgstr "بيانات التواصل الاجتماعي العامة المصحَّحة، إن وُجدت"
+
+msgid "Submit request"
+msgstr "أرسل الطلب"
+
+msgid "That public campaign ID was not found."
+msgstr "لم يُعثر على حملة عامة بهذا الرقم."
+
+msgid "Enter a valid public http:// or https:// URL."
+msgstr "أدخل رابطًا عامًا صحيحًا يبدأ بـ http:// أو https://."
+
+msgid "Thank you. Your request has been submitted for review."
+msgstr "شكرًا لك. تم إرسال طلبك للمراجعة."
+
+msgid "Butterfly database"
+msgstr "قاعدة بيانات الفراشة"
+
+msgid "Searches Butterfly campaign, country, and initiative data. Authorised BFEP staff also see matching referrals, volunteer applications, and change requests."
+msgstr "يبحث في بيانات الحملات والبلدان والمبادرات في دليل الفراشة. ويرى موظفو BFEP المخوَّلون أيضًا ما يطابق بحثهم من ترشيحات وطلبات تطوع وطلبات تغيير."
+
+msgid "Campaign"
+msgstr "حملة"
+
+msgid "Line #@line_number"
+msgstr "السطر رقم @line_number"
+
+msgid "Ground initiative"
+msgstr "مبادرة ميدانية"
+
+msgid "Staff · Referral"
+msgstr "للموظفين · ترشيح"
+
+msgid "Staff · Volunteer"
+msgstr "للموظفين · متطوع"
+
+msgid "Staff · Change request"
+msgstr "للموظفين · طلب تغيير"
+
+msgid "1 campaign"
+msgid_plural "@count campaigns"
+msgstr[0] "لا توجد حملات"
+msgstr[1] "حملة واحدة"
+msgstr[2] "حملتان"
+msgstr[3] "@count حملات"
+msgstr[4] "@count حملة"
+msgstr[5] "@count حملة"
+
+msgid "Funding progress"
+msgstr "تقدّم التمويل"
+
+msgid "Amounts last updated from the fundraiser page on @campaign.figures_updated."
+msgstr "حُدّثت المبالغ آخر مرة من صفحة التبرع في @campaign.figures_updated."
+
+msgid "Tags"
+msgstr "الوسوم"
+
+msgid "Fundraisers"
+msgstr "صفحات جمع التبرعات"
+
+msgid "This campaign is raising money on more than one fundraiser. The totals above add them up where they use the same currency."
+msgstr "تجمع هذه الحملة التبرعات عبر أكثر من صفحة. تجمع المبالغ أعلاه ما بينها حين تكون بالعملة نفسها."
+
+msgid "Amounts last updated from the fundraiser page on @fundraiser.figures_updated."
+msgstr "حُدّثت المبالغ آخر مرة من صفحة التبرع في @fundraiser.figures_updated."
+
+msgid "Open fundraiser"
+msgstr "افتح صفحة التبرع"
+
+msgid "on @fundraiser.platform (opens in a new tab)"
+msgstr "على @fundraiser.platform (تُفتح في تبويب جديد)"
+
+msgid "About this campaign"
+msgstr "عن هذه الحملة"
+
+msgid "No public description is currently available."
+msgstr "لا يتوفر وصف عام لهذه الحملة حاليًا."
+
+msgid "Directory record last updated @campaign.updated."
+msgstr "آخر تحديث لسجل الدليل: @campaign.updated."
+
+msgid "BFEP marks a campaign as verified only while it maintains direct contact with the beneficiary and the beneficiary confirms that they are receiving funds from the fundraiser organiser. BFEP does not process donations, and verification is not a financial guarantee."
+msgstr "لا تصف BFEP حملةً بأنها موثّقة إلا ما دامت على تواصل مباشر مع المستفيد، وما دام المستفيد يؤكد أنه يتلقى الأموال من منظِّم صفحة التبرع. لا تتولّى BFEP معالجة التبرعات، والتوثيق ليس ضمانًا ماليًا."
+
+msgid "(opens in a new tab)"
+msgstr "(تُفتح في تبويب جديد)"
+
+msgid "Back to campaigns"
+msgstr "العودة إلى الحملات"
+
+msgid "Share this campaign"
+msgstr "شارك هذه الحملة"
+
+msgid "Share…"
+msgstr "مشاركة…"
+
+msgid "Copy link"
+msgstr "انسخ الرابط"
+
+msgid "More campaigns in @campaign.country"
+msgstr "حملات أخرى في @campaign.country"
+
+msgid "Line #@item.line_number"
+msgstr "السطر رقم @item.line_number"
+
+msgid "Campaign details"
+msgstr "تفاصيل الحملة"
+
+msgid "Raising on @fundraiser_total fundraisers"
+msgstr "عدد صفحات جمع التبرعات: @fundraiser_total"
+
+msgid "View details"
+msgstr "عرض التفاصيل"
+
+msgid "See all campaigns in @campaign.country"
+msgstr "عرض جميع الحملات في @campaign.country"
+
+msgid "Fundraiser"
+msgstr "صفحة جمع التبرعات"
+
+msgid "Choose a country to browse its public campaign records."
+msgstr "اختر بلدًا لتصفّح سجلات حملاته العامة."
+
+msgid "campaign"
+msgstr "حملة"
+
+msgid "campaigns"
+msgstr "حملات"
+
+msgid "featured"
+msgstr "مميّزة"
+
+msgid "urgent"
+msgstr "عاجلة"
+
+msgid "No countries are currently available."
+msgstr "لا توجد بلدان متاحة حاليًا."
+
+msgid "Featured community and humanitarian initiatives maintained in the BFEP directory."
+msgstr "مبادرات مجتمعية وإنسانية مميّزة مُدرجة في دليل BFEP."
+
+msgid "No featured ground initiatives are currently listed."
+msgstr "لا توجد مبادرات ميدانية مميّزة مُدرجة حاليًا."
+
+msgid "Discover humanitarian fundraisers, check the information available, submit a referral, or help keep the directory current."
+msgstr "اكتشف حملات جمع التبرعات الإنسانية، وراجِع المعلومات المتاحة عنها، ورشّح حملة جديدة، أو ساعدنا في إبقاء الدليل محدّثًا."
+
+msgid "View campaigns"
+msgstr "عرض الحملات"
+
+msgid "Browse countries"
+msgstr "تصفّح البلدان"
+
+msgid "Directory at a glance"
+msgstr "الدليل في لمحة"
+
+msgid "Campaigns listed"
+msgstr "الحملات المُدرجة"
+
+msgid "Urgent medical cases"
+msgstr "الحالات الطبية العاجلة"
+
+msgid "Countries represented"
+msgstr "البلدان الممثَّلة"
+
+msgid "Campaigns that need help now"
+msgstr "حملات تحتاج إلى المساعدة الآن"
+
+msgid "Urgent medical cases first, then the campaigns furthest from their goal."
+msgstr "الحالات الطبية العاجلة أولًا، ثم الحملات الأبعد عن بلوغ هدفها."
+
+msgid "See all campaigns, least funded first"
+msgstr "عرض جميع الحملات، الأقل تمويلًا أولًا"
+
+msgid "Find a way to help"
+msgstr "اعثر على طريقة للمساعدة"
+
+msgid "Find campaigns"
+msgstr "ابحث عن الحملات"
+
+msgid "Search by name, country, urgency, platform, or tag."
+msgstr "ابحث بالاسم أو البلد أو درجة الإلحاح أو المنصة أو الوسم."
+
+msgid "Understand verification"
+msgstr "افهم آلية التحقق"
+
+msgid "See what the review process checks—and what no remote review can guarantee."
+msgstr "اطّلع على ما تتحقق منه عملية المراجعة، وما لا يمكن لأي مراجعة عن بُعد أن تضمنه."
+
+msgid "Correct a record"
+msgstr "صحّح سجلًّا"
+
+msgid "Tell the team about changed, inaccurate, unsafe, or private information."
+msgstr "أبلغ الفريق عن معلومات تغيّرت، أو غير دقيقة، أو غير آمنة، أو خاصة."
+
+msgid "Help research, organise, translate, and maintain campaign information."
+msgstr "ساعد في البحث عن معلومات الحملات وتنظيمها وترجمتها وتحديثها."
+
+msgid "Before you donate"
+msgstr "قبل أن تتبرّع"
+
+msgid "A directory reduces friction, not every risk."
+msgstr "الدليل يسهّل الطريق، لكنه لا يزيل كل المخاطر."
+
+msgid "BFEP does not process donations. Review the current fundraiser and use its platform’s protected payment flow."
+msgstr "لا تتولّى BFEP معالجة التبرعات. راجِع صفحة التبرع الحالية واستخدم وسيلة الدفع المحمية الخاصة بمنصتها."
+
+msgid "Read our transparency page"
+msgstr "اقرأ صفحة الشفافية"
+
+msgid "Email:"
+msgstr "البريد الإلكتروني:"
+
+msgid "Last updated @updated."
+msgstr "آخر تحديث: @updated."
+
+msgid "@count public humanitarian fundraising campaign is listed for @fixed_country."
+msgid_plural "@count public humanitarian fundraising campaigns are listed for @fixed_country."
+msgstr[0] "لا توجد حملات عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
+msgstr[1] "توجد حملة عامة واحدة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
+msgstr[2] "توجد حملتان عامتان لجمع التبرعات الإنسانية مُدرجتان لـ @fixed_country."
+msgstr[3] "توجد @count حملات عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
+msgstr[4] "توجد @count حملة عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
+msgstr[5] "توجد @count حملة عامة لجمع التبرعات الإنسانية مُدرجة لـ @fixed_country."
+
+msgid "Of these, @urgent is for urgent medical needs."
+msgid_plural "Of these, @urgent are for urgent medical needs."
+msgstr[0] "لا توجد بينها حملات لاحتياجات طبية عاجلة."
+msgstr[1] "منها حملة واحدة لاحتياجات طبية عاجلة."
+msgstr[2] "منها حملتان لاحتياجات طبية عاجلة."
+msgstr[3] "منها @urgent حملات لاحتياجات طبية عاجلة."
+msgstr[4] "منها @urgent حملة لاحتياجات طبية عاجلة."
+msgstr[5] "منها @urgent حملة لاحتياجات طبية عاجلة."
+
+msgid "@featured is featured by BFEP."
+msgid_plural "@featured are featured by BFEP."
+msgstr[0] "لا توجد بينها حملات مميّزة من BFEP."
+msgstr[1] "وحملة واحدة مميّزة من BFEP."
+msgstr[2] "وحملتان مميّزتان من BFEP."
+msgstr[3] "و@featured حملات مميّزة من BFEP."
+msgstr[4] "و@featured حملة مميّزة من BFEP."
+msgstr[5] "و@featured حملة مميّزة من BFEP."
+
+msgid "Each record links to the organiser's own fundraiser page, and donations go directly through that platform. BFEP does not process donations."
+msgstr "يرتبط كل سجل بصفحة التبرع الخاصة بالمنظِّم، وتمرّ التبرعات مباشرة عبر تلك المنصة. لا تتولّى BFEP معالجة التبرعات."
+
+msgid "How we verify fundraisers"
+msgstr "كيف نتحقق من صفحات التبرع"
+
+msgid "Browse public campaigns in @fixed_country."
+msgstr "تصفّح الحملات العامة في @fixed_country."
+
+msgid "Browse public humanitarian fundraiser records maintained by The Butterfly Effect Project."
+msgstr "تصفّح سجلات حملات جمع التبرعات الإنسانية العامة التي يحتفظ بها مشروع أثر الفراشة."
+
+msgid "Filter campaigns"
+msgstr "تصفية الحملات"
+
+msgid "Line number, name, description, or place"
+msgstr "رقم السطر أو الاسم أو الوصف أو المكان"
+
+msgid "All countries"
+msgstr "كل البلدان"
+
+msgid "All regions"
+msgstr "كل المناطق"
+
+msgid "All platforms"
+msgstr "كل المنصات"
+
+msgid "Tag"
+msgstr "الوسم"
+
+msgid "All tags"
+msgstr "كل الوسوم"
+
+msgid "Sort"
+msgstr "الترتيب"
+
+msgid "Per page"
+msgstr "لكل صفحة"
+
+msgid "Featured only"
+msgstr "المميّزة فقط"
+
+msgid "Urgent only"
+msgstr "العاجلة فقط"
+
+msgid "Apply filters"
+msgstr "تطبيق التصفية"
+
+msgid "Clear filters"
+msgstr "مسح التصفية"
+
+msgid "Showing 1 of 1 campaign"
+msgstr "عرض حملة واحدة من أصل حملة واحدة"
+
+msgid "Showing @shown of @total campaigns"
+msgstr "الحملات المعروضة: @shown من أصل @total"
+
+msgid "Page @filters.page of @total_pages"
+msgstr "الصفحة @filters.page من @total_pages"
+
+msgid "Line #@campaign.line_number"
+msgstr "السطر رقم @campaign.line_number"
+
+msgid "No matching campaigns"
+msgstr "لا توجد حملات مطابقة"
+
+msgid "Try removing a filter or using a broader search."
+msgstr "جرّب إزالة أحد عوامل التصفية أو استخدام بحث أوسع."
+
+msgid "Campaign pages"
+msgstr "صفحات الحملات"
+
+msgid "Previous"
+msgstr "السابق"
+
+msgid "Next"
+msgstr "التالي"
+
+msgid "Our main official channel"
+msgstr "قناتنا الرسمية الرئيسية"
+
+msgid "Communication and amplification on Instagram"
+msgstr "التواصل وإيصال الصوت عبر إنستغرام"
+
+msgid "Follow @official_channel.handle on Instagram (opens in a new tab)"
+msgstr "تابع @official_channel.handle على إنستغرام (يُفتح في تبويب جديد)"
+
+msgid "Follow @official_channel.handle"
+msgstr "تابع @official_channel.handle"
+
+msgid "Language"
+msgstr "اللغة"
+
+msgid "Arabic"
+msgstr "العربية"
+
+msgctxt "Country name"
+msgid "Palestine"
+msgstr "فلسطين"
+
+msgctxt "Long month name"
+msgid "October"
+msgstr "أكتوبر"
+
+msgctxt "Country name"
+msgid "Sudan"
+msgstr "السودان"
+
+msgctxt "Country name"
+msgid "Lebanon"
+msgstr "لبنان"
+
+msgctxt "Country name"
+msgid "Syria"
+msgstr "سوريا"
+
+msgctxt "World region"
+msgid "Africa"
+msgstr "أفريقيا"
+
+msgctxt "World region"
+msgid "Middle East"
+msgstr "الشرق الأوسط"
+
+msgid "Skip to main content"
+msgstr "انتقل إلى المحتوى الرئيسي"
+
+msgid "Sticky header"
+msgstr "تثبيت الترويسة"
+
+msgid "Main Menu"
+msgstr "القائمة الرئيسية"
+
+msgid "Menu"
+msgstr "القائمة"
+
+msgid "Powered by <a href=\":poweredby\">Drupal</a>"
+msgstr "يعمل بنظام <a href=\":poweredby\">دروبال</a>"
+
+msgid "Powered by"
+msgstr "يعمل بنظام"
+
+msgid "Drupal"
+msgstr "دروبال"
+
+msgid "Drupal Logo"
+msgstr "شعار دروبال"
+
+msgid "Breadcrumb"
+msgstr "مسار التنقل"
+
+msgid "Log in"
+msgstr "تسجيل الدخول"
+
+msgid "Discover"
+msgstr "اكتشف"
+
+msgid "About & trust"
+msgstr "عن المشروع والثقة"
+
+msgid "@title sub-navigation"
+msgstr "القائمة الفرعية لـ @title"
+
+msgid "Follow"
+msgstr "تابع"
+
+msgid "The requested page could not be found."
+msgstr "تعذّر العثور على الصفحة المطلوبة."
+
+msgid "Page not found"
+msgstr "الصفحة غير موجودة"
+
+msgid "Link copied."
+msgstr "تم نسخ الرابط."
+
+msgid "Could not copy the link. Copy it from the address bar instead."
+msgstr "تعذّر نسخ الرابط. انسخه من شريط العنوان بدلًا من ذلك."
+
+msgid "Request an information update"
+msgstr "اطلب تحديث المعلومات"
+
+msgid "You are not authorized to access this page."
+msgstr "ليس لديك إذن للوصول إلى هذه الصفحة."
+
+msgid "Access denied"
+msgstr "الوصول مرفوض"
+
+msgid "@name field is required."
+msgstr "حقل @name مطلوب."
+
+msgid "Error message"
+msgstr "رسالة خطأ"
+
+msgid "Close message"
+msgstr "إغلاق الرسالة"
+
+msgid "… @excerpt … @excerpt …"
+msgstr "… @excerpt … @excerpt …"
+
+msgid "Search results"
+msgstr "نتائج البحث"
+
+msgid "Search by keyword or phrase."
+msgstr "ابحث بكلمة أو عبارة."
+
+msgid "Enter your keywords"
+msgstr "أدخل كلمات البحث"
+
+msgid "About searching"
+msgstr "حول البحث"
+
+msgid "Search for @keywords"
+msgstr "ابحث عن @keywords"
+
+msgid "Enter the terms you wish to search for."
+msgstr "أدخل الكلمات التي تريد البحث عنها."
+
+msgid "Search Form"
+msgstr "نموذج البحث"
+
+msgid "Your search yielded no results."
+msgstr "لم يُسفر بحثك عن أي نتائج."
+
+msgid "English"
+msgstr "الإنجليزية"
+
+msgid "Main navigation"
+msgstr "التنقل الرئيسي"
+
+msgid "User account menu"
+msgstr "قائمة حساب المستخدم"
+
+msgid "Breadcrumbs"
+msgstr "مسار التنقل"
+
+msgid "Main page content"
+msgstr "محتوى الصفحة الرئيسي"
+
+msgid "Help"
+msgstr "مساعدة"
+
+msgid "Status messages"
+msgstr "رسائل الحالة"
+
+msgid "Page title"
+msgstr "عنوان الصفحة"
+
+msgid "Powered by Drupal"
+msgstr "يعمل بنظام دروبال"
+
+msgid "Site branding"
+msgstr "هوية الموقع"
+
+msgid "Primary tabs"
+msgstr "التبويبات الرئيسية"
+
+msgid "Secondary tabs"
+msgstr "التبويبات الثانوية"
+
+msgid "Primary admin actions"
+msgstr "إجراءات الإدارة الرئيسية"
+
+msgid "Log out"
+msgstr "تسجيل الخروج"
+
+msgid "My account"
+msgstr "حسابي"
+
+msgid "Instagram is our main official channel for communication, project updates, and campaign amplification."
+msgstr "إنستغرام هو قناتنا الرسمية الرئيسية للتواصل ونشر مستجدات المشروع وإيصال صوت الحملات إلى عدد أكبر من الناس."
+
+msgid "Search form (narrow)"
+msgstr "نموذج البحث (ضيق)"
+
+msgid "Search form (wide)"
+msgstr "نموذج البحث (عريض)"
+
+msgid "Please enter some keywords."
+msgstr "يرجى إدخال بعض كلمات البحث."
+
+msgid "Status message"
+msgstr "رسالة حالة"
+
+msgid "Warning message"
+msgstr "رسالة تحذير"
+
+msgid "The email address %mail is not valid. Use the format user@example.com."
+msgstr "عنوان البريد الإلكتروني %mail غير صحيح. استخدم الصيغة user@example.com."
+
+msgid "The URL %url is not valid."
+msgstr "الرابط %url غير صحيح."
+
+msgid "@name cannot be longer than %max characters but is currently %length characters long."
+msgstr "لا يمكن أن يزيد @name عن %max حرفًا، وطوله الحالي %length حرفًا."
+
+msgid "An illegal choice has been detected. Please contact the site administrator."
+msgstr "تم اكتشاف اختيار غير صالح. يرجى التواصل مع مسؤول الموقع."
+
+msgid "Temporarily unavailable"
+msgstr "غير متاح مؤقتًا"
+
+msgctxt "Long month name"
+msgid "January"
+msgstr "يناير"
+
+msgctxt "Long month name"
+msgid "February"
+msgstr "فبراير"
+
+msgctxt "Long month name"
+msgid "March"
+msgstr "مارس"
+
+msgctxt "Long month name"
+msgid "April"
+msgstr "أبريل"
+
+msgctxt "Long month name"
+msgid "May"
+msgstr "مايو"
+
+msgctxt "Long month name"
+msgid "June"
+msgstr "يونيو"
+
+msgctxt "Long month name"
+msgid "July"
+msgstr "يوليو"
+
+msgctxt "Long month name"
+msgid "August"
+msgstr "أغسطس"
+
+msgctxt "Long month name"
+msgid "September"
+msgstr "سبتمبر"
+
+msgctxt "Long month name"
+msgid "November"
+msgstr "نوفمبر"
+
+msgctxt "Long month name"
+msgid "December"
+msgstr "ديسمبر"
+
+msgctxt "Country name"
+msgid "Afghanistan"
+msgstr "أفغانستان"
+
+msgctxt "Country name"
+msgid "Albania"
+msgstr "ألبانيا"
+
+msgctxt "Country name"
+msgid "Algeria"
+msgstr "الجزائر"
+
+msgctxt "Country name"
+msgid "Angola"
+msgstr "أنغولا"
+
+msgctxt "Country name"
+msgid "Argentina"
+msgstr "الأرجنتين"
+
+msgctxt "Country name"
+msgid "Armenia"
+msgstr "أرمينيا"
+
+msgctxt "Country name"
+msgid "Australia"
+msgstr "أستراليا"
+
+msgctxt "Country name"
+msgid "Austria"
+msgstr "النمسا"
+
+msgctxt "Country name"
+msgid "Azerbaijan"
+msgstr "أذربيجان"
+
+msgctxt "Country name"
+msgid "Bahrain"
+msgstr "البحرين"
+
+msgctxt "Country name"
+msgid "Bangladesh"
+msgstr "بنغلاديش"
+
+msgctxt "Country name"
+msgid "Belarus"
+msgstr "بيلاروسيا"
+
+msgctxt "Country name"
+msgid "Belgium"
+msgstr "بلجيكا"
+
+msgctxt "Country name"
+msgid "Benin"
+msgstr "بنين"
+
+msgctxt "Country name"
+msgid "Bolivia"
+msgstr "بوليفيا"
+
+msgctxt "Country name"
+msgid "Bosnia and Herzegovina"
+msgstr "البوسنة والهرسك"
+
+msgctxt "Country name"
+msgid "Brazil"
+msgstr "البرازيل"
+
+msgctxt "Country name"
+msgid "Burkina Faso"
+msgstr "بوركينا فاسو"
+
+msgctxt "Country name"
+msgid "Burundi"
+msgstr "بوروندي"
+
+msgctxt "Country name"
+msgid "Cambodia"
+msgstr "كمبوديا"
+
+msgctxt "Country name"
+msgid "Cameroon"
+msgstr "الكاميرون"
+
+msgctxt "Country name"
+msgid "Canada"
+msgstr "كندا"
+
+msgctxt "Country name"
+msgid "Central African Republic"
+msgstr "جمهورية أفريقيا الوسطى"
+
+msgctxt "Country name"
+msgid "Chad"
+msgstr "تشاد"
+
+msgctxt "Country name"
+msgid "Chile"
+msgstr "تشيلي"
+
+msgctxt "Country name"
+msgid "China"
+msgstr "الصين"
+
+msgctxt "Country name"
+msgid "Colombia"
+msgstr "كولومبيا"
+
+msgctxt "Country name"
+msgid "Comoros"
+msgstr "جزر القمر"
+
+msgctxt "Country name"
+msgid "Congo"
+msgstr "الكونغو"
+
+msgctxt "Country name"
+msgid "Democratic Republic of the Congo"
+msgstr "جمهورية الكونغو الديمقراطية"
+
+msgctxt "Country name"
+msgid "DR Congo"
+msgstr "جمهورية الكونغو الديمقراطية"
+
+msgctxt "Country name"
+msgid "DRC"
+msgstr "جمهورية الكونغو الديمقراطية"
+
+msgctxt "Country name"
+msgid "Cuba"
+msgstr "كوبا"
+
+msgctxt "Country name"
+msgid "Cyprus"
+msgstr "قبرص"
+
+msgctxt "Country name"
+msgid "Denmark"
+msgstr "الدنمارك"
+
+msgctxt "Country name"
+msgid "Djibouti"
+msgstr "جيبوتي"
+
+msgctxt "Country name"
+msgid "Ecuador"
+msgstr "الإكوادور"
+
+msgctxt "Country name"
+msgid "Egypt"
+msgstr "مصر"
+
+msgctxt "Country name"
+msgid "El Salvador"
+msgstr "السلفادور"
+
+msgctxt "Country name"
+msgid "Eritrea"
+msgstr "إريتريا"
+
+msgctxt "Country name"
+msgid "Ethiopia"
+msgstr "إثيوبيا"
+
+msgctxt "Country name"
+msgid "Finland"
+msgstr "فنلندا"
+
+msgctxt "Country name"
+msgid "France"
+msgstr "فرنسا"
+
+msgctxt "Country name"
+msgid "Gambia"
+msgstr "غامبيا"
+
+msgctxt "Country name"
+msgid "Georgia"
+msgstr "جورجيا"
+
+msgctxt "Country name"
+msgid "Germany"
+msgstr "ألمانيا"
+
+msgctxt "Country name"
+msgid "Ghana"
+msgstr "غانا"
+
+msgctxt "Country name"
+msgid "Greece"
+msgstr "اليونان"
+
+msgctxt "Country name"
+msgid "Guatemala"
+msgstr "غواتيمالا"
+
+msgctxt "Country name"
+msgid "Guinea"
+msgstr "غينيا"
+
+msgctxt "Country name"
+msgid "Haiti"
+msgstr "هايتي"
+
+msgctxt "Country name"
+msgid "Honduras"
+msgstr "هندوراس"
+
+msgctxt "Country name"
+msgid "India"
+msgstr "الهند"
+
+msgctxt "Country name"
+msgid "Indonesia"
+msgstr "إندونيسيا"
+
+msgctxt "Country name"
+msgid "Iran"
+msgstr "إيران"
+
+msgctxt "Country name"
+msgid "Iraq"
+msgstr "العراق"
+
+msgctxt "Country name"
+msgid "Ireland"
+msgstr "أيرلندا"
+
+msgctxt "Country name"
+msgid "Italy"
+msgstr "إيطاليا"
+
+msgctxt "Country name"
+msgid "Japan"
+msgstr "اليابان"
+
+msgctxt "Country name"
+msgid "Jordan"
+msgstr "الأردن"
+
+msgctxt "Country name"
+msgid "Kazakhstan"
+msgstr "كازاخستان"
+
+msgctxt "Country name"
+msgid "Kenya"
+msgstr "كينيا"
+
+msgctxt "Country name"
+msgid "Kosovo"
+msgstr "كوسوفو"
+
+msgctxt "Country name"
+msgid "Kuwait"
+msgstr "الكويت"
+
+msgctxt "Country name"
+msgid "Kyrgyzstan"
+msgstr "قيرغيزستان"
+
+msgctxt "Country name"
+msgid "Liberia"
+msgstr "ليبيريا"
+
+msgctxt "Country name"
+msgid "Libya"
+msgstr "ليبيا"
+
+msgctxt "Country name"
+msgid "Madagascar"
+msgstr "مدغشقر"
+
+msgctxt "Country name"
+msgid "Malawi"
+msgstr "ملاوي"
+
+msgctxt "Country name"
+msgid "Malaysia"
+msgstr "ماليزيا"
+
+msgctxt "Country name"
+msgid "Mali"
+msgstr "مالي"
+
+msgctxt "Country name"
+msgid "Mauritania"
+msgstr "موريتانيا"
+
+msgctxt "Country name"
+msgid "Mexico"
+msgstr "المكسيك"
+
+msgctxt "Country name"
+msgid "Moldova"
+msgstr "مولدوفا"
+
+msgctxt "Country name"
+msgid "Morocco"
+msgstr "المغرب"
+
+msgctxt "Country name"
+msgid "Mozambique"
+msgstr "موزمبيق"
+
+msgctxt "Country name"
+msgid "Myanmar"
+msgstr "ميانمار"
+
+msgctxt "Country name"
+msgid "Nepal"
+msgstr "نيبال"
+
+msgctxt "Country name"
+msgid "Netherlands"
+msgstr "هولندا"
+
+msgctxt "Country name"
+msgid "New Zealand"
+msgstr "نيوزيلندا"
+
+msgctxt "Country name"
+msgid "Nicaragua"
+msgstr "نيكاراغوا"
+
+msgctxt "Country name"
+msgid "Niger"
+msgstr "النيجر"
+
+msgctxt "Country name"
+msgid "Nigeria"
+msgstr "نيجيريا"
+
+msgctxt "Country name"
+msgid "North Korea"
+msgstr "كوريا الشمالية"
+
+msgctxt "Country name"
+msgid "Norway"
+msgstr "النرويج"
+
+msgctxt "Country name"
+msgid "Oman"
+msgstr "عُمان"
+
+msgctxt "Country name"
+msgid "Pakistan"
+msgstr "باكستان"
+
+msgctxt "Country name"
+msgid "State of Palestine"
+msgstr "دولة فلسطين"
+
+msgctxt "Country name"
+msgid "Gaza"
+msgstr "غزة"
+
+msgctxt "Country name"
+msgid "Gaza Strip"
+msgstr "قطاع غزة"
+
+msgctxt "Country name"
+msgid "West Bank"
+msgstr "الضفة الغربية"
+
+msgctxt "Country name"
+msgid "Panama"
+msgstr "بنما"
+
+msgctxt "Country name"
+msgid "Peru"
+msgstr "بيرو"
+
+msgctxt "Country name"
+msgid "Philippines"
+msgstr "الفلبين"
+
+msgctxt "Country name"
+msgid "Poland"
+msgstr "بولندا"
+
+msgctxt "Country name"
+msgid "Portugal"
+msgstr "البرتغال"
+
+msgctxt "Country name"
+msgid "Qatar"
+msgstr "قطر"
+
+msgctxt "Country name"
+msgid "Romania"
+msgstr "رومانيا"
+
+msgctxt "Country name"
+msgid "Russia"
+msgstr "روسيا"
+
+msgctxt "Country name"
+msgid "Rwanda"
+msgstr "رواندا"
+
+msgctxt "Country name"
+msgid "Saudi Arabia"
+msgstr "السعودية"
+
+msgctxt "Country name"
+msgid "Senegal"
+msgstr "السنغال"
+
+msgctxt "Country name"
+msgid "Serbia"
+msgstr "صربيا"
+
+msgctxt "Country name"
+msgid "Sierra Leone"
+msgstr "سيراليون"
+
+msgctxt "Country name"
+msgid "Somalia"
+msgstr "الصومال"
+
+msgctxt "Country name"
+msgid "South Africa"
+msgstr "جنوب أفريقيا"
+
+msgctxt "Country name"
+msgid "South Korea"
+msgstr "كوريا الجنوبية"
+
+msgctxt "Country name"
+msgid "South Sudan"
+msgstr "جنوب السودان"
+
+msgctxt "Country name"
+msgid "Spain"
+msgstr "إسبانيا"
+
+msgctxt "Country name"
+msgid "Sri Lanka"
+msgstr "سريلانكا"
+
+msgctxt "Country name"
+msgid "Sweden"
+msgstr "السويد"
+
+msgctxt "Country name"
+msgid "Switzerland"
+msgstr "سويسرا"
+
+msgctxt "Country name"
+msgid "Tajikistan"
+msgstr "طاجيكستان"
+
+msgctxt "Country name"
+msgid "Tanzania"
+msgstr "تنزانيا"
+
+msgctxt "Country name"
+msgid "Thailand"
+msgstr "تايلاند"
+
+msgctxt "Country name"
+msgid "Togo"
+msgstr "توغو"
+
+msgctxt "Country name"
+msgid "Tunisia"
+msgstr "تونس"
+
+msgctxt "Country name"
+msgid "Turkey"
+msgstr "تركيا"
+
+msgctxt "Country name"
+msgid "Türkiye"
+msgstr "تركيا"
+
+msgctxt "Country name"
+msgid "Uganda"
+msgstr "أوغندا"
+
+msgctxt "Country name"
+msgid "Ukraine"
+msgstr "أوكرانيا"
+
+msgctxt "Country name"
+msgid "United Arab Emirates"
+msgstr "الإمارات العربية المتحدة"
+
+msgctxt "Country name"
+msgid "UAE"
+msgstr "الإمارات"
+
+msgctxt "Country name"
+msgid "United Kingdom"
+msgstr "المملكة المتحدة"
+
+msgctxt "Country name"
+msgid "UK"
+msgstr "المملكة المتحدة"
+
+msgctxt "Country name"
+msgid "United States"
+msgstr "الولايات المتحدة"
+
+msgctxt "Country name"
+msgid "USA"
+msgstr "الولايات المتحدة"
+
+msgctxt "Country name"
+msgid "Uzbekistan"
+msgstr "أوزبكستان"
+
+msgctxt "Country name"
+msgid "Venezuela"
+msgstr "فنزويلا"
+
+msgctxt "Country name"
+msgid "Vietnam"
+msgstr "فيتنام"
+
+msgctxt "Country name"
+msgid "Western Sahara"
+msgstr "الصحراء الغربية"
+
+msgctxt "Country name"
+msgid "Yemen"
+msgstr "اليمن"
+
+msgctxt "Country name"
+msgid "Zambia"
+msgstr "زامبيا"
+
+msgctxt "Country name"
+msgid "Zimbabwe"
+msgstr "زيمبابوي"
+
+msgctxt "Country name"
+msgid "Western Papua"
+msgstr "بابوا الغربية"
+
+msgctxt "Country name"
+msgid "West Papua"
+msgstr "بابوا الغربية"
+
+msgctxt "Country name"
+msgid "Kashmir"
+msgstr "كشمير"
+
+msgctxt "Country name"
+msgid "Rohingya"
+msgstr "الروهينغا"
+
+msgctxt "Country name"
+msgid "Congo (Kinshasa)"
+msgstr "جمهورية الكونغو الديمقراطية"
+
+msgctxt "World region"
+msgid "North Africa"
+msgstr "شمال أفريقيا"
+
+msgctxt "World region"
+msgid "East Africa"
+msgstr "شرق أفريقيا"
+
+msgctxt "World region"
+msgid "West Africa"
+msgstr "غرب أفريقيا"
+
+msgctxt "World region"
+msgid "Central Africa"
+msgstr "وسط أفريقيا"
+
+msgctxt "World region"
+msgid "Southern Africa"
+msgstr "الجنوب الأفريقي"
+
+msgctxt "World region"
+msgid "Sub-Saharan Africa"
+msgstr "أفريقيا جنوب الصحراء"
+
+msgctxt "World region"
+msgid "Asia"
+msgstr "آسيا"
+
+msgctxt "World region"
+msgid "South Asia"
+msgstr "جنوب آسيا"
+
+msgctxt "World region"
+msgid "Southeast Asia"
+msgstr "جنوب شرق آسيا"
+
+msgctxt "World region"
+msgid "East Asia"
+msgstr "شرق آسيا"
+
+msgctxt "World region"
+msgid "Central Asia"
+msgstr "آسيا الوسطى"
+
+msgctxt "World region"
+msgid "Europe"
+msgstr "أوروبا"
+
+msgctxt "World region"
+msgid "Eastern Europe"
+msgstr "أوروبا الشرقية"
+
+msgctxt "World region"
+msgid "Americas"
+msgstr "الأمريكتان"
+
+msgctxt "World region"
+msgid "North America"
+msgstr "أمريكا الشمالية"
+
+msgctxt "World region"
+msgid "South America"
+msgstr "أمريكا الجنوبية"
+
+msgctxt "World region"
+msgid "Latin America"
+msgstr "أمريكا اللاتينية"
+
+msgctxt "World region"
+msgid "Central America"
+msgstr "أمريكا الوسطى"
+
+msgctxt "World region"
+msgid "Caribbean"
+msgstr "منطقة البحر الكاريبي"
+
+msgctxt "World region"
+msgid "Oceania"
+msgstr "أوقيانوسيا"
+
+msgctxt "World region"
+msgid "Pacific"
+msgstr "المحيط الهادئ"
+
+msgctxt "World region"
+msgid "MENA"
+msgstr "الشرق الأوسط وشمال أفريقيا"
+
+msgctxt "World region"
+msgid "Middle East and North Africa"
+msgstr "الشرق الأوسط وشمال أفريقيا"
+
+msgctxt "World region"
+msgid "Levant"
+msgstr "بلاد الشام"
+
+msgctxt "World region"
+msgid "Gulf"
+msgstr "الخليج"
+
+msgid "Enter some keywords."
+msgstr "أدخل بعض كلمات البحث."
+
+msgid "Pagination"
+msgstr "ترقيم الصفحات"
+
+msgid "Page"
+msgstr "الصفحة"
+
+msgid "First page"
+msgstr "الصفحة الأولى"
+
+msgid "Previous page"
+msgstr "الصفحة السابقة"
+
+msgid "Next page"
+msgstr "الصفحة التالية"
+
+msgid "Last page"
+msgstr "الصفحة الأخيرة"
+
+msgid "Current page"
+msgstr "الصفحة الحالية"
+
+msgid "Go to first page"
+msgstr "الانتقال إلى الصفحة الأولى"
+
+msgid "Go to previous page"
+msgstr "الانتقال إلى الصفحة السابقة"
+
+msgid "Go to page @key"
+msgstr "الانتقال إلى الصفحة @key"
+
+msgid "Go to next page"
+msgstr "الانتقال إلى الصفحة التالية"
+
+msgid "Go to last page"
+msgstr "الانتقال إلى الصفحة الأخيرة"
+
+msgctxt "Campaign tag"
+msgid "medical"
+msgstr "طبي"
+
+msgctxt "Campaign tag"
+msgid "Medical"
+msgstr "طبي"
+
+msgctxt "Campaign tag"
+msgid "food aid"
+msgstr "مساعدات غذائية"
+
+msgctxt "Campaign tag"
+msgid "Food aid"
+msgstr "مساعدات غذائية"
+
+msgctxt "Campaign tag"
+msgid "food"
+msgstr "غذاء"
+
+msgctxt "Campaign tag"
+msgid "Food"
+msgstr "غذاء"
+
+msgctxt "Campaign tag"
+msgid "education"
+msgstr "تعليم"
+
+msgctxt "Campaign tag"
+msgid "Education"
+msgstr "تعليم"
+
+msgctxt "Campaign tag"
+msgid "winter"
+msgstr "الشتاء"
+
+msgctxt "Campaign tag"
+msgid "Winter"
+msgstr "الشتاء"
+
+msgctxt "Campaign tag"
+msgid "shelter"
+msgstr "مأوى"
+
+msgctxt "Campaign tag"
+msgid "Shelter"
+msgstr "مأوى"
+
+msgctxt "Campaign tag"
+msgid "housing"
+msgstr "سكن"
+
+msgctxt "Campaign tag"
+msgid "Housing"
+msgstr "سكن"
+
+msgctxt "Campaign tag"
+msgid "rent"
+msgstr "إيجار"
+
+msgctxt "Campaign tag"
+msgid "Rent"
+msgstr "إيجار"
+
+msgctxt "Campaign tag"
+msgid "children"
+msgstr "أطفال"
+
+msgctxt "Campaign tag"
+msgid "Children"
+msgstr "أطفال"
+
+msgctxt "Campaign tag"
+msgid "water"
+msgstr "مياه"
+
+msgctxt "Campaign tag"
+msgid "Water"
+msgstr "مياه"
+
+msgctxt "Campaign tag"
+msgid "evacuation"
+msgstr "إجلاء"
+
+msgctxt "Campaign tag"
+msgid "Evacuation"
+msgstr "إجلاء"
+
+msgctxt "Campaign tag"
+msgid "surgery"
+msgstr "جراحة"
+
+msgctxt "Campaign tag"
+msgid "Surgery"
+msgstr "جراحة"
+
+msgctxt "Campaign tag"
+msgid "disability"
+msgstr "إعاقة"
+
+msgctxt "Campaign tag"
+msgid "Disability"
+msgstr "إعاقة"
+
+msgctxt "Campaign tag"
+msgid "orphans"
+msgstr "أيتام"
+
+msgctxt "Campaign tag"
+msgid "Orphans"
+msgstr "أيتام"
+
+msgctxt "Campaign tag"
+msgid "rebuilding"
+msgstr "إعادة الإعمار"
+
+msgctxt "Campaign tag"
+msgid "Rebuilding"
+msgstr "إعادة الإعمار"
+
+msgctxt "Campaign tag"
+msgid "business"
+msgstr "مشروع صغير"
+
+msgctxt "Campaign tag"
+msgid "Business"
+msgstr "مشروع صغير"
+
+msgctxt "Campaign tag"
+msgid "emergency"
+msgstr "طوارئ"
+
+msgctxt "Campaign tag"
+msgid "Emergency"
+msgstr "طوارئ"
+
+msgctxt "Campaign tag"
+msgid "cancer"
+msgstr "السرطان"
+
+msgctxt "Campaign tag"
+msgid "Cancer"
+msgstr "السرطان"
+
+msgctxt "Volunteer interest area"
+msgid "Research"
+msgstr "البحث"
+
+msgctxt "Volunteer interest area"
+msgid "Translation"
+msgstr "الترجمة"
+
+msgctxt "Volunteer interest area"
+msgid "Social media"
+msgstr "وسائل التواصل الاجتماعي"
+
+msgctxt "Volunteer interest area"
+msgid "Outreach"
+msgstr "التواصل المجتمعي"
+
+msgctxt "Volunteer interest area"
+msgid "Graphic design"
+msgstr "التصميم الجرافيكي"
+
+msgctxt "Volunteer interest area"
+msgid "Design"
+msgstr "التصميم"
+
+msgctxt "Volunteer interest area"
+msgid "Writing"
+msgstr "الكتابة"
+
+msgctxt "Volunteer interest area"
+msgid "Data entry"
+msgstr "إدخال البيانات"
+
+msgctxt "Volunteer interest area"
+msgid "Verification"
+msgstr "التحقق"
+
+msgctxt "Volunteer interest area"
+msgid "Web development"
+msgstr "تطوير المواقع"
+
+msgctxt "Volunteer interest area"
+msgid "Fundraising"
+msgstr "جمع التبرعات"
+
+msgctxt "Volunteer interest area"
+msgid "Administration"
+msgstr "الإدارة"
+
+msgctxt "Volunteer interest area"
+msgid "Admin"
+msgstr "الإدارة"
+
+msgctxt "Volunteer interest area"
+msgid "Video editing"
+msgstr "تحرير الفيديو"
+
+msgctxt "Volunteer interest area"
+msgid "Photography"
+msgstr "التصوير"
+
+msgctxt "Initiative type"
+msgid "Water"
+msgstr "مياه"
+
+msgctxt "Initiative type"
+msgid "Food"
+msgstr "غذاء"
+
+msgctxt "Initiative type"
+msgid "Food aid"
+msgstr "مساعدات غذائية"
+
+msgctxt "Initiative type"
+msgid "Medical"
+msgstr "طبي"
+
+msgctxt "Initiative type"
+msgid "Medical care"
+msgstr "رعاية طبية"
+
+msgctxt "Initiative type"
+msgid "Education"
+msgstr "تعليم"
+
+msgctxt "Initiative type"
+msgid "Shelter"
+msgstr "مأوى"
+
+msgctxt "Initiative type"
+msgid "Community kitchen"
+msgstr "مطبخ مجتمعي"
+
+msgctxt "Initiative type"
+msgid "Kitchen"
+msgstr "مطبخ مجتمعي"
+
+msgctxt "Initiative type"
+msgid "Clinic"
+msgstr "عيادة"
+
+msgctxt "Initiative type"
+msgid "Orphanage"
+msgstr "دار أيتام"
+
+msgctxt "Initiative type"
+msgid "Children"
+msgstr "أطفال"
+
+msgctxt "Initiative type"
+msgid "Mental health"
+msgstr "الصحة النفسية"
+
+msgctxt "Initiative type"
+msgid "Clothing"
+msgstr "ملابس"
+
+msgctxt "Initiative type"
+msgid "Hygiene"
+msgstr "النظافة الشخصية"
+
+msgctxt "Initiative type"
+msgid "Relief"
+msgstr "إغاثة"
+
+msgctxt "Initiative type"
+msgid "Other"
+msgstr "أخرى"

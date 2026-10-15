@@ -21,6 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class CampaignAddForm extends FormBase {
 
+  use ReturnToListTrait;
   use SaveFailureTrait;
 
   private const LINE_LOCK_ID = 42633701;
@@ -338,7 +339,7 @@ final class CampaignAddForm extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => Url::fromRoute('bfep.admin_campaigns'),
+      '#url' => $this->listUrl('bfep.admin_campaigns'),
       '#attributes' => ['class' => ['button']],
     ];
 
@@ -674,8 +675,9 @@ final class CampaignAddForm extends FormBase {
     $this->auditLogger->record('created', 'campaign', $campaign_id, ['line_number']);
 
     $this->messenger()->addStatus($this->t(
-      'Campaign @id added to BFEP as line @line with its related database records.',
+      'Campaign <a href=":url">@id</a> added to BFEP as line @line with its related database records.',
       [
+        ':url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $campaign_id])->toString(),
         '@id' => $campaign_id,
         '@line' => $line_number,
       ]
@@ -689,9 +691,7 @@ final class CampaignAddForm extends FormBase {
       ]));
     }
 
-    $form_state->setRedirect('bfep.admin_campaign_edit', [
-      'campaign_id' => $campaign_id,
-    ]);
+    $form_state->setRedirectUrl($this->listUrl('bfep.admin_campaigns'));
   }
 
   /**

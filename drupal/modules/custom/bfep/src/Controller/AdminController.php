@@ -10,6 +10,7 @@ use Drupal\Core\Utility\TableSort;
 use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Admin\CampaignRemoval;
 use Drupal\bfep\Admin\DataChecks;
+use Drupal\bfep\Admin\ListReturn;
 use Drupal\bfep\OptionalBfdb;
 use Drupal\bfep\Service\HealthCheck;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -380,6 +381,8 @@ final class AdminController extends ControllerBase {
       return $this->redirect('bfep.admin_campaign_edit', ['campaign_id' => (int) $rows[0]->id]);
     }
 
+    // Edit links carry this view of the list, so saving returns to it.
+    $back = ListReturn::linkQuery($request->query->all());
     $table_rows = [];
     foreach ($rows as $row) {
       $table_rows[] = [
@@ -396,7 +399,7 @@ final class AdminController extends ControllerBase {
             '#links' => [
               'edit' => [
                 'title' => $this->t('Edit'),
-                'url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $row->id]),
+                'url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $row->id], ['query' => $back]),
               ],
               'view' => [
                 'title' => $this->t('View public page'),
@@ -405,7 +408,7 @@ final class AdminController extends ControllerBase {
               ],
               'remove' => [
                 'title' => $this->t('Remove'),
-                'url' => Url::fromRoute('bfep.admin_campaign_remove', ['campaign_id' => $row->id]),
+                'url' => Url::fromRoute('bfep.admin_campaign_remove', ['campaign_id' => $row->id], ['query' => $back]),
               ],
             ],
           ],
@@ -669,12 +672,14 @@ final class AdminController extends ControllerBase {
       return $this->redirect('bfep.admin_referral_review', ['referral_id' => (int) $rows[0]->id]);
     }
 
+    // Edit links carry this view of the list, so saving returns to it.
+    $back = ListReturn::linkQuery($request->query->all());
     $table_rows = [];
     foreach ($rows as $row) {
       $links = [
         'review' => [
           'title' => $this->t('Review'),
-          'url' => Url::fromRoute('bfep.admin_referral_review', ['referral_id' => $row->id]),
+          'url' => Url::fromRoute('bfep.admin_referral_review', ['referral_id' => $row->id], ['query' => $back]),
         ],
       ];
       if ($url = $this->externalUrl($row->fundraiser_url)) {
@@ -733,6 +738,8 @@ final class AdminController extends ControllerBase {
       return $this->redirect('bfep.admin_volunteer_review', ['volunteer_id' => (int) $rows[0]->id]);
     }
 
+    // Edit links carry this view of the list, so saving returns to it.
+    $back = ListReturn::linkQuery($request->query->all());
     $table_rows = [];
     foreach ($rows as $row) {
       [$status_label, $tone] = match (TRUE) {
@@ -756,7 +763,7 @@ final class AdminController extends ControllerBase {
             '#links' => [
               'review' => [
                 'title' => $this->t('Review'),
-                'url' => Url::fromRoute('bfep.admin_volunteer_review', ['volunteer_id' => $row->id]),
+                'url' => Url::fromRoute('bfep.admin_volunteer_review', ['volunteer_id' => $row->id], ['query' => $back]),
               ],
             ],
           ],
@@ -803,12 +810,14 @@ final class AdminController extends ControllerBase {
       return $this->redirect('bfep.admin_change_review', ['request_id' => (int) $rows[0]->id]);
     }
 
+    // Edit links carry this view of the list, so saving returns to it.
+    $back = ListReturn::linkQuery($request->query->all());
     $table_rows = [];
     foreach ($rows as $row) {
       $links = [
         'review' => [
           'title' => $this->t('Review'),
-          'url' => Url::fromRoute('bfep.admin_change_review', ['request_id' => $row->id]),
+          'url' => Url::fromRoute('bfep.admin_change_review', ['request_id' => $row->id], ['query' => $back]),
         ],
       ];
       if (!empty($row->campaign_id)) {

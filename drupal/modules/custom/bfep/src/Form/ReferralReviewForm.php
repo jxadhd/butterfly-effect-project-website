@@ -143,12 +143,21 @@ final class ReferralReviewForm extends AdminRecordFormBase {
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $fields = ['verification_status' => trim((string) $form_state->getValue('verification_status'))];
-    $this->bfdb()->update('referral_submissions')
-      ->fields($fields)
-      ->condition('id', $this->referralId)
-      ->execute();
+    try {
+      $this->bfdb()->update('referral_submissions')
+        ->fields($fields)
+        ->condition('id', $this->referralId)
+        ->execute();
+    }
+    catch (\Throwable $exception) {
+      $this->reportSaveFailure($form_state, $exception, 'referral ' . $this->referralId);
+      return;
+    }
     $this->auditLogger->record('updated', 'referral', $this->referralId, AdminFormat::changedKeys((array) $this->referral, $fields));
-    $this->messenger()->addStatus($this->t('Referral review saved.'));
+    $this->messenger()->addStatus($this->t('Referral review saved for <a href=":url">@name</a>.', [
+      ':url' => $this->recordUrl($this->referralId),
+      '@name' => trim((string) ($this->referral->full_name ?? '')) ?: $this->t('referral #@id', ['@id' => $this->referralId]),
+    ]));
     $this->redirectAfterSave($form_state, $this->referralId, 'bfep.admin_referrals');
   }
 

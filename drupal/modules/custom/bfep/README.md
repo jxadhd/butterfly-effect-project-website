@@ -80,6 +80,17 @@ form requires Drupal's `administer site configuration` permission.
   date and render external URLs as links only when they are `http(s)`. Each
   form has a "Save and review next pending" button that opens the oldest
   remaining pending item.
+- **Saving returns to the list.** After a successful save, every staff form
+  goes back to the list it was opened from, with the same search, filters,
+  sort and page, and shows the confirmation there, naming the record with a
+  link back to it. List edit links carry the list's query string in `?back=`
+  (see `src/Admin/ListReturn.php`); forms pass it on to "Save and review next
+  pending" and to fundraiser forms, and fall back to the plain list without
+  it. A fundraiser returns to its campaign's Fundraisers table. When a save is
+  refused (a validation error, someone else's newer save, or a database
+  error) the form stays open with the error and everything typed is kept.
+  `?destination=` is deliberately not used: Drupal would apply it to every
+  redirect, including "review next".
 - **Referral status** is a fixed list: pending, needs information, verified and
   rejected. Older free-text values are matched case-insensitively and kept as
   an extra option, so nothing is lost on save.

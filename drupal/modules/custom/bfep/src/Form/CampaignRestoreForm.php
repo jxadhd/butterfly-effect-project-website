@@ -87,8 +87,11 @@ final class CampaignRestoreForm extends CampaignVisibilityFormBase {
       return;
     }
     $this->auditLogger->record('restored', 'campaign', $this->campaignId, ['deleted_at']);
-    $this->messenger()->addStatus($this->t('@campaign is back on the site.', ['@campaign' => $this->label($this->campaign)]));
-    $form_state->setRedirect('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId]);
+    $this->messenger()->addStatus($this->t('<a href=":url">@campaign</a> is back on the site.', [
+      ':url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId])->toString(),
+      '@campaign' => $this->label($this->campaign),
+    ]));
+    $form_state->setRedirect('bfep.admin_campaigns_removed');
   }
 
 }

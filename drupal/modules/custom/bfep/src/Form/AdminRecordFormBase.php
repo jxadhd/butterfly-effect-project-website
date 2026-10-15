@@ -19,9 +19,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * Provides read-only display items, safe external links, the services every
  * staff form needs, and a "save and review next" action that walks the
- * pending queue oldest first.
+ * pending queue oldest first. Saving returns to the list view the form was
+ * opened from.
  */
 abstract class AdminRecordFormBase extends FormBase {
+
+  use ReturnToListTrait;
+  use SaveFailureTrait;
 
   public function __construct(
     protected Connection $database,
@@ -112,13 +116,17 @@ abstract class AdminRecordFormBase extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $backLabel,
-      '#url' => Url::fromRoute($backRoute),
+      '#url' => $this->listUrl($backRoute),
       '#attributes' => ['class' => ['button']],
     ];
   }
 
   /**
-   * Redirects to the next pending record or back to the saved one.
+   * Redirects to the next pending record, or back to the list.
+   *
+   * The list keeps the filters, sort and page it was opened with, and the
+   * next record carries them on, so the queue can be worked through and still
+   * end on the same view.
    */
   protected function redirectAfterSave(FormStateInterface $form_state, int $currentId, string $listRoute): void {
     $trigger = $form_state->getTriggeringElement();
@@ -126,15 +134,23 @@ abstract class AdminRecordFormBase extends FormBase {
       $next = $this->nextPendingId($currentId);
       if ($next !== NULL) {
         [$route, $parameters] = $this->reviewRoute($next);
-        $form_state->setRedirect($route, $parameters);
+        $form_state->setRedirect($route, $parameters, ['query' => $this->backQuery()]);
         return;
       }
       $this->messenger()->addStatus($this->t('There are no other pending records in this queue.'));
-      $form_state->setRedirect($listRoute);
-      return;
     }
-    [$route, $parameters] = $this->reviewRoute($currentId);
-    $form_state->setRedirect($route, $parameters);
+    $form_state->setRedirectUrl($this->listUrl($listRoute));
+  }
+
+  /**
+   * The review URL of one record, for linking to it from a status message.
+   *
+   * Saving returns to the list, so the message names the record and links
+   * back to it in case it needs another look.
+   */
+  protected function recordUrl(int $id): string {
+    [$route, $parameters] = $this->reviewRoute($id);
+    return Url::fromRoute($route, $parameters, ['query' => $this->backQuery()])->toString();
   }
 
   /**

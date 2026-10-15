@@ -55,15 +55,19 @@ where the wording is changed.
 | Country, region and tag names, initiative types and volunteer interest areas (stored in English in bfdb) | `translations/ar.po`, with the context `Country name`, `World region`, `Campaign tag`, `Initiative type` or `Volunteer interest area` |
 | Organisation name, tagline, homepage title and description, country title pattern, Instagram message | Configuration translations, written on install |
 | Policy pages saved in **Content and channels** | Configuration translations, written on install while the English is still the default wording |
+| Policy pages after staff edit them | `translations/ar.po`, one paragraph, heading or list item at a time (context `Policy text`, then the same English with no context). A paragraph with no Arabic is shown in English and marked `lang="en"` |
+| Custom blocks (such as the branded footer), block titles and menu links typed in on the site | `translations/ar.po`, one piece of text at a time (context `Site block text`, `Site block title` or `Site menu link`, then the same English with no context). Links in custom blocks to this site's pages point at the Arabic page |
 
 What stays as entered: campaign names, descriptions, careers, platforms,
 initiative names and anything else staff type into bfdb. Long English
 descriptions are marked `dir="auto"`, so they read left to right inside an
 Arabic page. The RSS feed and the admin stay English.
 
-A country, region or tag that is not in `ar.po` is shown in English. Once a
+A country, region or tag, or a policy paragraph or footer sentence staff
+have edited, that is not in `ar.po` is shown in English. Once a
 page using it has been viewed in Arabic, it can be translated on **User
 interface translation** (filter by the context above).
+A translation saved there wins over `ar.po`.
 
 ## Search engines
 

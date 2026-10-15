@@ -7,7 +7,10 @@ declare(strict_types=1);
  * Arabic version of the public site: language switch, hreflang, sitemap.
  */
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Menu\MenuLinkInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\bfep_i18n\LanguageSettings;
 
@@ -158,6 +161,155 @@ function bfep_i18n_preprocess_page(array &$variables): void {
     '#attached' => ['library' => ['bfep_i18n/language-switcher']],
     '#cache' => $cache,
   ];
+}
+
+/**
+ * Translates text staff built on the site, such as a footer menu link.
+ *
+ * Menu links, block titles and custom block text are typed in on the site in
+ * English, so they have no Arabic of their own. On a page in another
+ * language they are looked up under User interface translation instead, with
+ * a context that says where they come from, then without one. Looking them
+ * up also lists them there, so staff can find and translate them.
+ *
+ * @param string $text
+ *   The English text.
+ * @param string $context
+ *   'Site menu link', 'Site block title' or 'Site block text'.
+ *
+ * @return string|null
+ *   The translation, or NULL when there is none (or the page is in the
+ *   default language, or the text is already in the page's language).
+ */
+function _bfep_i18n_site_text(string $text, string $context): ?string {
+  $language = \Drupal::languageManager()->getCurrentLanguage();
+  if ($language->isDefault() || trim($text) === '' || !_bfep_i18n_is_public_page()) {
+    return NULL;
+  }
+  // Already translated, for example with Configuration translation.
+  if ($language->getId() === 'ar' && preg_match('/\p{Arabic}/u', $text)) {
+    return NULL;
+  }
+  // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+  $translated = (string) new TranslatableMarkup($text, [], ['context' => $context, 'langcode' => $language->getId()]);
+  if ($translated !== $text) {
+    return $translated;
+  }
+  // The same English used elsewhere on the site, such as "Campaigns" or a
+  // sentence of the original policy pages, already has a translation.
+  $string = \Drupal::service('locale.storage')->findTranslation(['source' => $text, 'context' => '', 'language' => $language->getId()]);
+  $fallback = $string?->isTranslation() ? (string) $string->getString() : '';
+  return $fallback !== '' && $fallback !== $text ? $fallback : NULL;
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for menu.
+ *
+ * Menu links staff added on the site (footer links, for example).
+ */
+function bfep_i18n_preprocess_menu(array &$variables): void {
+  _bfep_i18n_translate_menu_items($variables['items']);
+}
+
+/**
+ * Translates the titles of site-built menu links, at every depth.
+ */
+function _bfep_i18n_translate_menu_items(array &$items): void {
+  foreach ($items as &$item) {
+    $link = $item['original_link'] ?? NULL;
+    if ($link instanceof MenuLinkInterface && $link->getProvider() === 'menu_link_content' && is_string($title = (string) ($item['title'] ?? ''))) {
+      $translated = _bfep_i18n_site_text($title, 'Site menu link');
+      if ($translated !== NULL) {
+        $item['title'] = $translated;
+      }
+    }
+    if (!empty($item['below'])) {
+      _bfep_i18n_translate_menu_items($item['below']);
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for block.
+ *
+ * Block titles, and the body of custom blocks, typed in on the site.
+ */
+function bfep_i18n_preprocess_block(array &$variables): void {
+  if (is_string($variables['label'] ?? NULL) || $variables['label'] instanceof \Stringable) {
+    $translated = _bfep_i18n_site_text((string) $variables['label'], 'Site block title');
+    if ($translated !== NULL) {
+      $variables['label'] = $translated;
+    }
+  }
+  if (str_starts_with((string) ($variables['plugin_id'] ?? ''), 'block_content:') && isset($variables['content']['body'])) {
+    foreach ($variables['content']['body'] as $delta => &$item) {
+      // Formatted text is translated before its text format filters it.
+      if (is_int($delta) && is_array($item) && is_string($item['#text'] ?? NULL)) {
+        $item['#text'] = _bfep_i18n_translate_html($item['#text'], 'Site block text');
+      }
+    }
+  }
+}
+
+/**
+ * Translates HTML staff wrote on the site one piece of text at a time.
+ *
+ * Each paragraph, heading, list item or link text is looked up on its own, so
+ * the HTML around it stays as staff wrote it and an edit to one paragraph
+ * only needs that paragraph translated again. Links to pages on this site
+ * are pointed at the same page in the current language.
+ *
+ * @param string $html
+ *   The English HTML.
+ * @param string $context
+ *   The translation context, such as 'Site block text' or 'Policy text'.
+ * @param int $missing
+ *   Set to the number of pieces of text that have no translation. Each is
+ *   marked as English.
+ */
+function _bfep_i18n_translate_html(string $html, string $context, int &$missing = 0): string {
+  $missing = 0;
+  $language = \Drupal::languageManager()->getCurrentLanguage();
+  if ($language->isDefault() || !_bfep_i18n_is_public_page()) {
+    return $html;
+  }
+  $prefix = _bfep_i18n_languages()[$language->getId()]['prefix'] ?? '';
+  $document = Html::load($html);
+  $xpath = new \DOMXPath($document);
+  $changed = FALSE;
+  foreach ($xpath->query('//body//text()[normalize-space()]') as $node) {
+    $text = $node->nodeValue;
+    $translated = _bfep_i18n_site_text(trim($text), $context);
+    if ($translated === NULL) {
+      $missing++;
+      // Screen readers and browsers should read it as English.
+      $parent = $node->parentNode;
+      if ($parent instanceof \DOMElement && $parent->nodeName !== 'body' && !$parent->hasAttribute('lang')) {
+        $parent->setAttribute('lang', 'en');
+        $parent->setAttribute('dir', 'ltr');
+        $changed = TRUE;
+      }
+    }
+    else {
+      // Keep the spaces around the text, which separate it from its
+      // neighbours.
+      preg_match('/^\s*/u', $text, $before);
+      preg_match('/\s*$/u', $text, $after);
+      $node->nodeValue = $before[0] . $translated . $after[0];
+      $changed = TRUE;
+    }
+  }
+  if ($prefix !== '') {
+    foreach ($xpath->query('//body//a[starts-with(@href, "/")]') as $link) {
+      $href = $link->getAttribute('href');
+      if (str_starts_with($href, '//') || $href === '/' . $prefix || str_starts_with($href, '/' . $prefix . '/') || preg_match('#^/(admin|user|sites|system|core)(/|$)#', $href)) {
+        continue;
+      }
+      $link->setAttribute('href', '/' . $prefix . ($href === '/' ? '' : $href));
+      $changed = TRUE;
+    }
+  }
+  return $changed ? Html::serialize($document) : $html;
 }
 
 /**
@@ -336,13 +488,12 @@ function bfep_i18n_preprocess_bfep_trust_page(array &$variables): void {
   $manager = \Drupal::languageManager();
   $override = $manager->getLanguageConfigOverride($langcode, 'bfep_content.settings');
   $english = ['lang' => 'en', 'dir' => 'ltr'];
-  if (!empty($variables['body']) && trim((string) $override->get('policies.' . $page . '.body.value')) === '') {
-    $variables['body'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'div',
-      '#attributes' => $english,
-      'body' => $variables['body'],
-    ];
+  if (is_string($variables['body']['#text'] ?? NULL) && trim((string) $override->get('policies.' . $page . '.body.value')) === '') {
+    // No translation of the whole page, which happens once staff edit the
+    // English: translate it a paragraph at a time from User interface
+    // translation instead (context 'Policy text'). Paragraphs with no
+    // translation are marked as English.
+    $variables['body']['#text'] = _bfep_i18n_translate_html($variables['body']['#text'], 'Policy text');
   }
   if (($variables['intro'] ?? '') !== '' && trim((string) $override->get('policies.' . $page . '.intro')) === '') {
     $variables['intro_attributes'] = $english;

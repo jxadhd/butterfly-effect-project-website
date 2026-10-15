@@ -252,7 +252,7 @@ body:not(.path-admin) .header-nav .primary-nav__menu--level-2 .primary-nav__menu
   > .primary-nav__menu-link {
     flex: 0 0 auto !important;
     width: auto !important;
-    padding-right: .25rem !important;
+    padding-inline-end: .25rem !important;
   }
 
   body:not(.path-admin)
@@ -264,7 +264,8 @@ body:not(.path-admin) .header-nav .primary-nav__menu--level-2 .primary-nav__menu
     width: 2rem !important;
     min-width: 2rem !important;
     height: 2rem !important;
-    margin: 0 0 0 -.1rem !important;
+    margin: 0 !important;
+    margin-inline-start: -.1rem !important;
     padding: 0 !important;
   }
 
@@ -273,9 +274,8 @@ body:not(.path-admin) .header-nav .primary-nav__menu--level-2 .primary-nav__menu
   .primary-nav__menu--level-2 {
     position: absolute !important;
     top: calc(100% + .35rem) !important;
-    right: auto !important;
     bottom: auto !important;
-    left: 0 !important;
+    inset-inline: 0 auto !important;
     z-index: 700 !important;
 
     display: flex !important;

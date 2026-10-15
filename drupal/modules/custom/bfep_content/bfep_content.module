@@ -49,7 +49,9 @@ function bfep_content_instagram(): array {
     $message = (string) t('Instagram is our main official channel for communication, project updates, and campaign amplification.');
   }
 
-  return ['url' => $url, 'handle' => $handle, 'message' => $message];
+  // The handle is shown inside translated sentences. Isolating it (Unicode
+  // FSI and PDI) keeps its @ at the start when the sentence is right to left.
+  return ['url' => $url, 'handle' => "\u{2068}" . $handle . "\u{2069}", 'message' => $message];
 }
 
 /**

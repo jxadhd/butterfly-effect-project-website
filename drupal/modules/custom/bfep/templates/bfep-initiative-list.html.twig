@@ -4,9 +4,9 @@
     <div class="bfep-campaign-grid">
       {% for initiative in initiatives %}
         <article class="bfep-campaign-card" id="initiative-{{ initiative.id }}">
-          <h2>{{ initiative.name }}</h2>
+          <h2><bdi>{{ initiative.name }}</bdi></h2>
           {% if initiative.country or initiative.type %}<ul class="bfep-badges">{% if initiative.country %}<li>{{ initiative.country }}</li>{% endif %}{% if initiative.type %}<li>{{ initiative.type }}</li>{% endif %}</ul>{% endif %}
-          {% if initiative.description %}<p>{{ initiative.description }}</p>{% endif %}
+          {% if initiative.description %}<p dir="auto">{{ initiative.description }}</p>{% endif %}
         </article>
       {% endfor %}
     </div>

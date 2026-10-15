@@ -31,7 +31,7 @@
       </div>
       <a class="bfep-instagram-link" href="{{ official_channel.url }}" target="_blank" rel="me noopener noreferrer" aria-label="{% trans %}Follow {{ official_channel.handle }} on Instagram (opens in a new tab){% endtrans %}">
         {% trans %}Follow {{ official_channel.handle }}{% endtrans %}
-        <span aria-hidden="true">↗</span>
+        <span class="bfep-icon-external" aria-hidden="true">↗</span>
       </a>
     </aside>
   {% endif %}
@@ -44,7 +44,7 @@
         {% for item in spotlight %}
           <article class="bfep-campaign-card bfep-campaign-card--compact">
             <div class="bfep-card-heading">
-              <h3><a class="bfep-campaign-title" href="{{ item.detail_url }}">{{ item.name }}</a></h3>
+              <h3><a class="bfep-campaign-title" href="{{ item.detail_url }}"><bdi>{{ item.name }}</bdi></a></h3>
               {% if item.line_number %}<span class="bfep-line">{% trans %}Line #{{ item.line_number }}{% endtrans %}</span>{% endif %}
             </div>
             {% if item.badges %}<ul class="bfep-badges" aria-label="{% trans %}Campaign details{% endtrans %}">{% for badge in item.badges %}<li>{{ badge }}</li>{% endfor %}</ul>{% endif %}

@@ -317,7 +317,8 @@ body:not(.path-admin) .site-header__inner__container:has(.header-nav.is-active) 
 
 body:not(.path-admin) .header-nav.is-active {
   position: fixed !important;
-  inset: 0 0 0 auto !important;
+  inset-block: 0 !important;
+  inset-inline: auto 0 !important;
   z-index: 501 !important;
   display: block !important;
   width: min(88vw, 24rem) !important;
@@ -512,7 +513,8 @@ body:not(.path-admin) .block-search-narrow .icon--search {
 
   body:not(.path-admin) .block-search-wide__wrapper {
     position: absolute !important;
-    inset: calc(100% + .75rem) 0 auto auto !important;
+    inset-block: calc(100% + .75rem) auto !important;
+    inset-inline: auto 0 !important;
     z-index: 510 !important;
     width: min(32rem, calc(100vw - 2rem)) !important;
     height: auto !important;
@@ -1200,9 +1202,9 @@ body:not(.path-admin) .block-search-wide__button:focus-visible {
     display: flex;
     align-items: center;
     gap: .25rem;
-    margin-left: .75rem;
-    padding-left: .75rem;
-    border-left: 1px solid rgba(255, 255, 255, .14);
+    margin-inline-start: .75rem;
+    padding-inline-start: .75rem;
+    border-inline-start: 1px solid rgba(255, 255, 255, .14);
   }
 
   body:not(.path-admin) .region--secondary-menu .block-search-wide {

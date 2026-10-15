@@ -1,0 +1,39 @@
+services:
+  # Runs before the page cache (priority 200), so cached English pages still
+  # send first-time Arabic readers, and readers who picked Arabic, to /ar.
+  bfep_i18n.language_redirect:
+    class: Drupal\bfep_i18n\StackMiddleware\LanguageRedirect
+    arguments: ['@bfep_i18n.language_settings', '@session_configuration']
+    tags:
+      - { name: http_middleware, priority: 250 }
+
+  bfep_i18n.language_settings:
+    class: Drupal\bfep_i18n\LanguageSettings
+    arguments: ['@config.factory']
+
+  bfep_i18n.language_access_subscriber:
+    class: Drupal\bfep_i18n\EventSubscriber\LanguageAccessSubscriber
+    arguments: ['@bfep_i18n.language_settings', '@current_user']
+    tags:
+      - { name: event_subscriber }
+
+  bfep_i18n.translations:
+    class: Drupal\bfep_i18n\Translations
+    arguments:
+      - '@extension.list.module'
+      - '@language_manager'
+      - '@config.factory'
+      - '@state'
+      - '@module_handler'
+      - '@logger.channel.bfep'
+      - '@locale.storage'
+      - '@locale.plural.formula'
+      - '@class_resolver'
+      - '@string_translation'
+      - '@language.config_factory_override'
+
+  bfep_i18n.config_translation_subscriber:
+    class: Drupal\bfep_i18n\EventSubscriber\ConfigTranslationSubscriber
+    arguments: ['@bfep_i18n.translations']
+    tags:
+      - { name: event_subscriber }

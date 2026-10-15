@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\SyncPlatforms;
 use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -167,6 +168,7 @@ final class CampaignAddForm extends FormBase {
       '#title' => $this->t('Fundraiser URL'),
       '#maxlength' => 2000,
       '#default_value' => $prefill['fundraiser_url'] ?? '',
+      '#description' => SyncPlatforms::help(),
     ];
 
     $form['fundraiser']['allow_duplicate_url'] = [

@@ -5,8 +5,8 @@ body:not(.path-admin) .bfep-official-channel {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: clamp(1rem, 3vw, 2rem);
   align-items: center;
-  width: min(100%, 64rem);
-  margin: clamp(1.5rem, 4vw, 2.75rem) auto;
+  width: 100%;
+  margin: clamp(1.5rem, 4vw, 2.75rem) 0;
   padding: clamp(1.15rem, 3vw, 1.65rem);
   border: 1px solid rgba(207, 181, 255, .18);
   border-radius: var(--bf-polish-radius, 1rem);
@@ -131,8 +131,8 @@ body:not(.path-admin) .bfep-policy-body ol {
 
 /* BFEP grouped public navigation — direct update. */
 body:not(.path-admin) .bfep-section-nav {
-  width: min(100%, 64rem);
-  margin: clamp(2.5rem, 6vw, 4.5rem) auto 0;
+  width: 100%;
+  margin: clamp(2.5rem, 6vw, 4.5rem) 0 0;
   padding: clamp(1.15rem, 3vw, 1.6rem);
   border: 1px solid rgba(207, 181, 255, .16);
   border-radius: var(--bf-polish-radius, 1rem);
@@ -163,7 +163,7 @@ body:not(.path-admin) .bfep-section-nav__description {
 
 body:not(.path-admin) .bfep-section-nav__links {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: .65rem;
   margin-top: 1.1rem;
 }
@@ -252,7 +252,7 @@ body:not(.path-admin) .header-nav .primary-nav__menu--level-2 .primary-nav__menu
   > .primary-nav__menu-link {
     flex: 0 0 auto !important;
     width: auto !important;
-    padding-right: .25rem !important;
+    padding-inline-end: .25rem !important;
   }
 
   body:not(.path-admin)
@@ -264,7 +264,8 @@ body:not(.path-admin) .header-nav .primary-nav__menu--level-2 .primary-nav__menu
     width: 2rem !important;
     min-width: 2rem !important;
     height: 2rem !important;
-    margin: 0 0 0 -.1rem !important;
+    margin: 0 !important;
+    margin-inline-start: -.1rem !important;
     padding: 0 !important;
   }
 
@@ -273,9 +274,8 @@ body:not(.path-admin) .header-nav .primary-nav__menu--level-2 .primary-nav__menu
   .primary-nav__menu--level-2 {
     position: absolute !important;
     top: calc(100% + .35rem) !important;
-    right: auto !important;
     bottom: auto !important;
-    left: 0 !important;
+    inset-inline: 0 auto !important;
     z-index: 700 !important;
 
     display: flex !important;

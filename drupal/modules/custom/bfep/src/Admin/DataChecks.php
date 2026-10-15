@@ -23,6 +23,8 @@ final class DataChecks {
   public static function all(): array {
     $active = 'SELECT 1 FROM campaign_fundraisers f WHERE f.campaign_id = campaigns.id AND f.is_active';
     $sameUrl = AdminFormat::urlKeySql('g.url') . ' = ' . AdminFormat::urlKeySql('f.url');
+    // Text that is not a web address is left to bad_url.
+    $address = "COALESCE(TRIM(f.url), '') <> '' AND TRIM(f.url) !~ '\\s' AND POSITION('.' IN TRIM(f.url)) > 0";
 
     return [
       'no_fundraiser' => [
@@ -33,7 +35,7 @@ final class DataChecks {
       'shared_url' => [
         'label' => 'Fundraiser shared with another campaign',
         'help' => 'Two campaigns point at the same fundraiser, which usually means one is a duplicate.',
-        'sql' => "EXISTS ({$active} AND COALESCE(TRIM(f.url), '') <> '' AND EXISTS ("
+        'sql' => "EXISTS ({$active} AND {$address} AND EXISTS ("
         . 'SELECT 1 FROM campaign_fundraisers g JOIN campaigns c2 ON c2.id = g.campaign_id AND c2.deleted_at IS NULL '
         . "WHERE g.is_active AND g.campaign_id <> campaigns.id AND {$sameUrl}))",
       ],
@@ -41,6 +43,17 @@ final class DataChecks {
         'label' => 'Fundraiser link is not a web address',
         'help' => 'The link is empty, contains spaces or line breaks (often the fundraiser title pasted in), or has no domain. The donate button cannot work and the sync skips it. Replace it with the fundraiser address.',
         'sql' => "EXISTS ({$active} AND (COALESCE(TRIM(f.url), '') = '' OR TRIM(f.url) ~ '\\s' OR POSITION('.' IN TRIM(f.url)) = 0))",
+      ],
+      'dead_link' => [
+        'label' => 'Fundraiser page not found',
+        'help' => 'The platform answered "page not found" on 3 nightly syncs in a row, so the fundraiser was probably removed or moved, and the sync stopped updating it. If the campaign moved to a new fundraiser, add it and end this one; if the link was mistyped, correct it; otherwise mark it inactive.',
+        // The sync turns auto_sync off for these rows, so it is not part of the check.
+        'sql' => "EXISTS ({$active} AND CAST(f.sync_status AS TEXT) = 'not_found')",
+      ],
+      'several_fundraisers' => [
+        'label' => 'More than one active fundraiser',
+        'help' => 'The public page adds these fundraisers up (or lists them side by side when currencies differ). Check that each one belongs to this campaign and is still running, and end any the campaign has moved away from.',
+        'sql' => 'campaigns.id IN (SELECT f.campaign_id FROM campaign_fundraisers f WHERE f.is_active GROUP BY f.campaign_id HAVING COUNT(*) > 1)',
       ],
       'duplicate_line' => [
         'label' => 'Line number used twice',

@@ -95,7 +95,8 @@ body:not(.path-admin)
 
     body:not(.path-admin) .primary-nav__menu--level-2 {
         position: absolute !important;
-        inset: calc(100% + .45rem) auto auto 0 !important;
+        inset-block: calc(100% + .45rem) auto !important;
+        inset-inline: 0 auto !important;
         z-index: 600 !important;
         display: block !important;
         width: max-content !important;
@@ -180,7 +181,7 @@ body:not(.path-admin)
     .mobile-nav-button[aria-expanded="true"] {
         position: fixed !important;
         top: .75rem !important;
-        right: .75rem !important;
+        inset-inline-end: .75rem !important;
         z-index: 603 !important;
     }
 
@@ -191,7 +192,7 @@ body:not(.path-admin)
                 1rem
                 2rem !important;
         border: 0 !important;
-        border-left: 1px solid rgba(214, 197, 255, .14) !important;
+        border-inline-start: 1px solid rgba(214, 197, 255, .14) !important;
     }
 
     body:not(.path-admin) .header-nav .primary-nav {
@@ -250,7 +251,7 @@ body:not(.path-admin)
         margin: 0 !important;
         padding: 0 !important;
         border: 0 !important;
-        border-left: 1px solid rgba(214, 197, 255, .10) !important;
+        border-inline-start: 1px solid rgba(214, 197, 255, .10) !important;
         border-radius: 0 !important;
         background: rgba(139, 92, 246, .06) !important;
         box-shadow: none !important;

@@ -1,0 +1,13 @@
+# Adds a Translate tab to the BFEP settings forms, so staff can translate the
+# tagline, page titles and policy pages they have edited.
+bfep_i18n.bfep_settings:
+  title: 'Butterfly Effect Project settings'
+  base_route_name: bfep.settings
+  names:
+    - bfep.settings
+
+bfep_i18n.bfep_content_settings:
+  title: 'BFEP content and channels'
+  base_route_name: bfep_content.settings
+  names:
+    - bfep_content.settings

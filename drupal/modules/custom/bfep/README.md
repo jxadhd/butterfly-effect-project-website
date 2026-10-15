@@ -82,11 +82,23 @@ form requires Drupal's `administer site configuration` permission.
   same fundraiser URL or email. A change request with no campaign suggests
   campaigns that use its URL. URLs are compared without scheme, `www.`, query
   string, fragment or trailing slash.
-- **Campaign edit** covers the active fundraiser (platform, URL, currency, goal
-  and raised amounts), tags, the no-feature response and the auto-sync switch.
-  Changing the fundraiser URL deactivates the old fundraiser row and adds a new
-  one, so history is kept. If someone else saved the campaign after you opened
-  it, your save is refused with a message, rather than overwriting theirs.
+- **Campaign edit** covers the campaign's details, tags and the no-feature
+  response, and lists its fundraisers. If someone else saved the campaign after
+  you opened it, your save is refused with a message, rather than overwriting
+  theirs.
+- **Several fundraisers per campaign.** A campaign (a `campaigns`
+  row) can have any number of fundraisers (`campaign_fundraisers` rows). The
+  edit page's Fundraisers table shows them all, active and ended, with an Edit
+  link each and an "Add fundraiser" button. Adding one offers to end the
+  campaign's current fundraisers (ticked by default, which is how a move to a new
+  platform is recorded); untick to keep them running side by side. Each
+  fundraiser's form has the platform, URL, currency, amounts, an Active
+  checkbox and the auto-sync switch. Ended fundraisers stay as history and are
+  never deleted. The public page adds up active fundraisers that share a
+  currency, lists different currencies side by side (never converted), and
+  shows each fundraiser with its own figures and button when there is more than
+  one. The sync already works per fundraiser, so it needs no change. The data
+  check "More than one active fundraiser" lists these campaigns for review.
 - **Campaign add** refuses a fundraiser URL that another campaign already uses,
   with links to those campaigns, unless "Add anyway if another campaign
   already uses this fundraiser URL" is ticked.
@@ -101,13 +113,23 @@ form requires Drupal's `administer site configuration` permission.
   status)" and campaigns by "Sync problems".
 - **CSV export.** "Download … as CSV" under the campaign list exports the
   campaigns the list is showing, with the same search and filters (up to
-  10,000 rows): line, name, country, flags, tags, active fundraiser figures and
-  links. Internal notes and submitter details are never exported. Cells that
+  10,000 rows): line, name, country, flags, tags, the newest active
+  fundraiser's figures, any other active fundraisers' links, and links. Internal notes and submitter details are never exported. Cells that
   start with `=`, `+`, `-` or `@` get a leading apostrophe so spreadsheets do
   not run them as formulas. Each export is logged with the user and row count.
 - **Sorting.** Click a column heading (line, name, country, email, hours,
   status, created or updated) to sort; click again to reverse. Only listed
   columns can be sorted, so the URL cannot inject SQL.
+- **Removing campaigns.** "Remove from site" (edit page) or "Remove" (list)
+  opens a confirmation that asks why (duplicate, fundraiser ended, family
+  asked, other) and warns when the fundraiser is listed on another campaign,
+  the campaign is featured or urgent, or it has pending change requests.
+  Removing sets `campaigns.deleted_at`, so the campaign leaves the public
+  site, staff lists, data checks and the fundraiser sync; nothing is deleted.
+  A dated line with the reason is added to its internal notes. "Removed
+  campaigns" lists them, newest first, and "Restore" clears `deleted_at`
+  (warning if its line number or fundraiser is now used elsewhere). The site's
+  bfdb user needs UPDATE on `campaigns.deleted_at`.
 - **Audit log.** Every staff create or update writes a notice to the `bfep` log
   channel (Reports > Recent log messages) with the user, record and the names
   of the fields changed. Values are not logged.
@@ -146,6 +168,16 @@ DDL and reports that `database-hardening.sql` should be run later by the schema
 owner. No new indexes are added because the audited database already has useful
 country, featured, line-number, updated-time, trigram, and search indexes.
 
+## Translations
+
+The public site is translatable; `bfep_i18n` adds the Arabic version (see its
+README). Public text goes through `t()`, `{% trans %}` or `|t`, and English
+names stored in bfdb (countries, regions, tags, initiative types) through
+`CampaignPresenter::placeName()` with a context, so visitors see them in their
+language while filters and URLs keep the English values. Absolute links use
+`BfepSettings::localizedUrl()`, which adds the page's language prefix. Admin
+pages stay English.
+
 ## Tests
 
 Unit tests live in `tests/src/Unit` and run in CI (`.github/workflows/tests.yml`).
@@ -167,3 +199,13 @@ hooks, and tests public routes.
 The policy-page wording is an operational draft and should be reviewed whenever
 the project's real people, providers, retention practices, or contact details
 change.
+
+## Visitor IP addresses behind Cloudflare
+
+`settings/cloudflare.settings.php` adds Cloudflare's edge ranges to
+`reverse_proxy_addresses`, so Drupal records the real visitor IP instead of a
+Cloudflare address. It only takes effect when `sites/default/settings.php`
+includes it after its own `reverse_proxy` lines (the snippet is in the file's
+header). It ships with this module so `bfep deploy` keeps it up to date.
+Refresh the ranges from https://www.cloudflare.com/ips/ if Cloudflare changes
+them.

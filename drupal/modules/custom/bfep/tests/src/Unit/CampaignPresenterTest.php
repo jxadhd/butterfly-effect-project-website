@@ -18,7 +18,9 @@ final class CampaignPresenterTest extends UnitTestCase {
   private function presenter(): CampaignPresenter {
     $formatter = $this->createMock(DateFormatterInterface::class);
     $formatter->method('format')->willReturn('3 September 2026');
-    return new CampaignPresenter($formatter);
+    $presenter = new CampaignPresenter($formatter);
+    $presenter->setStringTranslation($this->getStringTranslationStub());
+    return $presenter;
   }
 
   /**
@@ -137,6 +139,56 @@ final class CampaignPresenterTest extends UnitTestCase {
     $row = (object) ['id' => 3, 'contact_name' => 'Synced family', 'donated_amount' => '10'];
     $this->assertSame('', $this->presenter()->detail($row)['figures_updated']);
     $this->assertSame('3 September 2026', $this->presenter()->detail($row, '2026-09-03 10:00:00+00')['figures_updated']);
+  }
+
+  /**
+   * @covers ::card
+   * @covers ::detail
+   */
+  public function testListsMixedCurrenciesSideBySide(): void {
+    $row = (object) [
+      'id' => 6305,
+      'contact_name' => 'Two fundraisers',
+      'fundraiser_url' => 'https://chuffed.org/project/example',
+      'platform' => 'Chuffed',
+      'platforms' => '{Chuffed,GoFundMe}',
+      'fundraiser_count' => 2,
+      'currency_code' => NULL,
+      'goal_amount' => NULL,
+      'donated_amount' => NULL,
+      'pct_goal_achieved' => NULL,
+      'currency_totals' => '[{"currency":"AUD","raised":500,"goal":2000},{"currency":"USD","raised":1200.5,"goal":null}]',
+    ];
+    $card = $this->presenter()->card($row, '/campaigns/6305');
+    $this->assertSame([
+      ['label' => 'Raised', 'value' => 'AUD 500 + USD 1,201'],
+      ['label' => 'Goal', 'value' => 'AUD 2,000'],
+    ], $card['amounts']);
+    $this->assertNull($card['progress']);
+    $this->assertSame(1, $card['more_fundraisers']);
+    $this->assertSame(['Chuffed', 'GoFundMe'], $card['badges']);
+
+    $detail = $this->presenter()->detail($row, NULL, [
+      (object) ['url' => 'https://chuffed.org/project/example', 'platform' => 'Chuffed', 'currency_code' => 'AUD', 'goal_amount' => '2000', 'donated_amount' => '500', 'pct_goal_achieved' => '25', 'figures_updated_at' => '2026-09-03 10:00:00+00'],
+      (object) ['url' => 'gofundme.com/f/example', 'platform' => 'GoFundMe', 'currency_code' => 'USD', 'goal_amount' => NULL, 'donated_amount' => '1200.5', 'figures_updated_at' => NULL],
+    ]);
+    $this->assertSame(['label' => 'Platforms', 'value' => 'Chuffed, GoFundMe'], $detail['metadata'][0]);
+    $this->assertCount(2, $detail['fundraisers']);
+    $this->assertSame('https://gofundme.com/f/example', $detail['fundraisers'][1]['url']);
+    $this->assertSame(25.0, $detail['fundraisers'][0]['progress']);
+    $this->assertSame('3 September 2026', $detail['fundraisers'][0]['figures_updated']);
+    $this->assertSame('', $detail['fundraisers'][1]['figures_updated']);
+  }
+
+  /**
+   * @covers ::detail
+   */
+  public function testOneFundraiserIsNotListedSeparately(): void {
+    $row = (object) ['id' => 4, 'contact_name' => 'One fundraiser', 'platform' => 'GoFundMe', 'fundraiser_count' => 1];
+    $detail = $this->presenter()->detail($row, NULL, [(object) ['url' => 'https://gofundme.com/f/x', 'platform' => 'GoFundMe']]);
+    $this->assertSame([], $detail['fundraisers']);
+    $this->assertSame(['label' => 'Platform', 'value' => 'GoFundMe'], $detail['metadata'][0]);
+    $this->assertSame(0, $this->presenter()->card($row, '/campaigns/4')['more_fundraisers']);
   }
 
 }

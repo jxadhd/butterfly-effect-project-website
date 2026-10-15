@@ -1,4 +1,4 @@
-FROM drupal@sha256:7a6958c7f2c886da5e3825220fea02fec28c19bd71bea918b925f2fdb4763310
+FROM drupal@sha256:1ac414c513e88f39d3857eaed661850c1fb79146ca2707e9c30a5ce424520576
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libgmp-dev \
@@ -21,6 +21,16 @@ RUN composer require \
       --update-no-dev \
       --optimize-autoloader \
     && composer clear-cache
+
+# The base image's opcache-recommended.ini caches at most 4000 files, but
+# Drupal core plus vendor has well over that, so scripts keep getting evicted
+# and recompiled and uncached pages render slowly. zz- sorts after it, so
+# these values win.
+RUN printf '%s\n' \
+      'opcache.memory_consumption=256' \
+      'opcache.interned_strings_buffer=32' \
+      'opcache.max_accelerated_files=30000' \
+      > /usr/local/etc/php/conf.d/zz-bfep-opcache.ini
 
 RUN printf '%s\n' 'ServerName bfep.org' \
       > /etc/apache2/conf-available/servername.conf \

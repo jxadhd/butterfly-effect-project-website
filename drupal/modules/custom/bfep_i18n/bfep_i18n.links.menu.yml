@@ -1,0 +1,6 @@
+bfep_i18n.settings:
+  title: 'Languages'
+  description: 'Who can see the Arabic site, the automatic language choice and the language switch.'
+  route_name: bfep_i18n.settings
+  parent: bfep.admin
+  weight: 9

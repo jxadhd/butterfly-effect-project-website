@@ -47,6 +47,16 @@ final class AdminFormatTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::urlMatchKey
+   */
+  public function testUrlMatchKeyKeepsFundraiserIdParams(): void {
+    // PayPal donate links share a path and differ only in the query.
+    $this->assertSame('paypal.com/donate?campaign_id=abc123', AdminFormat::urlMatchKey('https://www.paypal.com/donate/?campaign_id=ABC123&locale.x=en_GB'));
+    $this->assertSame('paypal.com/donate?hosted_button_id=q1', AdminFormat::urlMatchKey('https://paypal.com/donate?hosted_button_id=Q1#x'));
+    $this->assertNotSame(AdminFormat::urlMatchKey('https://paypal.com/donate?campaign_id=A'), AdminFormat::urlMatchKey('https://paypal.com/donate?campaign_id=B'));
+  }
+
+  /**
    * @covers ::urlKeySql
    */
   public function testUrlKeySqlAvoidsSquareBrackets(): void {
@@ -96,6 +106,17 @@ final class AdminFormatTest extends UnitTestCase {
     $this->assertNull(AdminFormat::lineNumberQuery('0'));
     $this->assertNull(AdminFormat::lineNumberQuery('1e3'));
     $this->assertNull(AdminFormat::lineNumberQuery(['142']));
+  }
+
+  /**
+   * @covers ::lineOrderSql
+   */
+  public function testLineOrderSqlSortsByNumber(): void {
+    $sql = AdminFormat::lineOrderSql('c.line_number', 'DESC');
+    $this->assertStringStartsWith("CAST(substring(CAST(c.line_number AS TEXT) from '\\d+') AS NUMERIC) DESC NULLS LAST", $sql);
+    // Drupal reads [..] in a query as an identifier, so the regex avoids it.
+    $this->assertStringNotContainsString('[', $sql);
+    $this->assertStringContainsString(' ASC NULLS LAST', AdminFormat::lineOrderSql('line_number', 'anything'));
   }
 
   /**

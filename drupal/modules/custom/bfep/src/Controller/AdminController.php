@@ -8,6 +8,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\TableSort;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\CampaignRemoval;
 use Drupal\bfep\Admin\DataChecks;
 use Drupal\bfep\OptionalBfdb;
 use Drupal\bfep\Service\HealthCheck;
@@ -309,6 +310,11 @@ final class AdminController extends ControllerBase {
   ];
 
   /**
+   * Sortable columns holding line numbers as text, sorted by number.
+   */
+  private const LINE_COLUMNS = ['line_number', 'family_line_number_raw'];
+
+  /**
    * Table header cells; the list's sortable titles become sort links.
    *
    * @param string $list
@@ -348,6 +354,9 @@ final class AdminController extends ControllerBase {
       return $default;
     }
     $direction = $context['sort'] === TableSort::DESC ? 'DESC' : 'ASC';
+    if (in_array($column, self::LINE_COLUMNS, TRUE)) {
+      return AdminFormat::lineOrderSql($column, $direction) . ", id {$direction}";
+    }
     return "{$column} {$direction} NULLS LAST, id {$direction}";
   }
 
@@ -364,9 +373,9 @@ final class AdminController extends ControllerBase {
 
     $total = (int) $db->query("SELECT COUNT(*) FROM campaigns WHERE {$where_sql}", $params)->fetchField();
     ['per_page' => $per_page, 'offset' => $offset] = $this->window($request, $total);
-    $header = $this->header('campaigns', ['Line', 'Name', 'Country', 'Featured', 'Urgent', 'Updated', 'Operations'], 'Updated');
+    $header = $this->header('campaigns', ['Line', 'Name', 'Country', 'Fundraisers', 'Featured', 'Urgent', 'Updated', 'Operations'], 'Updated');
     $order_sql = $this->orderBy($request, 'campaigns', $header, 'updated_at DESC NULLS LAST, id DESC');
-    $rows = $db->query("\n      SELECT id, line_number, contact_name, country_raw, featured_by_bfep, urgent_medical_needs, updated_at\n      FROM campaigns\n      WHERE {$where_sql}\n      ORDER BY {$order_sql}\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
+    $rows = $db->query("\n      SELECT id, line_number, contact_name, country_raw, featured_by_bfep, urgent_medical_needs, updated_at,\n        (SELECT string_agg(COALESCE(fp.name, 'Unknown platform'), ', ' ORDER BY cf.id DESC) FROM campaign_fundraisers cf LEFT JOIN fundraising_platforms fp ON fp.id = cf.platform_id WHERE cf.campaign_id = campaigns.id AND cf.is_active) AS fundraisers\n      FROM campaigns\n      WHERE {$where_sql}\n      ORDER BY {$order_sql}\n      LIMIT {$per_page} OFFSET {$offset}\n    ", $params)->fetchAll();
     if ($q !== '' && $total === 1 && count($rows) === 1) {
       return $this->redirect('bfep.admin_campaign_edit', ['campaign_id' => (int) $rows[0]->id]);
     }
@@ -377,6 +386,7 @@ final class AdminController extends ControllerBase {
         'line' => $row->line_number ?: '—',
         'name' => $row->contact_name ?: 'Campaign #' . $row->id,
         'country' => $row->country_raw ?: '—',
+        'fundraisers' => $row->fundraisers ?: 'None',
         'featured' => !empty($row->featured_by_bfep) ? 'Yes' : 'No',
         'urgent' => !empty($row->urgent_medical_needs) ? 'Yes' : 'No',
         'updated' => $this->date($row->updated_at),
@@ -392,6 +402,10 @@ final class AdminController extends ControllerBase {
                 'title' => $this->t('View public page'),
                 'url' => Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $row->id]),
                 'attributes' => ['target' => '_blank', 'rel' => 'noopener'],
+              ],
+              'remove' => [
+                'title' => $this->t('Remove'),
+                'url' => Url::fromRoute('bfep.admin_campaign_remove', ['campaign_id' => $row->id]),
               ],
             ],
           ],
@@ -474,14 +488,15 @@ final class AdminController extends ControllerBase {
       SELECT c.id, c.line_number, c.contact_name, COALESCE(co.name, c.country_raw) AS country,
         c.featured_by_bfep, c.urgent_medical_needs, c.updated_at,
         p.name AS platform, f.url, f.currency_code, f.goal_amount, f.donated_amount,
-        (SELECT string_agg(t.name, ', ' ORDER BY t.name) FROM campaign_tags ct JOIN tags t ON t.id = ct.tag_id WHERE ct.campaign_id = c.id) AS tags
+        (SELECT string_agg(t.name, ', ' ORDER BY t.name) FROM campaign_tags ct JOIN tags t ON t.id = ct.tag_id WHERE ct.campaign_id = c.id) AS tags,
+        (SELECT string_agg(o.url, ' ' ORDER BY o.id DESC) FROM campaign_fundraisers o WHERE o.campaign_id = c.id AND o.is_active AND o.id <> f.id) AS other_urls
       FROM (
         SELECT id, line_number, contact_name, country_id, country_raw, featured_by_bfep, urgent_medical_needs, updated_at
         FROM campaigns
         WHERE {$where_sql}
       ) c
       LEFT JOIN LATERAL (
-        SELECT cf.platform_id, cf.url, cf.currency_code, cf.goal_amount, cf.donated_amount
+        SELECT cf.id, cf.platform_id, cf.url, cf.currency_code, cf.goal_amount, cf.donated_amount
         FROM campaign_fundraisers cf
         WHERE cf.campaign_id = c.id AND cf.is_active
         ORDER BY cf.id DESC
@@ -489,10 +504,10 @@ final class AdminController extends ControllerBase {
       ) f ON TRUE
       LEFT JOIN fundraising_platforms p ON p.id = f.platform_id
       LEFT JOIN countries co ON co.id = c.country_id
-      ORDER BY c.line_number ASC NULLS LAST, c.id ASC
+      ORDER BY " . AdminFormat::lineOrderSql('c.line_number', 'ASC') . ", c.id ASC
       LIMIT " . self::EXPORT_LIMIT, $params)->fetchAll();
 
-    $lines = [['Line', 'Name', 'Country', 'Featured', 'Urgent', 'Tags', 'Platform', 'Fundraiser URL', 'Currency', 'Goal', 'Raised', 'Percent funded', 'Last edited', 'Public page', 'Edit page']];
+    $lines = [['Line', 'Name', 'Country', 'Featured', 'Urgent', 'Tags', 'Platform', 'Fundraiser URL', 'Currency', 'Goal', 'Raised', 'Percent funded', 'Other active fundraisers', 'Last edited', 'Public page', 'Edit page']];
     foreach ($rows as $row) {
       $goal = $row->goal_amount !== NULL ? (float) $row->goal_amount : NULL;
       $raised = $row->donated_amount !== NULL ? (float) $row->donated_amount : NULL;
@@ -509,6 +524,7 @@ final class AdminController extends ControllerBase {
         $row->goal_amount,
         $row->donated_amount,
         $goal > 0 && $raised !== NULL ? round($raised / $goal * 100, 1) : NULL,
+        $row->other_urls,
         $row->updated_at ? $this->dateFormatter->format(strtotime((string) $row->updated_at), 'custom', 'Y-m-d H:i') : NULL,
         Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $row->id], ['absolute' => TRUE])->toString(),
         Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $row->id], ['absolute' => TRUE])->toString(),
@@ -526,6 +542,52 @@ final class AdminController extends ControllerBase {
       'Cache-Control' => 'private, no-store',
       'X-Content-Type-Options' => 'nosniff',
     ]);
+  }
+
+  /**
+   * Campaigns removed from the site, most recently removed first.
+   */
+  public function removedCampaigns(): array {
+    $rows = $this->bfdb()->query('
+      SELECT id, line_number, contact_name, country_raw, internal_notes, deleted_at
+      FROM campaigns
+      WHERE deleted_at IS NOT NULL
+      ORDER BY deleted_at DESC, id DESC
+      LIMIT 500')->fetchAll();
+    $table_rows = [];
+    foreach ($rows as $row) {
+      $table_rows[] = [
+        'line' => $row->line_number ?: '—',
+        'name' => $row->contact_name ?: 'Campaign #' . $row->id,
+        'country' => $row->country_raw ?: '—',
+        'removed' => $this->date($row->deleted_at),
+        'reason' => CampaignRemoval::lastReason($row->internal_notes) ?: '—',
+        'operations' => [
+          'data' => [
+            '#type' => 'operations',
+            '#links' => [
+              'restore' => [
+                'title' => $this->t('Restore'),
+                'url' => Url::fromRoute('bfep.admin_campaign_restore', ['campaign_id' => $row->id]),
+              ],
+            ],
+          ],
+        ],
+      ];
+    }
+    return [
+      '#attached' => ['library' => ['bfep/admin']],
+      'intro' => [
+        '#markup' => '<p>' . $this->t('These campaigns are hidden from the public site, the campaign lists, data checks and the fundraiser sync. Restoring one puts it back as it was.') . '</p>',
+      ],
+      'table' => [
+        '#type' => 'table',
+        '#header' => [$this->t('Line'), $this->t('Name'), $this->t('Country'), $this->t('Removed'), $this->t('Reason'), $this->t('Operations')],
+        '#rows' => $table_rows,
+        '#empty' => $this->t('No campaigns have been removed.'),
+        '#attributes' => ['class' => ['bfep-admin-table']],
+      ],
+    ];
   }
 
   /**

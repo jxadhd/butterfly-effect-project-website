@@ -61,6 +61,17 @@ final class DataChecksTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::all
+   */
+  public function testDeadLinkCheck(): void {
+    // sync_status may be an enum on production, so it is compared as text.
+    $sql = DataChecks::get('dead_link')['sql'];
+    $this->assertStringContainsString("CAST(f.sync_status AS TEXT) = 'not_found'", $sql);
+    // The sync turns auto_sync off for dead links, and they must still be listed.
+    $this->assertStringNotContainsString('auto_sync', $sql);
+  }
+
+  /**
    * @covers ::countSql
    */
   public function testCountSqlCoversEveryCheck(): void {

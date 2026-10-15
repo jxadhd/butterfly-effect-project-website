@@ -10,19 +10,37 @@
     </dl>
   {% endif %}
   {% if campaign.progress is not null %}<progress class="bfep-progress" max="100" value="{{ campaign.progress }}" aria-label="{% trans %}Funding progress{% endtrans %}">{{ campaign.progress }}%</progress>{% endif %}
-  {% if campaign.amounts and campaign.figures_updated %}<p class="bfep-updated bfep-figures-updated">{% trans %}Amounts last updated from the fundraiser page on {{ campaign.figures_updated }}.{% endtrans %}</p>{% endif %}
+  {% if campaign.amounts and campaign.figures_updated and not campaign.fundraisers %}<p class="bfep-updated bfep-figures-updated">{% trans %}Amounts last updated from the fundraiser page on {{ campaign.figures_updated }}.{% endtrans %}</p>{% endif %}
   {% if campaign.tags %}<ul class="bfep-tags" aria-label="{% trans %}Tags{% endtrans %}">{% for tag in campaign.tags %}<li class="bfep-tag">{{ tag }}</li>{% endfor %}</ul>{% endif %}
+
+  {% if campaign.fundraisers %}
+    <section class="bfep-fundraisers" id="fundraisers" aria-labelledby="bfep-fundraisers-heading">
+      <h2 id="bfep-fundraisers-heading">{% trans %}Fundraisers{% endtrans %}</h2>
+      <p>{% trans %}This campaign is raising money on more than one fundraiser. The totals above add them up where they use the same currency.{% endtrans %}</p>
+      <ul class="bfep-fundraiser-list">
+        {% for fundraiser in campaign.fundraisers %}
+          <li class="bfep-fundraiser">
+            <h3>{{ fundraiser.platform ?: 'Fundraiser'|t }}</h3>
+            {% if fundraiser.amounts %}<dl class="bfep-amounts">{% for amount in fundraiser.amounts %}<div><dt>{{ amount.label }}</dt><dd>{{ amount.value }}</dd></div>{% endfor %}</dl>{% endif %}
+            {% if fundraiser.progress is not null %}<progress class="bfep-progress" max="100" value="{{ fundraiser.progress }}" aria-label="{% trans %}Funding progress{% endtrans %}">{{ fundraiser.progress }}%</progress>{% endif %}
+            {% if fundraiser.amounts and fundraiser.figures_updated %}<p class="bfep-updated bfep-figures-updated">{% trans %}Amounts last updated from the fundraiser page on {{ fundraiser.figures_updated }}.{% endtrans %}</p>{% endif %}
+            {% if fundraiser.url %}<a class="button button--primary" href="{{ fundraiser.url }}" target="_blank" rel="ugc nofollow noopener noreferrer">{% trans %}Open fundraiser{% endtrans %}<span class="visually-hidden"> {% trans %}on {{ fundraiser.platform }} (opens in a new tab){% endtrans %}</span></a>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
 
   <section class="bfep-description" aria-labelledby="bfep-description-heading">
     <h2 id="bfep-description-heading">{% trans %}About this campaign{% endtrans %}</h2>
-    {% if campaign.paragraphs %}{% for paragraph in campaign.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}{% else %}<p class="bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
+    {% if campaign.paragraphs %}{% for paragraph in campaign.paragraphs %}<p dir="auto">{{ paragraph }}</p>{% endfor %}{% else %}<p class="bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
   </section>
 
   {% if campaign.updated %}<p class="bfep-updated">{% trans %}Directory record last updated {{ campaign.updated }}.{% endtrans %}</p>{% endif %}
   <p class="bfep-disclaimer">{% trans %}BFEP marks a campaign as verified only while it maintains direct contact with the beneficiary and the beneficiary confirms that they are receiving funds from the fundraiser organiser. BFEP does not process donations, and verification is not a financial guarantee.{% endtrans %} <a href="{{ verification_url }}">{% trans %}How verification works{% endtrans %}</a>.</p>
 
   <div class="bfep-actions">
-    {% if campaign.fundraiser_url %}<a class="button button--primary" href="{{ campaign.fundraiser_url }}" target="_blank" rel="ugc nofollow noopener noreferrer">{% trans %}Open fundraiser{% endtrans %}<span class="visually-hidden"> {% trans %}(opens in a new tab){% endtrans %}</span></a>{% endif %}
+    {% if campaign.fundraiser_url and not campaign.fundraisers %}<a class="button button--primary" href="{{ campaign.fundraiser_url }}" target="_blank" rel="ugc nofollow noopener noreferrer">{% trans %}Open fundraiser{% endtrans %}<span class="visually-hidden"> {% trans %}(opens in a new tab){% endtrans %}</span></a>{% endif %}
     <a class="button" href="{{ change_url }}">{% trans %}Request an update{% endtrans %}</a>
     <a class="button" href="{{ campaigns_url }}">{% trans %}Back to campaigns{% endtrans %}</a>
   </div>
@@ -46,12 +64,13 @@
         {% for item in related %}
           <article class="bfep-campaign-card bfep-campaign-card--compact">
             <div class="bfep-card-heading">
-              <h3><a class="bfep-campaign-title" href="{{ item.detail_url }}">{{ item.name }}</a></h3>
+              <h3><a class="bfep-campaign-title" href="{{ item.detail_url }}"><bdi>{{ item.name }}</bdi></a></h3>
               {% if item.line_number %}<span class="bfep-line">{% trans %}Line #{{ item.line_number }}{% endtrans %}</span>{% endif %}
             </div>
             {% if item.badges %}<ul class="bfep-badges" aria-label="{% trans %}Campaign details{% endtrans %}">{% for badge in item.badges %}<li>{{ badge }}</li>{% endfor %}</ul>{% endif %}
             {% if item.amounts %}<dl class="bfep-amounts">{% for amount in item.amounts %}<div><dt>{{ amount.label }}</dt><dd>{{ amount.value }}</dd></div>{% endfor %}</dl>{% endif %}
             {% if item.progress is not null %}<progress class="bfep-progress" max="100" value="{{ item.progress }}" aria-label="{% trans %}Funding progress{% endtrans %}">{{ item.progress }}%</progress>{% endif %}
+            {% if item.more_fundraisers %}{% set fundraiser_total = item.more_fundraisers + 1 %}<p class="bfep-more-fundraisers"><a href="{{ item.detail_url }}#fundraisers">{% trans %}Raising on {{ fundraiser_total }} fundraisers{% endtrans %}</a></p>{% endif %}
             <div class="bfep-card-actions"><a class="button" href="{{ item.detail_url }}">{% trans %}View details{% endtrans %}<span class="visually-hidden">: {{ item.name }}</span></a></div>
           </article>
         {% endfor %}

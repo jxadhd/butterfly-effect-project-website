@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\bfep\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 
 /**
  * Typed access to BFEP public-site configuration with safe upgrade defaults.
@@ -46,6 +48,7 @@ final class BfepSettings {
 
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,
+    private readonly ?LanguageManagerInterface $languageManager = NULL,
   ) {}
 
   public function string(string $key): string {
@@ -84,6 +87,28 @@ final class BfepSettings {
   public function absoluteUrl(string $path = '/'): string {
     $path = '/' . ltrim($path, '/');
     return $this->baseUrl() . ($path === '/' ? '/' : $path);
+  }
+
+  /**
+   * The absolute URL of a public path in the page's language.
+   *
+   * Adds the language's path prefix (such as /ar) when the site has one for
+   * it. English, the default language, has none, so English URLs are the same
+   * as absoluteUrl() returns.
+   *
+   * @param string $path
+   *   A path without a language prefix, such as /campaigns/42.
+   * @param string|null $langcode
+   *   The language, or NULL for the language of the current page's URL.
+   */
+  public function localizedUrl(string $path = '/', ?string $langcode = NULL): string {
+    $langcode ??= $this->languageManager?->getCurrentLanguage(LanguageInterface::TYPE_URL)->getId();
+    $prefix = $langcode === NULL ? '' : trim((string) ($this->configFactory->get('language.negotiation')->get('url.prefixes.' . $langcode) ?? ''), '/');
+    if ($prefix === '') {
+      return $this->absoluteUrl($path);
+    }
+    $path = '/' . ltrim($path, '/');
+    return $this->baseUrl() . '/' . rawurlencode($prefix) . ($path === '/' ? '' : $path);
   }
 
   public function organizationName(): string {

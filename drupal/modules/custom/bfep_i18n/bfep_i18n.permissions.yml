@@ -1,0 +1,3 @@
+administer bfep languages:
+  title: 'Control the site languages'
+  description: 'Choose who can see each language, and turn the automatic language choice and the header language switch on or off.'

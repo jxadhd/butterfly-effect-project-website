@@ -1,5 +1,5 @@
 <article class="bfep-page bfep-trust-page">
-  {% if intro %}<p class="bfep-lead">{{ intro }}</p>{% endif %}
+  {% if intro %}<p class="bfep-lead"{% if intro_attributes %} lang="en" dir="ltr"{% endif %}>{{ intro }}</p>{% endif %}
   {% if body %}
     <div class="bfep-policy-body">{{ body }}</div>
   {% else %}

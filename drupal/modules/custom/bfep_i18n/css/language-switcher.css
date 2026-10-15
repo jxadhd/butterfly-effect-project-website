@@ -1,0 +1,142 @@
+/**
+ * @file
+ * The header language switch: a glass pill with a glowing thumb that slides
+ * to the chosen language. Uses the butterfly theme's colour tokens, with
+ * fallbacks so it also looks right without them.
+ */
+
+.bfep-lang {
+  --bfep-lang-pad: 0.1875rem;
+  --bfep-lang-height: 2.5rem;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.5rem;
+  /* Mobile: sits just before the menu button. */
+  margin-inline-start: auto;
+  color: var(--bf-muted, #aaa4b8);
+}
+
+.bfep-lang__globe {
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
+}
+
+.bfep-lang:hover .bfep-lang__globe,
+.bfep-lang:focus-within .bfep-lang__globe {
+  color: var(--bf-lilac, #ddd6fe);
+  transform: rotate(-25deg);
+}
+
+.bfep-lang__track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--bfep-lang-count, 2), minmax(0, 1fr));
+  align-items: stretch;
+  height: var(--bfep-lang-height);
+  padding: var(--bfep-lang-pad);
+  border: 1px solid var(--bf-polish-border, rgba(214, 197, 255, 0.14));
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 6px 18px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  isolation: isolate;
+}
+
+.bfep-lang__thumb {
+  position: absolute;
+  z-index: -1;
+  inset-block: var(--bfep-lang-pad);
+  inset-inline-start: var(--bfep-lang-pad);
+  width: calc((100% - 2 * var(--bfep-lang-pad)) / var(--bfep-lang-count, 2));
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--bf-purple, #a78bfa), var(--bf-violet, #8b5cf6) 55%, var(--bf-purple-deep, #5b21b6));
+  box-shadow: 0 0 0 1px rgba(221, 214, 254, 0.25) inset, 0 6px 18px rgba(139, 92, 246, 0.45), 0 0 24px rgba(167, 139, 250, 0.35);
+  transform: translateX(calc(var(--bfep-lang-index, 0) * 100%));
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+
+[dir="rtl"] .bfep-lang__thumb {
+  transform: translateX(calc(var(--bfep-lang-index, 0) * -100%));
+}
+
+.bfep-lang__option {
+  display: grid;
+  place-items: center;
+  min-width: 3rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  color: var(--bf-muted, #aaa4b8);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: color 0.25s ease;
+}
+
+.bfep-lang__option[lang="ar"] {
+  font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  font-size: 0.9375rem;
+  letter-spacing: 0;
+}
+
+.bfep-lang__option:hover {
+  color: var(--bf-ink, #f8f6ff);
+}
+
+.bfep-lang__option.is-active {
+  color: #fff;
+  cursor: default;
+  text-shadow: 0 1px 2px rgba(46, 16, 101, 0.6);
+}
+
+.bfep-lang__option:focus-visible {
+  outline: 2px solid var(--bf-lilac, #ddd6fe);
+  outline-offset: 2px;
+}
+
+/* The thumb lights up a little while the next page loads. */
+.bfep-lang.is-switching .bfep-lang__thumb {
+  box-shadow: 0 0 0 1px rgba(221, 214, 254, 0.35) inset, 0 6px 22px rgba(139, 92, 246, 0.6), 0 0 34px rgba(240, 171, 252, 0.45);
+}
+
+@media (max-width: 30rem) {
+  .bfep-lang {
+    --bfep-lang-height: 2.375rem;
+  }
+
+  .bfep-lang__globe {
+    display: none;
+  }
+
+  .bfep-lang__option {
+    min-width: 2.6rem;
+    padding: 0 0.6rem;
+  }
+}
+
+/* Desktop: after the navigation, at the end of the header. */
+@media (min-width: 75rem) {
+  .bfep-lang {
+    order: 10;
+    margin-inline-start: 0.25rem;
+    padding-inline-start: 1rem;
+    border-inline-start: 1px solid var(--bf-border-strong, rgba(255, 255, 255, 0.12));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bfep-lang__thumb,
+  .bfep-lang__globe {
+    transition: none;
+  }
+}

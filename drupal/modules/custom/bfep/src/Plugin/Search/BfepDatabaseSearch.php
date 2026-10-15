@@ -135,6 +135,15 @@ final class BfepDatabaseSearch extends SearchPluginBase {
   }
 
   /**
+   * A place or type name from bfdb in the page's language, when translated.
+   */
+  protected function place(mixed $name, string $context): string {
+    $name = trim((string) ($name ?? ''));
+    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+    return $name === '' ? '' : (string) $this->t($name, [], ['context' => $context]);
+  }
+
+  /**
    * Converts a user query into a short list of ANDed search terms.
    */
   protected function tokens(string $keywords): array {
@@ -256,7 +265,11 @@ final class BfepDatabaseSearch extends SearchPluginBase {
 
     $results = [];
     foreach ($rows as $row) {
-      $title = trim((string) ($row->contact_name ?: 'Campaign #' . $row->id));
+      // v_campaigns has a row per active fundraiser; list each campaign once.
+      if (isset($results[(int) $row->id])) {
+        continue;
+      }
+      $title = trim((string) ($row->contact_name ?? '')) ?: (string) $this->t('Campaign #@id', ['@id' => (int) $row->id]);
       $text = implode(' ', [
         $row->line_number,
         $row->country,
@@ -272,14 +285,14 @@ final class BfepDatabaseSearch extends SearchPluginBase {
         ? Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $row->id], ['absolute' => TRUE])
         : Url::fromRoute('bfep.campaign_detail', ['campaign_id' => $row->id], ['absolute' => TRUE]);
 
-      $results[] = [
+      $results[(int) $row->id] = [
         'title' => $title,
         'link' => $url->toString(),
         'type' => $this->t('Campaign'),
         'snippet' => $this->snippet([
-          $row->line_number ? 'Line #' . $row->line_number : NULL,
-          $row->country,
-          $row->global_region,
+          $row->line_number ? (string) $this->t('Line #@line_number', ['@line_number' => $row->line_number]) : NULL,
+          $this->place($row->country, 'Country name'),
+          $this->place($row->global_region, 'World region'),
           $row->platform,
           $row->description,
         ]),
@@ -287,7 +300,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
       ];
     }
 
-    return $results;
+    return array_values($results);
   }
 
   protected function countryResults(array $tokens, string $phrase): array {
@@ -297,19 +310,19 @@ final class BfepDatabaseSearch extends SearchPluginBase {
       "COALESCE(v.global_region, '')",
     ], $tokens, 'country', $params);
 
-    $rows = $this->rows("\n      SELECT v.country, v.global_region, COUNT(*) AS campaign_count\n      FROM v_campaigns v\n      INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL\n      WHERE v.country IS NOT NULL AND v.country <> '' AND {$where}\n      GROUP BY v.country, v.global_region\n      ORDER BY campaign_count DESC, v.country ASC\n      LIMIT 30", $params, 'countries');
+    $rows = $this->rows("\n      SELECT v.country, v.global_region, COUNT(DISTINCT v.id) AS campaign_count\n      FROM v_campaigns v\n      INNER JOIN campaigns source ON source.id = v.id AND source.deleted_at IS NULL\n      WHERE v.country IS NOT NULL AND v.country <> '' AND {$where}\n      GROUP BY v.country, v.global_region\n      ORDER BY campaign_count DESC, v.country ASC\n      LIMIT 30", $params, 'countries');
 
     $results = [];
     foreach ($rows as $row) {
-      $title = (string) $row->country;
+      $title = $this->place($row->country, 'Country name');
       $text = trim((string) $row->global_region . ' ' . (string) $row->campaign_count);
       $results[] = [
         'title' => $title,
         'link' => Url::fromRoute('bfep.country_detail', ['country' => $row->country], ['absolute' => TRUE])->toString(),
         'type' => $this->t('Country'),
         'snippet' => $this->snippet([
-          $row->global_region,
-          (int) $row->campaign_count . ' campaigns',
+          $this->place($row->global_region, 'World region'),
+          (string) $this->formatPlural((int) $row->campaign_count, '1 campaign', '@count campaigns'),
         ]),
         '_score' => $this->score($phrase, $title, $text, 20),
       ];
@@ -332,7 +345,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
 
     $results = [];
     foreach ($rows as $row) {
-      $title = trim((string) ($row->contact_name ?: 'Ground initiative #' . $row->id));
+      $title = trim((string) ($row->contact_name ?? '')) ?: (string) $this->t('Ground initiative #@id', ['@id' => (int) $row->id]);
       $text = implode(' ', [$row->country_raw, $row->project_description, $row->initiative_type]);
       $results[] = [
         'title' => $title,
@@ -341,7 +354,7 @@ final class BfepDatabaseSearch extends SearchPluginBase {
           'fragment' => 'initiative-' . $row->id,
         ])->toString(),
         'type' => $this->t('Ground initiative'),
-        'snippet' => $this->snippet([$row->country_raw, $row->initiative_type, $row->project_description]),
+        'snippet' => $this->snippet([$this->place($row->country_raw, 'Country name'), $this->place($row->initiative_type, 'Initiative type'), $row->project_description]),
         '_score' => $this->score($phrase, $title, $text, 15),
       ];
     }

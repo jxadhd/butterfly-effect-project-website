@@ -26,7 +26,7 @@ final class InitiativeMedia {
   /**
    * Largest accepted upload, in bytes.
    */
-  public const MAX_UPLOAD = 12 * 1024 * 1024;
+  public const MAX_UPLOAD = 20 * 1024 * 1024;
 
   private ?bool $available = NULL;
 
@@ -226,14 +226,14 @@ final class InitiativeMedia {
       return 'The file is empty.';
     }
     if ($size > self::MAX_UPLOAD) {
-      return 'The file is larger than 12 MB.';
+      return 'The file is larger than 20 MB.';
     }
     $info = @getimagesize($path);
     $loaders = [IMAGETYPE_JPEG => 'imagecreatefromjpeg', IMAGETYPE_PNG => 'imagecreatefrompng', IMAGETYPE_WEBP => 'imagecreatefromwebp'];
     if ($info === FALSE || !isset($loaders[$info[2]]) || !function_exists($loaders[$info[2]])) {
       return 'Only JPG, PNG and WebP photos can be uploaded.';
     }
-    if ($info[0] * $info[1] > 50_000_000) {
+    if ($info[0] * $info[1] > 40_000_000) {
       return 'The photo has too many pixels.';
     }
     $source = @$loaders[$info[2]]($path);

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\bfep\Form;
 
+use Drupal\Component\Utility\Bytes;
+use Drupal\Component\Utility\Environment;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\ByteSizeMarkup;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Admin\PgEnum;
@@ -76,6 +79,7 @@ final class InitiativeForm extends FormBase {
         ->fetchObject() ?: throw new NotFoundHttpException();
     }
     $current = $this->initiative;
+    $this->warnIfPostWasDropped();
 
     $form['#attached']['library'][] = 'bfep/admin';
     if ($current !== NULL) {
@@ -171,7 +175,11 @@ final class InitiativeForm extends FormBase {
     }
     $prepared = [];
     foreach ($this->uploadedFiles() as $file) {
-      $result = $file->isValid() ? InitiativeMedia::prepareImage($file->getRealPath()) : 'The upload did not finish.';
+      $result = match (TRUE) {
+        $file->isValid() => InitiativeMedia::prepareImage($file->getRealPath()),
+        in_array($file->getError(), [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], TRUE) => 'The file is larger than this server accepts (' . ByteSizeMarkup::create($this->maxFileSize()) . ').',
+        default => 'The upload did not finish.',
+      };
       if (is_string($result)) {
         $form_state->setErrorByName('image_upload', $this->t('@name: @problem', ['@name' => $file->getClientOriginalName(), '@problem' => $result]));
       }
@@ -324,8 +332,17 @@ final class InitiativeForm extends FormBase {
       '#parents' => ['image_upload'],
       '#title' => $existing ? $this->t('Add photos') : $this->t('Photos'),
       '#multiple' => TRUE,
-      '#attributes' => ['accept' => 'image/jpeg,image/png,image/webp'],
-      '#description' => $this->t('JPG, PNG or WebP, up to 12 MB each. Photos are resized to @max pixels on the long side and their location data is removed. The first photo is the main one on the public page. Only upload photos of people who agreed to be shown.', ['@max' => InitiativeMedia::MAX_EDGE]),
+      '#attributes' => [
+        'accept' => 'image/jpeg,image/png,image/webp',
+        // Read by js/initiative-photos.js, which shrinks photos before upload.
+        'data-bfep-max-file' => (string) $this->maxFileSize(),
+        'data-bfep-max-post' => (string) Bytes::toNumber((string) ini_get('post_max_size')),
+      ],
+      '#attached' => ['library' => ['bfep/initiative-photos']],
+      '#description' => $this->t('JPG, PNG or WebP. Large phone photos are made smaller before they are sent; each must end up under @limit. Photos are resized to @max pixels on the long side and their location data is removed. The first photo is the main one on the public page. Only upload photos of people who agreed to be shown.', [
+        '@max' => InitiativeMedia::MAX_EDGE,
+        '@limit' => ByteSizeMarkup::create($this->maxFileSize()),
+      ]),
     ];
     return $element;
   }
@@ -365,6 +382,32 @@ final class InitiativeForm extends FormBase {
       ];
     }
     return $element;
+  }
+
+  /**
+   * Explains a save that PHP threw away for being too large.
+   *
+   * When a request is bigger than post_max_size, PHP drops all of it, so the
+   * form would otherwise reappear empty with no message. That happens when
+   * photos are sent without the browser shrinking them first.
+   */
+  private function warnIfPostWasDropped(): void {
+    $request = $this->getRequest();
+    $limit = Bytes::toNumber((string) ini_get('post_max_size'));
+    $length = (int) $request->server->get('CONTENT_LENGTH', 0);
+    if ($request->isMethod('POST') && $limit > 0 && $length > $limit && !$request->request->count()) {
+      $this->messenger()->addError($this->t('Nothing was saved: the photos added up to @size, more than this server accepts in one save (@limit). Add fewer or smaller photos at a time.', [
+        '@size' => ByteSizeMarkup::create($length),
+        '@limit' => ByteSizeMarkup::create((int) $limit),
+      ]));
+    }
+  }
+
+  /**
+   * The largest photo this server accepts, in bytes.
+   */
+  private function maxFileSize(): int {
+    return (int) min(InitiativeMedia::MAX_UPLOAD, Environment::getUploadMaxSize());
   }
 
   /**

@@ -28,3 +28,10 @@ infinite-scroll:
     - core/drupal
     - core/once
     - core/drupalSettings
+
+initiative-photos:
+  js:
+    js/initiative-photos.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

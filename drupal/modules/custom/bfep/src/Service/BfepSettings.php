@@ -14,7 +14,7 @@ final class BfepSettings {
   public const CONFIG_NAME = 'bfep.settings';
 
   private const DEFAULTS = [
-    'base_url' => 'https://butterfly.joshcross.co.nz',
+    'base_url' => 'https://bfep.org',
     'organization_name' => 'The Butterfly Effect Project',
     'title_suffix' => '| The Butterfly Effect Project',
     'tagline' => 'Helping those in need be seen, shared, and supported.',

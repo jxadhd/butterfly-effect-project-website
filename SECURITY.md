@@ -7,7 +7,7 @@ information, or exploitation details in a public GitHub issue.
 
 Use the contact route on the BFEP website:
 
-https://butterfly.joshcross.co.nz/contact-us
+https://bfep.org/contact-us
 
 Include only the information needed to understand and reproduce the concern.
 Do not include unrelated personal information or live credentials.

@@ -1,7 +1,7 @@
 # The Butterfly Effect Project website
 
 Public source code for
-[The Butterfly Effect Project](https://butterfly.joshcross.co.nz/), a
+[The Butterfly Effect Project](https://bfep.org/), a
 volunteer-led humanitarian fundraiser discovery and information project.
 
 The website helps visitors discover humanitarian fundraising campaigns,

@@ -26,21 +26,11 @@ final class CampaignEditForm extends FormBase {
   protected object $campaign;
 
   /**
-   * The campaign's active fundraiser row, if it has one.
-   */
-  protected ?object $fundraiser = NULL;
-
-  /**
    * IDs of the tags currently attached to the campaign.
    *
    * @var int[]
    */
   protected array $tagIds = [];
-
-  /**
-   * Sync service columns of the active fundraiser, when the schema has them.
-   */
-  protected ?object $syncState = NULL;
 
   public function __construct(
     protected Connection $database,
@@ -81,21 +71,11 @@ final class CampaignEditForm extends FormBase {
       $countries[(int) $row->id] = $label;
     }
 
-    $this->fundraiser = $this->database->query('
-      SELECT platform_id, url, currency_code, goal_amount, donated_amount
-      FROM campaign_fundraisers
-      WHERE campaign_id = :id AND is_active
-      LIMIT 1
-    ', [':id' => $this->campaignId])->fetchObject() ?: NULL;
     $this->tagIds = array_map('intval', $this->database->query(
       'SELECT tag_id FROM campaign_tags WHERE campaign_id = :id',
       [':id' => $this->campaignId],
     )->fetchCol());
 
-    $platforms = [];
-    foreach ($this->database->query('SELECT id, name FROM fundraising_platforms ORDER BY name')->fetchAll() as $row) {
-      $platforms[(int) $row->id] = (string) $row->name;
-    }
     $tags = [];
     foreach ($this->database->query('SELECT id, name FROM tags ORDER BY name')->fetchAll() as $row) {
       $tags[(int) $row->id] = (string) $row->name;
@@ -153,81 +133,7 @@ final class CampaignEditForm extends FormBase {
       '#maxlength' => 5000,
     ];
 
-    $form['fundraiser'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Active fundraiser'),
-      '#open' => TRUE,
-      '#description' => $this->t('Changing the URL keeps the old fundraiser as an inactive record and creates a new active one. Choosing “No active fundraiser” deactivates the current one; nothing is deleted.'),
-    ];
-    $form['fundraiser']['platform_id'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Fundraising platform'),
-      '#options' => $platforms,
-      '#empty_option' => $this->t('- No active fundraiser -'),
-      '#default_value' => $this->fundraiser ? (int) $this->fundraiser->platform_id : '',
-    ];
-    $form['fundraiser']['fundraiser_url'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Fundraiser URL'),
-      '#maxlength' => 2000,
-      '#default_value' => $this->fundraiser->url ?? '',
-      '#description' => SyncPlatforms::help(),
-    ];
-    $form['fundraiser']['currency_code'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Currency code'),
-      '#maxlength' => 3,
-      '#size' => 6,
-      '#placeholder' => 'USD',
-      '#default_value' => $this->fundraiser->currency_code ?? '',
-    ];
-    $form['fundraiser']['goal_amount'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Goal amount'),
-      '#min' => 0,
-      '#step' => '0.01',
-      '#default_value' => $this->fundraiser->goal_amount ?? '',
-    ];
-    $form['fundraiser']['donated_amount'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Amount donated / raised'),
-      '#min' => 0,
-      '#step' => '0.01',
-      '#default_value' => $this->fundraiser->donated_amount ?? '',
-    ];
-
-    $this->syncState = $this->loadSyncState();
-    if ($this->syncState !== NULL && !SyncPlatforms::supports($this->fundraiser->url ?? NULL)) {
-      $form['fundraiser']['sync_unavailable'] = [
-        '#type' => 'item',
-        '#title' => $this->t('Automatic updates'),
-        '#markup' => $this->t('Not available for this platform, so keep the amounts up to date by hand.'),
-      ];
-    }
-    elseif ($this->syncState !== NULL) {
-      $status = trim((string) ($this->syncState->sync_status ?? ''));
-      $turnedOff = $status === 'not_found' && !AdminFormat::truthy($this->syncState->auto_sync);
-      $form['fundraiser']['auto_sync'] = [
-        '#type' => 'checkbox',
-        '#title' => $this->t('Update raised and goal amounts automatically'),
-        '#default_value' => AdminFormat::truthy($this->syncState->auto_sync),
-        '#description' => $turnedOff
-          ? $this->t('Turned off by the sync because the fundraiser page was not found 3 nights in a row. Fix the URL, or tick this to try the page again.')
-          : $this->t('The fundraiser sync service refreshes these figures from the platform. Untick to keep manually entered amounts.'),
-      ];
-      $form['fundraiser']['sync_state'] = [
-        '#type' => 'item',
-        '#title' => $this->t('Last sync'),
-        '#markup' => $status === ''
-          ? $this->t('Not checked yet.')
-          : $this->t('@status · checked @checked · last success @success · @failures consecutive failures', [
-            '@status' => $status,
-            '@checked' => $this->syncDate($this->syncState->last_checked_at ?? NULL),
-            '@success' => $this->syncDate($this->syncState->last_success_at ?? NULL),
-            '@failures' => (int) ($this->syncState->consecutive_failures ?? 0),
-          ]),
-      ];
-    }
+    $form['fundraisers'] = $this->fundraisersSection();
 
     $form['tags_section'] = ['#type' => 'details', '#title' => $this->t('Tags'), '#open' => FALSE];
     $form['tags_section']['tag_ids'] = [
@@ -309,16 +215,6 @@ final class CampaignEditForm extends FormBase {
         ':url' => Url::fromRoute('bfep.admin_campaign_edit', ['campaign_id' => $this->campaignId])->toString(),
       ]));
     }
-    $fundraiserErrors = AdminFormat::fundraiserErrors(
-      (int) $form_state->getValue('platform_id'),
-      trim((string) $form_state->getValue('fundraiser_url')),
-      strtoupper(trim((string) $form_state->getValue('currency_code'))),
-      $form_state->getValue('goal_amount'),
-      $form_state->getValue('donated_amount'),
-    );
-    foreach ($fundraiserErrors as $name => $message) {
-      $form_state->setErrorByName($name, $this->t($message));
-    }
     $countryId = (int) $form_state->getValue('country_id');
     if ($countryId < 1 || !(int) $this->database->query('SELECT CASE WHEN EXISTS (SELECT 1 FROM countries WHERE id = :id) THEN 1 ELSE 0 END', [':id' => $countryId])->fetchField()) {
       $form_state->setErrorByName('country_id', $this->t('Select a valid country.'));
@@ -350,8 +246,7 @@ final class CampaignEditForm extends FormBase {
     $transaction = $this->database->startTransaction();
     try {
       $this->database->update('campaigns')->fields($fields)->condition('id', $this->campaignId)->execute();
-      $changed = [...$changed, ...$this->saveFundraiser($values), ...$this->saveTags($values)];
-      $changed = [...$changed, ...$this->saveAutoSync($values)];
+      $changed = [...$changed, ...$this->saveTags($values)];
     }
     catch (\Throwable $exception) {
       $transaction->rollBack();
@@ -368,105 +263,65 @@ final class CampaignEditForm extends FormBase {
   }
 
   /**
-   * Applies fundraiser changes and returns the names of changed fields.
+   * The campaign's fundraisers: a table with links to add and edit them.
    */
-  private function saveFundraiser(array $values): array {
-    $platformId = (int) ($values['platform_id'] ?? 0);
-    $new = [
-      'platform_id' => $platformId,
-      'url' => trim((string) ($values['fundraiser_url'] ?? '')),
-      'currency_code' => strtoupper(trim((string) ($values['currency_code'] ?? ''))),
-      'goal_amount' => AdminFormat::isBlank($values['goal_amount'] ?? NULL) ? NULL : (string) $values['goal_amount'],
-      'donated_amount' => AdminFormat::isBlank($values['donated_amount'] ?? NULL) ? NULL : (string) $values['donated_amount'],
+  private function fundraisersSection(): array {
+    $rows = CampaignFundraiserForm::fundraiserRows($this->database, $this->campaignId, $hasSync);
+    $section = [
+      '#type' => 'details',
+      '#title' => $this->t('Fundraisers'),
+      '#open' => TRUE,
+      '#description' => $this->t('A campaign can raise money on more than one fundraiser. Active fundraisers are shown on the public page, added up where they use the same currency. When the campaign moves to a new fundraiser, add it and end the old one, rather than changing the old link, so the history is kept.'),
     ];
-    $old = $this->fundraiser ? (array) $this->fundraiser : [];
-    if ($platformId < 1) {
-      if (!$old) {
-        return [];
+    $header = [$this->t('Status'), $this->t('Platform'), $this->t('Link'), $this->t('Raised'), $this->t('Goal')];
+    if ($hasSync) {
+      $header[] = $this->t('Sync');
+    }
+    $header[] = $this->t('Operations');
+    $tableRows = [];
+    foreach ($rows as $row) {
+      $active = AdminFormat::truthy($row->is_active);
+      $currency = trim((string) ($row->currency_code ?? ''));
+      $amount = static fn(mixed $value): string => AdminFormat::isBlank($value) ? '—' : trim($currency . ' ' . number_format((float) $value, 2));
+      $url = AdminFormat::externalUrl($row->url ?? NULL);
+      $cells = [
+        $active ? $this->t('Active') : $this->t('Ended'),
+        trim((string) ($row->platform ?? '')) ?: '—',
+        $url !== NULL
+          ? ['data' => ['#type' => 'link', '#title' => $url, '#url' => Url::fromUri($url), '#attributes' => ['target' => '_blank', 'rel' => 'noopener noreferrer']]]
+          : (trim((string) ($row->url ?? '')) ?: '—'),
+        $amount($row->donated_amount ?? NULL),
+        $amount($row->goal_amount ?? NULL),
+      ];
+      if ($hasSync) {
+        $cells[] = !SyncPlatforms::supports($row->url ?? NULL)
+          ? $this->t('By hand')
+          : (AdminFormat::truthy($row->auto_sync ?? NULL)
+            ? (trim((string) ($row->sync_status ?? '')) ?: $this->t('Not checked yet'))
+            : $this->t('Off (@status)', ['@status' => trim((string) ($row->sync_status ?? '')) ?: $this->t('by hand')]));
       }
-      $this->database->update('campaign_fundraisers')
-        ->fields(['is_active' => 'false'])
-        ->condition('campaign_id', $this->campaignId)
-        ->condition('is_active', TRUE)
-        ->execute();
-      return ['fundraiser (deactivated)'];
+      $cells[] = [
+        'data' => [
+          '#type' => 'link',
+          '#title' => $this->t('Edit'),
+          '#url' => Url::fromRoute('bfep.admin_fundraiser_edit', ['campaign_id' => $this->campaignId, 'fundraiser_id' => (int) $row->id]),
+        ],
+      ];
+      $tableRows[] = ['data' => $cells, 'class' => [$active ? 'bfep-fundraiser-active' : 'bfep-fundraiser-ended']];
     }
-
-    $changed = AdminFormat::changedKeys($old, $new);
-    if (!$changed) {
-      return [];
-    }
-    $row = $new;
-    $row['currency_code'] = $row['currency_code'] === '' ? NULL : $row['currency_code'];
-    $sameFundraiser = $old && AdminFormat::urlMatchKey($old['url'] ?? '') === AdminFormat::urlMatchKey($new['url']);
-    if ($sameFundraiser) {
-      $this->database->update('campaign_fundraisers')
-        ->fields($row)
-        ->condition('campaign_id', $this->campaignId)
-        ->condition('is_active', TRUE)
-        ->execute();
-      return array_map(static fn(string $key): string => 'fundraiser.' . $key, $changed);
-    }
-    // A different URL is a different fundraiser: keep the old row as history.
-    if ($old) {
-      $this->database->update('campaign_fundraisers')
-        ->fields(['is_active' => 'false'])
-        ->condition('campaign_id', $this->campaignId)
-        ->condition('is_active', TRUE)
-        ->execute();
-    }
-    $this->database->insert('campaign_fundraisers')
-      ->fields(['campaign_id' => $this->campaignId, 'is_active' => 'true'] + $row)
-      ->execute();
-    return [$old ? 'fundraiser (replaced)' : 'fundraiser (added)'];
-  }
-
-  /**
-   * Reads the sync columns of the active fundraiser.
-   *
-   * Returns NULL when there is no active fundraiser or the columns do not
-   * exist (an environment without the sync service), so the form still works.
-   */
-  private function loadSyncState(): ?object {
-    try {
-      $row = $this->database->query('
-        SELECT auto_sync, sync_status, last_checked_at, last_success_at, consecutive_failures
-        FROM campaign_fundraisers
-        WHERE campaign_id = :id AND is_active
-        LIMIT 1
-      ', [':id' => $this->campaignId])->fetchObject();
-      return $row ?: NULL;
-    }
-    catch (\Throwable) {
-      return NULL;
-    }
-  }
-
-  private function syncDate(mixed $value): string {
-    $timestamp = !AdminFormat::isBlank($value) ? strtotime((string) $value) : FALSE;
-    return $timestamp ? date('j M Y H:i', $timestamp) : (string) $this->t('never');
-  }
-
-  /**
-   * Saves the auto-sync flag on the (possibly new) active fundraiser.
-   */
-  private function saveAutoSync(array $values): array {
-    if ($this->syncState === NULL || !array_key_exists('auto_sync', $values) || (int) ($values['platform_id'] ?? 0) < 1) {
-      return [];
-    }
-    $wanted = !empty($values['auto_sync']);
-    $fields = ['auto_sync' => $wanted ? 'true' : 'false'];
-    if ($wanted && !AdminFormat::truthy($this->syncState->auto_sync)) {
-      // Turning sync back on gives a dead link another 3 nights before the
-      // sync turns it off again.
-      $fields['consecutive_failures'] = 0;
-    }
-    $this->database->update('campaign_fundraisers')
-      ->fields($fields)
-      ->condition('campaign_id', $this->campaignId)
-      ->condition('is_active', TRUE)
-      ->execute();
-    return AdminFormat::truthy($this->syncState->auto_sync) === $wanted ? [] : ['fundraiser.auto_sync'];
+    $section['table'] = [
+      '#type' => 'table',
+      '#header' => $header,
+      '#rows' => $tableRows,
+      '#empty' => $this->t('No fundraisers yet, so visitors have nothing to donate to.'),
+    ];
+    $section['add'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Add fundraiser'),
+      '#url' => Url::fromRoute('bfep.admin_fundraiser_add', ['campaign_id' => $this->campaignId]),
+      '#attributes' => ['class' => ['button', 'button--small']],
+    ];
+    return $section;
   }
 
   /**

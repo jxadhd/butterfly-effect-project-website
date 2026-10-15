@@ -229,6 +229,29 @@ bfep.admin_campaign_edit:
   options:
     _admin_route: TRUE
 
+bfep.admin_fundraiser_add:
+  path: '/admin/bfep/campaign/{campaign_id}/fundraiser/add'
+  defaults:
+    _form: '\Drupal\bfep\Form\CampaignFundraiserForm'
+    _title: 'Add fundraiser'
+  requirements:
+    _permission: 'administer bfep external data'
+    campaign_id: '\d+'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_fundraiser_edit:
+  path: '/admin/bfep/campaign/{campaign_id}/fundraiser/{fundraiser_id}/edit'
+  defaults:
+    _form: '\Drupal\bfep\Form\CampaignFundraiserForm'
+    _title: 'Edit fundraiser'
+  requirements:
+    _permission: 'administer bfep external data'
+    campaign_id: '\d+'
+    fundraiser_id: '\d+'
+  options:
+    _admin_route: TRUE
+
 bfep.admin_campaign_remove:
   path: '/admin/bfep/campaign/{campaign_id}/remove'
   defaults:

@@ -1,12 +1,27 @@
 <div class="bfep-page bfep-initiative-list">
   <p class="bfep-intro">{% trans %}Featured community and humanitarian initiatives maintained in the BFEP directory.{% endtrans %}</p>
   {% if initiatives %}
-    <div class="bfep-campaign-grid">
+    <div class="bfep-campaign-grid bfep-initiative-grid">
       {% for initiative in initiatives %}
-        <article class="bfep-campaign-card" id="initiative-{{ initiative.id }}">
+        <article class="bfep-campaign-card bfep-initiative-card" id="initiative-{{ initiative.id }}">
+          {% if initiative.photos %}
+            {% set initiative_name = initiative.name %}
+            <div class="bfep-initiative-photos"{% if initiative.photos|length > 1 %} tabindex="0" role="group" aria-label="{% trans %}Photos of {{ initiative_name }}, scroll sideways for more{% endtrans %}"{% endif %}>
+              {% for photo in initiative.photos %}
+                <img src="{{ photo.url }}" alt="{{ photo.alt }}"{% if photo.width %} width="{{ photo.width }}" height="{{ photo.height }}"{% endif %} loading="lazy" decoding="async">
+              {% endfor %}
+            </div>
+          {% endif %}
           <h2><bdi>{{ initiative.name }}</bdi></h2>
           {% if initiative.country or initiative.type %}<ul class="bfep-badges">{% if initiative.country %}<li>{{ initiative.country }}</li>{% endif %}{% if initiative.type %}<li>{{ initiative.type }}</li>{% endif %}</ul>{% endif %}
-          {% if initiative.description %}<p dir="auto">{{ initiative.description }}</p>{% endif %}
+          {% if initiative.description %}<p dir="auto" class="bfep-initiative-description">{{ initiative.description|nl2br }}</p>{% endif %}
+          {% if initiative.links %}
+            <div class="bfep-card-actions">
+              {% for link in initiative.links %}
+                <a class="button{% if loop.first %} button--primary{% endif %}" href="{{ link.url }}" target="_blank" rel="ugc nofollow noopener noreferrer"><bdi>{{ link.label }}</bdi><span class="visually-hidden"> {% trans %}(opens in a new tab){% endtrans %}</span></a>
+              {% endfor %}
+            </div>
+          {% endif %}
         </article>
       {% endfor %}
     </div>

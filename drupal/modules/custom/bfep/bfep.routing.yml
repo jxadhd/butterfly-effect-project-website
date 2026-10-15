@@ -72,6 +72,14 @@ bfep.initiatives:
   requirements:
     _permission: 'access content'
 
+bfep.initiative_image:
+  path: '/initiatives/image/{image}'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\InitiativeController::image'
+  requirements:
+    _permission: 'access content'
+    image: '\d+\.(jpg|png|webp)'
+
 bfep.refer:
   path: '/refer'
   defaults:
@@ -302,6 +310,37 @@ bfep.admin_referral_review:
   requirements:
     _permission: 'administer bfep external data'
     referral_id: '\d+'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_initiatives:
+  path: '/admin/bfep/initiatives'
+  defaults:
+    _controller: '\Drupal\bfep\Controller\AdminController::initiatives'
+    _title: 'Ground initiatives'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_initiative_add:
+  path: '/admin/bfep/initiative/add'
+  defaults:
+    _form: '\Drupal\bfep\Form\InitiativeForm'
+    _title: 'Add ground initiative'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
+bfep.admin_initiative_edit:
+  path: '/admin/bfep/initiative/{initiative_id}/edit'
+  defaults:
+    _form: '\Drupal\bfep\Form\InitiativeForm'
+    _title: 'Edit ground initiative'
+  requirements:
+    _permission: 'administer bfep external data'
+    initiative_id: '\d+'
   options:
     _admin_route: TRUE
 

@@ -17,6 +17,7 @@ final class AdminFilterForm extends FormBase {
     'referrals' => 'bfep.admin_referrals',
     'volunteers' => 'bfep.admin_volunteers',
     'changes' => 'bfep.admin_changes',
+    'initiatives' => 'bfep.admin_initiatives',
   ];
 
   public function __construct(
@@ -73,7 +74,15 @@ final class AdminFilterForm extends FormBase {
       '#placeholder' => $this->t('Search records…'),
     ];
 
-    if ($section === 'campaigns') {
+    if ($section === 'initiatives') {
+      $form['featured'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Featured'),
+        '#return_value' => '1',
+        '#default_value' => $request->query->get('featured') === '1',
+      ];
+    }
+    elseif ($section === 'campaigns') {
       $form['featured'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Featured'),

@@ -108,7 +108,7 @@ final class CampaignListBuilder {
       '#theme' => 'bfep_campaign_list',
       '#country_summary' => $fixedCountry === NULL ? NULL : $this->countrySummary($fixedCountry),
       '#verification_url' => Url::fromRoute('bfep.trust_how_we_verify')->toString(),
-      '#attached' => ['library' => ['bfep/public']],
+      '#attached' => ['library' => $totalPages > 1 ? ['bfep/public', 'bfep/infinite-scroll'] : ['bfep/public']],
       '#campaigns' => $cards,
       '#filters' => $filters,
       '#options' => [

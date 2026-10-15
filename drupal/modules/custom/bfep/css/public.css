@@ -49,6 +49,13 @@
 .bfep-results-bar p { margin: 0; font-weight: 700; }
 .bfep-pager { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; margin-block: 2rem; }
 .bfep-pager > :last-child { text-align: end; }
+/* Infinite scroll (js/infinite-scroll.js): the "Load more" and "Show earlier" controls. */
+[data-bfep-infinite] [hidden] { display: none !important; }
+.bfep-load-more { display: flex; flex-direction: column; align-items: center; gap: .75rem; margin-block: 1.75rem; text-align: center; }
+.bfep-load-more--earlier { margin-block: 1rem 0; }
+.bfep-load-more .button { min-width: min(100%, 16rem); justify-content: center; }
+.bfep-load-more .button[aria-disabled="true"] { cursor: progress; opacity: .7; }
+.bfep-load-more__message { margin: 0; font-weight: 650; }
 
 .bfep-trust-page { max-width: 70rem; }
 .bfep-policy-section { max-width: 58rem; margin-block: 2rem; }

@@ -94,7 +94,13 @@ final class ChangeRequestReviewForm extends AdminRecordFormBase {
       $fields['processed_at'] = NULL;
     }
 
-    $this->bfdb()->update('info_change_requests')->fields($fields)->condition('id', $this->requestId)->execute();
+    try {
+      $this->bfdb()->update('info_change_requests')->fields($fields)->condition('id', $this->requestId)->execute();
+    }
+    catch (\Throwable $exception) {
+      $this->reportSaveFailure($form_state, $exception, 'change request ' . $this->requestId);
+      return;
+    }
     $this->auditLogger->record('updated', 'change request', $this->requestId, AdminFormat::changedKeys((array) $this->changeRequest, $fields));
     $this->messenger()->addStatus($this->t('Change request workflow saved for <a href=":url">@name</a>.', [
       ':url' => $this->recordUrl($this->requestId),

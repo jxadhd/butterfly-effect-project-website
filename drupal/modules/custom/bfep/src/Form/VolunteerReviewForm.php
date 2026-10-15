@@ -86,10 +86,16 @@ final class VolunteerReviewForm extends AdminRecordFormBase {
       'contacted' => (bool) $form_state->getValue('contacted'),
       'onboarded' => (bool) $form_state->getValue('onboarded'),
     ];
-    $this->bfdb()->update('volunteers')
-      ->fields($fields)
-      ->condition('id', $this->volunteerId)
-      ->execute();
+    try {
+      $this->bfdb()->update('volunteers')
+        ->fields($fields)
+        ->condition('id', $this->volunteerId)
+        ->execute();
+    }
+    catch (\Throwable $exception) {
+      $this->reportSaveFailure($form_state, $exception, 'volunteer ' . $this->volunteerId);
+      return;
+    }
     $this->auditLogger->record('updated', 'volunteer', $this->volunteerId, AdminFormat::changedKeys((array) $this->volunteer, $fields));
     $this->messenger()->addStatus($this->t('Volunteer workflow saved for <a href=":url">@name</a>.', [
       ':url' => $this->recordUrl($this->volunteerId),

@@ -25,6 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class AdminRecordFormBase extends FormBase {
 
   use ReturnToListTrait;
+  use SaveFailureTrait;
 
   public function __construct(
     protected Connection $database,

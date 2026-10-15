@@ -752,7 +752,7 @@ option {
 }
 
 .search-results {
-  padding-left: 0;
+  padding-inline-start: 0;
 }
 
 .search-results li {
@@ -1703,8 +1703,11 @@ body:not(.path-frontpage) .text-content blockquote {
   margin: 1.5rem 0;
   padding: 1.1rem 1.3rem;
 
-  border-left: 3px solid #8b5cf6;
-  border-radius: 0 16px 16px 0;
+  border-inline-start: 3px solid #8b5cf6;
+  border-start-start-radius: 0;
+  border-start-end-radius: 16px;
+  border-end-end-radius: 16px;
+  border-end-start-radius: 0;
 
   background: rgba(139,92,246,.055);
   color: #c3bdcd;
@@ -2219,22 +2222,22 @@ body[class*="path-search"] .search-results p {
   padding: .9rem 1rem;
 
   border: 1px solid rgba(255,255,255,.08);
-  border-left-width: 3px;
+  border-inline-start-width: 3px;
   border-radius: 16px;
 
   background: rgba(16,12,23,.86);
 }
 
 .messages--status {
-  border-left-color: #8b5cf6;
+  border-inline-start-color: #8b5cf6;
 }
 
 .messages--warning {
-  border-left-color: #f59e0b;
+  border-inline-start-color: #f59e0b;
 }
 
 .messages--error {
-  border-left-color: #fb7185;
+  border-inline-start-color: #fb7185;
 }
 
 
@@ -2578,8 +2581,8 @@ body:not(.path-admin) #main-wrapper,
 body:not(.path-admin) #main,
 body:not(.path-admin) .layout-main-wrapper,
 body:not(.path-admin) .layout-main {
-  margin-left: 0 !important;
-  padding-left: 0 !important;
+  margin-inline-start: 0 !important;
+  padding-inline-start: 0 !important;
   inset-inline-start: 0 !important;
 }
 
@@ -3422,8 +3425,8 @@ body:not(.path-admin) .block-search-wide__wrapper {
   z-index: 50 !important;
 
   top: calc(100% + 10px) !important;
-  right: clamp(1rem, 4vw, 3.5rem) !important;
-  left: auto !important;
+  inset-inline-end: clamp(1rem, 4vw, 3.5rem) !important;
+  inset-inline-start: auto !important;
 
   width: min(620px, calc(100vw - 2rem)) !important;
   height: auto !important;

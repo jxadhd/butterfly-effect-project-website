@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\bfep\Service;
 
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Routing\CurrentRouteMatch;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\bfep\Repository\CampaignRepository;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -13,6 +15,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * Resolves route-specific titles, canonical URLs, robots rules, and JSON-LD.
  */
 final class SeoManager {
+
+  use StringTranslationTrait;
 
   private bool $resolved = FALSE;
   private ?array $context = NULL;
@@ -23,6 +27,7 @@ final class SeoManager {
     private readonly CampaignRepository $campaigns,
     private readonly BfepSettings $settings,
     private readonly LoggerChannelInterface $logger,
+    private readonly LanguageManagerInterface $languageManager,
   ) {}
 
   public function context(): ?array {
@@ -39,35 +44,35 @@ final class SeoManager {
 
     $index = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
     $noindex = 'noindex, follow';
-    $base = $this->settings->baseUrl();
+    $organization = $this->settings->organizationName();
     $static = [
       'bfep.home' => [$this->settings->string('home_title'), $this->settings->string('tagline'), $this->settings->string('home_description'), '/', $index],
-      'bfep.about' => ['About', 'About ' . $this->settings->organizationName(), 'Learn how The Butterfly Effect Project organises and maintains a public directory of humanitarian fundraiser information.', '/about', $index],
-      'bfep.countries' => ['Campaigns by Country', 'Campaigns by Country', 'Browse humanitarian fundraising campaigns by country, including featured campaigns and urgent medical cases.', '/countries', $index],
-      'bfep.initiatives' => ['Ground Initiatives', 'Ground Initiatives', 'Explore humanitarian ground initiatives listed by The Butterfly Effect Project.', '/initiatives', $this->settings->boolean('index_initiatives_page') ? $index : $noindex],
-      'bfep.refer' => ['Submit a Referral', 'Submit a Referral', 'Refer a humanitarian fundraising campaign to The Butterfly Effect Project for review.', '/refer', $this->settings->boolean('index_referral_page') ? $index : $noindex],
-      'bfep.volunteer' => ['Volunteer', 'Volunteer with The Butterfly Effect Project', 'Apply to help review, organise, translate, and maintain humanitarian fundraiser information.', '/volunteer', $this->settings->boolean('index_volunteer_page') ? $index : $noindex],
-      'bfep.change_request' => ['Information or Privacy Request', 'Request an Information Update', 'Request a correction, removal, privacy response, or other update to information held by The Butterfly Effect Project.', '/change-request', $noindex],
+      'bfep.about' => [$this->t('About'), $this->t('About @organization', ['@organization' => $organization]), $this->t('Learn how The Butterfly Effect Project organises and maintains a public directory of humanitarian fundraiser information.'), '/about', $index],
+      'bfep.countries' => [$this->t('Campaigns by Country'), $this->t('Campaigns by Country'), $this->t('Browse humanitarian fundraising campaigns by country, including featured campaigns and urgent medical cases.'), '/countries', $index],
+      'bfep.initiatives' => [$this->t('Ground Initiatives'), $this->t('Ground Initiatives'), $this->t('Explore humanitarian ground initiatives listed by The Butterfly Effect Project.'), '/initiatives', $this->settings->boolean('index_initiatives_page') ? $index : $noindex],
+      'bfep.refer' => [$this->t('Submit a Referral'), $this->t('Submit a Referral'), $this->t('Refer a humanitarian fundraising campaign to The Butterfly Effect Project for review.'), '/refer', $this->settings->boolean('index_referral_page') ? $index : $noindex],
+      'bfep.volunteer' => [$this->t('Volunteer'), $this->t('Volunteer with The Butterfly Effect Project'), $this->t('Apply to help review, organise, translate, and maintain humanitarian fundraiser information.'), '/volunteer', $this->settings->boolean('index_volunteer_page') ? $index : $noindex],
+      'bfep.change_request' => [$this->t('Information or Privacy Request'), $this->t('Request an Information Update'), $this->t('Request a correction, removal, privacy response, or other update to information held by The Butterfly Effect Project.'), '/change-request', $noindex],
     ];
 
     if (isset($static[$route])) {
       [$title, $heading, $description, $path, $robots] = $static[$route];
-      $this->context = $this->baseContext($title, $heading, $description, $this->settings->absoluteUrl($path), $robots);
+      $this->context = $this->baseContext((string) $title, (string) $heading, (string) $description, $path, $robots);
     }
     elseif ($route === 'bfep.campaigns') {
       $page = $this->page();
       $filtered = $this->hasNonPageFilters();
-      $title = $filtered ? 'Search Humanitarian Fundraisers' : 'Humanitarian Fundraising Campaigns';
+      $title = (string) ($filtered ? $this->t('Search Humanitarian Fundraisers') : $this->t('Humanitarian Fundraising Campaigns'));
       if (!$filtered && $page > 1) {
-        $title .= ' – Page ' . $page;
+        $title = $this->pageTitle($title, $page);
       }
       $this->context = $this->baseContext(
         $title,
         $title,
-        $filtered
-          ? 'Search and filter humanitarian fundraising campaigns by country, urgency, platform, tags, and featured status.'
-          : 'Browse humanitarian fundraising campaigns, urgent medical cases, and public fundraiser information maintained by The Butterfly Effect Project.',
-        $base . '/campaigns' . (!$filtered && $page > 1 ? '?p=' . $page : ''),
+        (string) ($filtered
+          ? $this->t('Search and filter humanitarian fundraising campaigns by country, urgency, platform, tags, and featured status.')
+          : $this->t('Browse humanitarian fundraising campaigns, urgent medical cases, and public fundraiser information maintained by The Butterfly Effect Project.')),
+        '/campaigns' . (!$filtered && $page > 1 ? '?p=' . $page : ''),
         $filtered ? $noindex : $index,
       );
       $this->context['cache_tags'][] = BfepCacheInvalidator::CAMPAIGNS;
@@ -86,10 +91,10 @@ final class SeoManager {
     }
     elseif (str_starts_with($route, 'search.view_')) {
       $this->context = $this->baseContext(
-        'Search',
-        'Search',
-        'Search the public Butterfly Effect Project campaign and initiative directory.',
-        $base . '/search/database',
+        (string) $this->t('Search'),
+        (string) $this->t('Search'),
+        (string) $this->t('Search the public Butterfly Effect Project campaign and initiative directory.'),
+        '/search/database',
         $noindex,
       );
     }
@@ -120,8 +125,8 @@ final class SeoManager {
       return NULL;
     }
 
-    $name = trim((string) ($row->contact_name ?: 'Campaign #' . $campaignId));
-    $country = trim((string) ($row->country ?? ''));
+    $name = trim((string) ($row->contact_name ?? '')) ?: (string) $this->t('Campaign #@id', ['@id' => $campaignId]);
+    $country = $this->placeName($row->country ?? NULL);
     $title = strtr($this->settings->string('campaign_title_pattern'), [
       '[campaign:name]' => $name,
       '[campaign:country]' => $country,
@@ -129,12 +134,12 @@ final class SeoManager {
     $title = trim((string) preg_replace('/\s+[–—-]\s*$/u', '', $title));
     $description = $this->cleanDescription((string) ($row->description ?? ''));
     if ($description === '') {
-      $description = 'View ' . $name . "'s humanitarian fundraising campaign"
-        . ($country !== '' ? ' in ' . $country : '')
-        . ', listed by The Butterfly Effect Project.';
+      $description = (string) ($country !== ''
+        ? $this->t("View @name's humanitarian fundraising campaign in @country, listed by The Butterfly Effect Project.", ['@name' => $name, '@country' => $country])
+        : $this->t("View @name's humanitarian fundraising campaign, listed by The Butterfly Effect Project.", ['@name' => $name]));
     }
-    $canonical = $this->settings->absoluteUrl('/campaigns/' . $campaignId);
-    $context = $this->baseContext($title, $title, $description, $canonical, $robots);
+    $context = $this->baseContext($title, $title, $description, '/campaigns/' . $campaignId, $robots);
+    $canonical = $context['canonical'];
     // Dates tell search engines and link previews how fresh the record is.
     $published = $this->isoDate($row->created_at ?? NULL);
     $modified = $this->isoDate($row->updated_at ?? NULL) ?? $published;
@@ -148,14 +153,14 @@ final class SeoManager {
       'url' => $canonical,
       'name' => $title,
       'description' => $description,
-      'inLanguage' => 'en-NZ',
+      'inLanguage' => $this->languageTag(),
       'datePublished' => $published,
       'dateModified' => $modified,
       'isPartOf' => ['@id' => $this->settings->absoluteUrl('/#website')],
     ], static fn($value): bool => $value !== NULL);
     $context['json_ld'][] = $this->breadcrumbs([
-      ['name' => 'Home', 'url' => $this->settings->absoluteUrl('/')],
-      ['name' => 'Campaigns', 'url' => $this->settings->absoluteUrl('/campaigns')],
+      ['name' => (string) $this->t('Home'), 'url' => $this->settings->localizedUrl('/')],
+      ['name' => (string) $this->t('Campaigns'), 'url' => $this->settings->localizedUrl('/campaigns')],
       ['name' => $name, 'url' => $canonical],
     ]);
     $context['cache_tags'][] = BfepCacheInvalidator::CAMPAIGNS;
@@ -182,25 +187,25 @@ final class SeoManager {
 
     $filtered = $this->hasNonPageFilters();
     $page = $this->page();
+    $countryName = $this->placeName($canonicalCountry);
     $title = strtr($this->settings->string('country_title_pattern'), [
-      '[country:name]' => $canonicalCountry,
+      '[country:name]' => $countryName,
     ]);
     if (!$filtered && $page > 1) {
-      $title .= ' – Page ' . $page;
+      $title = $this->pageTitle($title, $page);
     }
     $path = '/countries/' . rawurlencode($canonicalCountry);
-    $canonical = $this->settings->absoluteUrl($path) . (!$filtered && $page > 1 ? '?p=' . $page : '');
     $context = $this->baseContext(
       $title,
       $title,
-      'Browse ' . $count . ' humanitarian fundraising ' . ($count === 1 ? 'campaign' : 'campaigns') . ' in ' . $canonicalCountry . ', including featured and urgent cases.',
-      $canonical,
+      (string) $this->formatPlural($count, 'Browse 1 humanitarian fundraising campaign in @country, including featured and urgent cases.', 'Browse @count humanitarian fundraising campaigns in @country, including featured and urgent cases.', ['@country' => $countryName]),
+      $path . (!$filtered && $page > 1 ? '?p=' . $page : ''),
       $filtered ? $noindex : $index,
     );
     $context['json_ld'][] = $this->breadcrumbs([
-      ['name' => 'Home', 'url' => $this->settings->absoluteUrl('/')],
-      ['name' => 'Countries', 'url' => $this->settings->absoluteUrl('/countries')],
-      ['name' => $canonicalCountry, 'url' => $this->settings->absoluteUrl($path)],
+      ['name' => (string) $this->t('Home'), 'url' => $this->settings->localizedUrl('/')],
+      ['name' => (string) $this->t('Countries'), 'url' => $this->settings->localizedUrl('/countries')],
+      ['name' => $countryName, 'url' => $this->settings->localizedUrl($path)],
     ]);
     $context['cache_tags'][] = BfepCacheInvalidator::COUNTRIES;
     $context['cache_tags'][] = BfepCacheInvalidator::CAMPAIGNS;
@@ -209,37 +214,79 @@ final class SeoManager {
 
   private function trustContext(string $page, string $robots): ?array {
     $definitions = [
-      'transparency' => ['Transparency', 'Transparency', 'Understand what The Butterfly Effect Project does, what its directory labels mean, and the limits of fundraiser review.'],
-      'how-we-verify' => ['How We Verify Fundraisers', 'How We Verify Fundraisers', 'Learn what BFEP verification means: ongoing direct contact with the beneficiary and confirmation that they receive funds from the fundraiser organiser.'],
-      'team' => ['Our Team', 'Our Team', 'Learn who operates The Butterfly Effect Project and how volunteer and technical responsibilities are separated.'],
-      'editorial-policy' => ['Editorial Policy', 'Editorial Policy', 'Read the standards for public descriptions, featured labels, corrections, removals, and conflicts of interest.'],
-      'privacy' => ['Privacy Notice', 'Privacy Notice', 'Learn what information The Butterfly Effect Project collects, why it is used, and how to request access or correction.'],
-      'safeguarding' => ['Safeguarding', 'Safeguarding', 'Read the privacy, dignity, and safety principles applied to humanitarian campaign information.'],
-      'contact-us' => ['Contact', 'Contact', 'Contact The Butterfly Effect Project about a referral, correction, privacy concern, or volunteering.'],
+      'transparency' => [$this->t('Transparency'), $this->t('Understand what The Butterfly Effect Project does, what its directory labels mean, and the limits of fundraiser review.')],
+      'how-we-verify' => [$this->t('How We Verify Fundraisers'), $this->t('Learn what BFEP verification means: ongoing direct contact with the beneficiary and confirmation that they receive funds from the fundraiser organiser.')],
+      'team' => [$this->t('Our Team'), $this->t('Learn who operates The Butterfly Effect Project and how volunteer and technical responsibilities are separated.')],
+      'editorial-policy' => [$this->t('Editorial Policy'), $this->t('Read the standards for public descriptions, featured labels, corrections, removals, and conflicts of interest.')],
+      'privacy' => [$this->t('Privacy Notice'), $this->t('Learn what information The Butterfly Effect Project collects, why it is used, and how to request access or correction.')],
+      'safeguarding' => [$this->t('Safeguarding'), $this->t('Read the privacy, dignity, and safety principles applied to humanitarian campaign information.')],
+      'contact-us' => [$this->t('Contact'), $this->t('Contact The Butterfly Effect Project about a referral, correction, privacy concern, or volunteering.')],
     ];
     if (!isset($definitions[$page])) {
       return NULL;
     }
-    [$title, $heading, $description] = $definitions[$page];
-    $context = $this->baseContext($title, $heading, $description, $this->settings->absoluteUrl('/' . $page), $robots);
+    $title = $heading = (string) $definitions[$page][0];
+    $description = (string) $definitions[$page][1];
+    $context = $this->baseContext($title, $heading, $description, '/' . $page, $robots);
     $context['json_ld'][] = $this->breadcrumbs([
-      ['name' => 'Home', 'url' => $this->settings->absoluteUrl('/')],
-      ['name' => $heading, 'url' => $this->settings->absoluteUrl('/' . $page)],
+      ['name' => (string) $this->t('Home'), 'url' => $this->settings->localizedUrl('/')],
+      ['name' => $heading, 'url' => $this->settings->localizedUrl('/' . $page)],
     ]);
     return $context;
   }
 
-  private function baseContext(string $title, string $heading, string $description, string $canonical, string $robots): array {
+  /**
+   * Builds the shared metadata for a page.
+   *
+   * @param string $title
+   *   The title for search results and link previews.
+   * @param string $heading
+   *   The page's visible heading.
+   * @param string $description
+   *   The meta description.
+   * @param string $path
+   *   The page's canonical path without a language prefix, with any query
+   *   string (such as /campaigns?p=2). The canonical URL adds the prefix of
+   *   the page's language; other languages' versions use the same path.
+   * @param string $robots
+   *   The robots meta value.
+   */
+  private function baseContext(string $title, string $heading, string $description, string $path, string $robots): array {
     return [
       'title' => $title,
       'heading' => $heading,
       'description' => $this->cleanDescription($description, 180),
-      'canonical' => $canonical,
+      'path' => $path,
+      'canonical' => $this->settings->localizedUrl($path),
       'robots' => $robots,
       'og_type' => 'website',
       'json_ld' => [],
       'cache_tags' => [],
     ];
+  }
+
+  /**
+   * Adds the page number to a listing title, as in "Campaigns – Page 2".
+   */
+  private function pageTitle(string $title, int $page): string {
+    return (string) $this->t('@title – Page @page', ['@title' => $title, '@page' => $page]);
+  }
+
+  /**
+   * A country name from bfdb in the page's language (see CampaignPresenter).
+   */
+  private function placeName(mixed $name): string {
+    $name = trim((string) ($name ?? ''));
+    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+    return $name === '' ? '' : (string) $this->t($name, [], ['context' => 'Country name']);
+  }
+
+  /**
+   * The BCP 47 tag of the page's language for JSON-LD inLanguage.
+   */
+  public function languageTag(): string {
+    $langcode = $this->languageManager->getCurrentLanguage()->getId();
+    return $langcode === 'en' ? 'en-NZ' : $langcode;
   }
 
   private function isoDate(mixed $value): ?string {

@@ -168,6 +168,16 @@ DDL and reports that `database-hardening.sql` should be run later by the schema
 owner. No new indexes are added because the audited database already has useful
 country, featured, line-number, updated-time, trigram, and search indexes.
 
+## Translations
+
+The public site is translatable; `bfep_i18n` adds the Arabic version (see its
+README). Public text goes through `t()`, `{% trans %}` or `|t`, and English
+names stored in bfdb (countries, regions, tags, initiative types) through
+`CampaignPresenter::placeName()` with a context, so visitors see them in their
+language while filters and URLs keep the English values. Absolute links use
+`BfepSettings::localizedUrl()`, which adds the page's language prefix. Admin
+pages stay English.
+
 ## Tests
 
 Unit tests live in `tests/src/Unit` and run in CI (`.github/workflows/tests.yml`).

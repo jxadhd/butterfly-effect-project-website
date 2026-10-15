@@ -21,7 +21,9 @@ final class VolunteerForm extends ProtectedExternalFormBase {
     }
     $options = [];
     foreach ($this->database->select('interest_areas', 'i')->fields('i', ['id', 'name'])->orderBy('id')->execute()->fetchAll() as $row) {
-      $options[(int) $row->id] = (string) $row->name;
+      // Staff can translate area names on the Interface translation page.
+      // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+      $options[(int) $row->id] = (string) $this->t((string) $row->name, [], ['context' => 'Volunteer interest area']);
     }
     $form['full_name'] = [
       '#type' => 'textfield',

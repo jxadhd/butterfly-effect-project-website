@@ -154,7 +154,7 @@ function bfep_page_attachments(array &$attachments): void {
   $attachments['#attached']['html_head_link'][] = [[
     'rel' => 'alternate',
     'type' => 'application/rss+xml',
-    'title' => 'New campaigns',
+    'title' => (string) t('New campaigns'),
     'href' => $settings->absoluteUrl('/campaigns/feed'),
   ], FALSE,
   ];
@@ -199,7 +199,7 @@ function bfep_page_attachments(array &$attachments): void {
       'name' => $settings->organizationName(),
       'alternateName' => 'BFEP',
       'url' => $settings->absoluteUrl('/'),
-      'inLanguage' => 'en-NZ',
+      'inLanguage' => \Drupal::service('bfep.seo_manager')->languageTag(),
       'publisher' => ['@id' => $settings->absoluteUrl('/#organization')],
     ];
     foreach (['organization' => $organization, 'website' => $website] as $key => $data) {

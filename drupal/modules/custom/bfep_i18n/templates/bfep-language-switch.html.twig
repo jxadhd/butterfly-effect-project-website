@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * The header language switch: a pill with a thumb that slides to the chosen
+ * language. Each option is a plain link, so it works without JavaScript.
+ *
+ * Available variables:
+ * - options: One per language, in order, each with langcode, label (short,
+ *   in its own language), name (full, in its own language), url, active and
+ *   direction.
+ * - current: The page's langcode.
+ */
+#}
+{% set active_index = 0 %}
+{% for option in options %}{% if option.active %}{% set active_index = loop.index0 %}{% endif %}{% endfor %}
+<nav class="bfep-lang" aria-label="{{ 'Language'|t }}" data-bfep-lang>
+  <svg class="bfep-lang__globe" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>
+  <div class="bfep-lang__track" style="--bfep-lang-count: {{ options|length }}; --bfep-lang-index: {{ active_index }};">
+    <span class="bfep-lang__thumb" aria-hidden="true"></span>
+    {% for option in options %}
+      <a class="bfep-lang__option{{ option.active ? ' is-active' }}" href="{{ option.url }}" hreflang="{{ option.langcode }}" lang="{{ option.langcode }}" dir="{{ option.direction }}" data-index="{{ loop.index0 }}"{% if option.active %} aria-current="true"{% endif %}>
+        <span aria-hidden="true">{{ option.label }}</span>
+        <span class="visually-hidden">{{ option.name }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</nav>

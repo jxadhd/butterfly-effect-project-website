@@ -1,0 +1,22 @@
+bfep_i18n.settings:
+  type: config_object
+  label: 'BFEP languages'
+  mapping:
+    visibility:
+      type: sequence
+      label: 'Who can see each language'
+      sequence:
+        type: string
+        label: 'Visibility: public, staff or off'
+        constraints:
+          Choice:
+            choices:
+              - public
+              - staff
+              - 'off'
+    automatic_choice:
+      type: boolean
+      label: 'Choose the language automatically'
+    switch:
+      type: boolean
+      label: 'Show the language switch in the header'

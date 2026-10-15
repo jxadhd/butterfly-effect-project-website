@@ -1,0 +1,19 @@
+language-switcher:
+  css:
+    component:
+      css/language-switcher.css: {}
+  js:
+    js/language-switcher.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
+right-to-left:
+  css:
+    theme:
+      css/right-to-left.css: {}
+
+preview:
+  css:
+    component:
+      css/preview.css: {}

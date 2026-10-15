@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Adds Arabic with /ar URLs and loads its translations.
+ */
+
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\language\Entity\ConfigurableLanguage;
+use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationSelected;
+use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
+
+/**
+ * Implements hook_install().
+ */
+function bfep_i18n_install(bool $is_syncing): void {
+  if ($is_syncing) {
+    return;
+  }
+  if (ConfigurableLanguage::load('ar') === NULL) {
+    // Drupal's standard list already knows Arabic is written right to left.
+    // Weighted after English, so the language switch reads EN, then عربي.
+    ConfigurableLanguage::createFromLangcode('ar')->setWeight(10)->save();
+  }
+
+  // English keeps its unprefixed URLs, so no existing link or search result
+  // changes. Arabic pages live under /ar.
+  \Drupal::configFactory()->getEditable('language.negotiation')
+    ->set('url.source', LanguageNegotiationUrl::CONFIG_PATH_PREFIX)
+    ->set('url.prefixes.en', '')
+    ->set('url.prefixes.ar', 'ar')
+    ->save();
+
+  // The page's language comes from its URL alone; anything without a prefix
+  // is English. The browser's preference and the visitor's choice decide
+  // which URL they land on (see LanguageRedirect), so every URL always shows
+  // the same language and caches stay simple.
+  \Drupal::service('language_negotiator')->saveConfiguration(LanguageInterface::TYPE_INTERFACE, [
+    LanguageNegotiationUrl::METHOD_ID => 0,
+    LanguageNegotiationSelected::METHOD_ID => 1,
+  ]);
+
+  \Drupal::service('bfep_i18n.translations')->sync(TRUE);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function bfep_i18n_uninstall(bool $is_syncing): void {
+  if ($is_syncing) {
+    return;
+  }
+  // Back to an English-only site. Deleting the language also deletes its
+  // interface and configuration translations; the .po file in this module
+  // still has them for a reinstall.
+  ConfigurableLanguage::load('ar')?->delete();
+  \Drupal::state()->deleteMultiple(['bfep_i18n.po_hashes', 'bfep_i18n.config_written', 'bfep_i18n.strings_written']);
+}

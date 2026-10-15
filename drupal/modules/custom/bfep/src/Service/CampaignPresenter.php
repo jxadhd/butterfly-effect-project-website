@@ -7,11 +7,19 @@ namespace Drupal\bfep\Service;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Converts database records into safe, template-ready public view models.
+ *
+ * Fixed labels are translated into the page's language and returned as plain
+ * strings. Names, descriptions and other text staff type into bfdb are passed
+ * through as entered, except country and region names, which are looked up in
+ * the interface translations (see placeName()).
  */
 final class CampaignPresenter {
+
+  use StringTranslationTrait;
 
   public function __construct(
     private readonly DateFormatterInterface $dateFormatter,
@@ -20,7 +28,7 @@ final class CampaignPresenter {
   public function card(object $row, string $detailUrl): array {
     return [
       'id' => (int) $row->id,
-      'name' => trim((string) ($row->contact_name ?: 'Campaign #' . $row->id)),
+      'name' => $this->campaignName($row),
       'detail_url' => $detailUrl,
       'line_number' => trim((string) ($row->line_number ?? '')),
       'badges' => $this->badges($row),
@@ -29,7 +37,7 @@ final class CampaignPresenter {
       'progress' => $this->progress($row),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
       'more_fundraisers' => max(0, (int) ($row->fundraiser_count ?? 0) - 1),
-      'tags' => $this->tags($row->tags ?? NULL),
+      'tags' => $this->tagNames($row->tags ?? NULL),
       'updated' => $this->date($row->updated_at ?? $row->created_at ?? NULL),
     ];
   }
@@ -50,31 +58,31 @@ final class CampaignPresenter {
     $platforms = $this->platforms($row);
     $metadata = [];
     foreach ([
-      'Line number' => $row->line_number ?? NULL,
-      'Country' => $row->country ?? NULL,
-      'Region' => $row->global_region ?? NULL,
-      (count($platforms) > 1 ? 'Platforms' : 'Platform') => implode(', ', $platforms),
-      'Career/background' => $row->career ?? NULL,
-    ] as $label => $value) {
+      [(string) $this->t('Line number'), $row->line_number ?? NULL],
+      [(string) $this->t('Country'), $this->placeName($row->country ?? NULL, 'Country name')],
+      [(string) $this->t('Region'), $this->placeName($row->global_region ?? NULL, 'World region')],
+      [(string) (count($platforms) > 1 ? $this->t('Platforms') : $this->t('Platform')), implode(', ', $platforms)],
+      [(string) $this->t('Career/background'), $row->career ?? NULL],
+    ] as [$label, $value]) {
       if (trim((string) ($value ?? '')) !== '') {
         $metadata[] = ['label' => $label, 'value' => trim((string) $value)];
       }
     }
     if ($this->truthy($row->featured_by_bfep ?? NULL)) {
-      $metadata[] = ['label' => 'Status', 'value' => 'Featured by BFEP'];
+      $metadata[] = ['label' => (string) $this->t('Status'), 'value' => (string) $this->t('Featured by BFEP')];
     }
     if ($this->truthy($row->urgent_medical_needs ?? NULL)) {
-      $metadata[] = ['label' => 'Needs', 'value' => 'Urgent medical needs'];
+      $metadata[] = ['label' => (string) $this->t('Needs'), 'value' => (string) $this->t('Urgent medical needs')];
     }
 
     return [
       'id' => (int) $row->id,
-      'name' => trim((string) ($row->contact_name ?: 'Campaign #' . $row->id)),
-      'country' => trim((string) ($row->country ?? '')),
+      'name' => $this->campaignName($row),
+      'country' => $this->placeName($row->country ?? NULL, 'Country name'),
       'metadata' => $metadata,
       'amounts' => $this->amounts($row),
       'progress' => $this->progress($row),
-      'tags' => $this->tags($row->tags ?? NULL),
+      'tags' => $this->tagNames($row->tags ?? NULL),
       'fundraiser_url' => $this->externalUrl($row->fundraiser_url ?? NULL),
       'fundraisers' => count($fundraisers) > 1 ? $this->fundraiserList($fundraisers) : [],
       'description' => trim((string) ($row->description ?? '')),
@@ -109,20 +117,51 @@ final class CampaignPresenter {
     ), static fn(string $paragraph): bool => $paragraph !== ''));
   }
 
+  /**
+   * The campaign's name, or a numbered placeholder when it has none.
+   */
+  public function campaignName(object $row): string {
+    $name = trim((string) ($row->contact_name ?? ''));
+    return $name !== '' ? $name : (string) $this->t('Campaign #@id', ['@id' => (int) $row->id]);
+  }
+
+  /**
+   * A country, region, tag or type name from bfdb in the page's language.
+   *
+   * The bfdb database stores English names. They are looked up as interface strings
+   * with a context, so a name nobody has translated yet stays in English.
+   * The result is a plain string, so templates still escape it.
+   *
+   * @param mixed $name
+   *   The English name as stored in bfdb.
+   * @param string $context
+   *   'Country name', 'World region', 'Campaign tag' or 'Initiative type'.
+   */
+  public function placeName(mixed $name, string $context = 'Country name'): string {
+    $name = trim((string) ($name ?? ''));
+    if ($name === '') {
+      return '';
+    }
+    // The name is data, not a source string with placeholders, so it is
+    // looked up without arguments and returned as plain text.
+    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+    return (string) $this->t($name, [], ['context' => $context]);
+  }
+
   private function excerpt(string $description): string {
     return $this->cleanDescription($description, 260);
   }
 
   private function badges(object $row): array {
     $badges = [];
-    if (trim((string) ($row->country ?? '')) !== '') {
-      $badges[] = (string) $row->country;
+    if (($country = $this->placeName($row->country ?? NULL)) !== '') {
+      $badges[] = $country;
     }
     if ($this->truthy($row->featured_by_bfep ?? NULL)) {
-      $badges[] = 'Featured';
+      $badges[] = (string) $this->t('Featured');
     }
     if ($this->truthy($row->urgent_medical_needs ?? NULL)) {
-      $badges[] = 'Urgent medical needs';
+      $badges[] = (string) $this->t('Urgent medical needs');
     }
     foreach ($this->platforms($row) as $platform) {
       $badges[] = $platform;
@@ -171,7 +210,7 @@ final class CampaignPresenter {
     if ($byCurrency) {
       // Different currencies are listed side by side, never added up.
       $amounts = [];
-      foreach (['raised' => 'Raised', 'goal' => 'Goal'] as $key => $label) {
+      foreach (['raised' => (string) $this->t('Raised'), 'goal' => (string) $this->t('Goal')] as $key => $label) {
         $parts = [];
         foreach ($byCurrency as $total) {
           if (is_numeric($total[$key] ?? NULL)) {
@@ -188,20 +227,20 @@ final class CampaignPresenter {
     $amounts = [];
     if (($row->donated_amount ?? NULL) !== NULL) {
       $amounts[] = [
-        'label' => 'Raised',
+        'label' => (string) $this->t('Raised'),
         'value' => trim($currency . ' ' . number_format((float) $row->donated_amount)),
       ];
     }
     if (($row->goal_amount ?? NULL) !== NULL) {
       $amounts[] = [
-        'label' => 'Goal',
+        'label' => (string) $this->t('Goal'),
         'value' => trim($currency . ' ' . number_format((float) $row->goal_amount)),
       ];
     }
     if (($row->pct_goal_achieved ?? NULL) !== NULL) {
       $amounts[] = [
-        'label' => 'Progress',
-        'value' => round((float) $row->pct_goal_achieved, 1) . '% funded',
+        'label' => (string) $this->t('Progress'),
+        'value' => (string) $this->t('@percent% funded', ['@percent' => round((float) $row->pct_goal_achieved, 1)]),
       ];
     }
     return $amounts;
@@ -247,7 +286,7 @@ final class CampaignPresenter {
     $items = '';
     $latest = NULL;
     foreach ($rows as $row) {
-      $name = trim((string) ($row->contact_name ?: 'Campaign #' . $row->id));
+      $name = $this->campaignName($row);
       $country = trim((string) ($row->country ?? ''));
       $link = $campaignUrl((int) $row->id);
       $summary = [];
@@ -303,7 +342,7 @@ final class CampaignPresenter {
       ['label' => 'Telegram', 'url' => 'https://t.me/share/url?url=' . $u . '&text=' . $t],
       ['label' => 'Facebook', 'url' => 'https://www.facebook.com/sharer/sharer.php?u=' . $u],
       ['label' => 'X', 'url' => 'https://x.com/intent/post?url=' . $u . '&text=' . $t],
-      ['label' => 'Email', 'url' => 'mailto:?subject=' . $t . '&body=' . rawurlencode($text . "\n\n" . $url)],
+      ['label' => (string) $this->t('Email'), 'url' => 'mailto:?subject=' . $t . '&body=' . rawurlencode($text . "\n\n" . $url)],
     ];
   }
 
@@ -357,6 +396,16 @@ final class CampaignPresenter {
       static fn(string $tag): string => trim($tag, "\" "),
       str_getcsv($tags, ',', '"', '\\'),
     )));
+  }
+
+  /**
+   * A campaign's tags as visitors read them, in the page's language.
+   *
+   * @return string[]
+   *   Tag names, translated where a translation exists.
+   */
+  private function tagNames(mixed $tags): array {
+    return array_map(fn(string $tag): string => $this->placeName($tag, 'Campaign tag'), $this->tags($tags));
   }
 
   private function date(mixed $value): string {

@@ -21,7 +21,8 @@ bfep_content.settings:
           type: uri
           label: 'Profile URL'
         handle:
-          type: label
+          # Not translatable: the handle is the same in every language.
+          type: string
           label: 'Profile handle'
         message:
           type: text
@@ -35,15 +36,22 @@ bfep_content.settings:
       mapping:
         transparency:
           type: bfep_content.policy_page
+          label: 'Transparency'
         how-we-verify:
           type: bfep_content.policy_page
+          label: 'How We Verify Fundraisers'
         team:
           type: bfep_content.policy_page
+          label: 'Our Team'
         editorial-policy:
           type: bfep_content.policy_page
+          label: 'Editorial Policy'
         privacy:
           type: bfep_content.policy_page
+          label: 'Privacy Notice'
         safeguarding:
           type: bfep_content.policy_page
+          label: 'Safeguarding'
         contact-us:
           type: bfep_content.policy_page
+          label: 'Contact'

@@ -18,7 +18,9 @@ final class CampaignPresenterTest extends UnitTestCase {
   private function presenter(): CampaignPresenter {
     $formatter = $this->createMock(DateFormatterInterface::class);
     $formatter->method('format')->willReturn('3 September 2026');
-    return new CampaignPresenter($formatter);
+    $presenter = new CampaignPresenter($formatter);
+    $presenter->setStringTranslation($this->getStringTranslationStub());
+    return $presenter;
   }
 
   /**

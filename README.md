@@ -17,6 +17,9 @@ under the control of their respective organisers and fundraising platforms.
   forms, verification information, metadata, caching and sitemap integration.
 - `drupal/modules/custom/bfep_content` — editable public policy content and
   official-channel presentation.
+- `drupal/modules/custom/bfep_i18n` — the Arabic version of the public site:
+  `/ar` URLs, automatic language choice, the header language switch and the
+  translations.
 - `drupal/themes/custom/butterfly` — the custom public Drupal theme.
 - `Dockerfile.drupal` — the Drupal image build definition.
 

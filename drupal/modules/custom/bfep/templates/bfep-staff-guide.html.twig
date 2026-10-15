@@ -9,6 +9,7 @@
  * - guide_url: HTTPS link to the full staff guide, or empty.
  * - settings_url: link to BFEP settings when the user may edit them.
  * - links: admin page paths keyed by name.
+ * - extra_tips: more "Good to know" items other modules add, if any.
  */
 #}
 <div class="bfep-staff-guide">
@@ -61,5 +62,8 @@
     <li>{{ 'If someone else saved a campaign while you had it open, your save is refused. Reload the page and make your change again.'|t }}</li>
     <li>{{ 'Every save is logged with your name and the fields you changed.'|t }}</li>
     <li>{{ 'Referral, volunteer and change request details are private. Never copy them into a public description.'|t }}</li>
+    {% for tip in extra_tips|default([]) %}
+      <li>{{ tip }}</li>
+    {% endfor %}
   </ul>
 </div>

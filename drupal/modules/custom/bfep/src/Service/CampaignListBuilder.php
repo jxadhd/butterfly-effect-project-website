@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\bfep\Service;
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Repository\CampaignRepository;
@@ -16,6 +17,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Builds canonical, cacheable campaign listing pages without Form API noise.
  */
 final class CampaignListBuilder {
+
+  use StringTranslationTrait;
 
   private const DEFAULT_SORT = 'line_desc';
   private const DEFAULT_PER_PAGE = 20;
@@ -109,14 +112,14 @@ final class CampaignListBuilder {
       '#campaigns' => $cards,
       '#filters' => $filters,
       '#options' => [
-        'countries' => $options['country'] ?? [],
-        'regions' => $options['global_region'] ?? [],
+        'countries' => $this->placeOptions($options['country'] ?? [], 'Country name'),
+        'regions' => $this->placeOptions($options['global_region'] ?? [], 'World region'),
         'platforms' => $options['platform'] ?? [],
-        'tags' => $options['tag'] ?? [],
-        'sorts' => self::SORT_OPTIONS,
+        'tags' => $this->placeOptions($options['tag'] ?? [], 'Campaign tag'),
+        'sorts' => $this->sortOptions(),
         'per_page' => array_combine(self::PER_PAGE_OPTIONS, self::PER_PAGE_OPTIONS),
       ],
-      '#fixed_country' => $fixedCountry,
+      '#fixed_country' => $fixedCountry === NULL ? NULL : $this->presenter->placeName($fixedCountry),
       '#action_url' => Url::fromRoute($routeName, $routeParameters)->toString(),
       '#clear_url' => Url::fromRoute($routeName, $routeParameters)->toString(),
       '#total' => $total,
@@ -130,6 +133,48 @@ final class CampaignListBuilder {
         'max-age' => $this->settings->listingCacheMaxAge(),
       ],
     ];
+  }
+
+  /**
+   * The sort choices with labels in the page's language.
+   *
+   * @return array<string, string>
+   *   Labels keyed by the sort value used in the URL.
+   */
+  private function sortOptions(): array {
+    $labels = [
+      'line_desc' => $this->t('Newest line number'),
+      'updated_desc' => $this->t('Recently updated'),
+      'created_desc' => $this->t('Recently added'),
+      'name_asc' => $this->t('Name A–Z'),
+      'country_asc' => $this->t('Country A–Z'),
+      'funded_asc' => $this->t('Least funded first'),
+      'funded_desc' => $this->t('Closest to goal'),
+    ];
+    return array_map('strval', array_intersect_key($labels, self::SORT_OPTIONS));
+  }
+
+  /**
+   * Country, region or tag filter choices: English values, translated labels.
+   *
+   * The value stays the English name stored in bfdb, so filter URLs are the
+   * same in every language.
+   *
+   * @param string[] $values
+   *   Names as stored in bfdb.
+   * @param string $context
+   *   The translation context, such as 'Country name' (see
+   *   CampaignPresenter::placeName()).
+   *
+   * @return array<string, string>
+   *   Labels keyed by value.
+   */
+  private function placeOptions(array $values, string $context): array {
+    $options = [];
+    foreach ($values as $value) {
+      $options[(string) $value] = $this->presenter->placeName($value, $context);
+    }
+    return $options;
   }
 
   /**

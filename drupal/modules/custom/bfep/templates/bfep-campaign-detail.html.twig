@@ -33,7 +33,7 @@
 
   <section class="bfep-description" aria-labelledby="bfep-description-heading">
     <h2 id="bfep-description-heading">{% trans %}About this campaign{% endtrans %}</h2>
-    {% if campaign.paragraphs %}{% for paragraph in campaign.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}{% else %}<p class="bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
+    {% if campaign.paragraphs %}{% for paragraph in campaign.paragraphs %}<p dir="auto">{{ paragraph }}</p>{% endfor %}{% else %}<p class="bfep-muted">{% trans %}No public description is currently available.{% endtrans %}</p>{% endif %}
   </section>
 
   {% if campaign.updated %}<p class="bfep-updated">{% trans %}Directory record last updated {{ campaign.updated }}.{% endtrans %}</p>{% endif %}
@@ -64,7 +64,7 @@
         {% for item in related %}
           <article class="bfep-campaign-card bfep-campaign-card--compact">
             <div class="bfep-card-heading">
-              <h3><a class="bfep-campaign-title" href="{{ item.detail_url }}">{{ item.name }}</a></h3>
+              <h3><a class="bfep-campaign-title" href="{{ item.detail_url }}"><bdi>{{ item.name }}</bdi></a></h3>
               {% if item.line_number %}<span class="bfep-line">{% trans %}Line #{{ item.line_number }}{% endtrans %}</span>{% endif %}
             </div>
             {% if item.badges %}<ul class="bfep-badges" aria-label="{% trans %}Campaign details{% endtrans %}">{% for badge in item.badges %}<li>{{ badge }}</li>{% endfor %}</ul>{% endif %}

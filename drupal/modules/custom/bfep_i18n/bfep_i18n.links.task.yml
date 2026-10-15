@@ -1,0 +1,5 @@
+bfep_i18n.admin_tab:
+  route_name: bfep_i18n.settings
+  title: 'Languages'
+  base_route: bfep.admin
+  weight: 9

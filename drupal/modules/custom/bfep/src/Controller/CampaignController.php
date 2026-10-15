@@ -49,10 +49,10 @@ final class CampaignController extends ControllerBase {
     $feedUrl = $this->settings->absoluteUrl('/campaigns/feed');
     $xml = $this->presenter->rss(
       $this->campaigns->recent(30),
-      'New campaigns · ' . $this->settings->organizationName(),
+      (string) $this->t('New campaigns · @organization', ['@organization' => $this->settings->organizationName()]),
       $this->settings->absoluteUrl('/campaigns'),
       $feedUrl,
-      'Humanitarian fundraisers recently added to the ' . $this->settings->organizationName() . ' directory.',
+      (string) $this->t('Humanitarian fundraisers recently added to the @organization directory.', ['@organization' => $this->settings->organizationName()]),
       fn(int $id): string => $this->settings->absoluteUrl('/campaigns/' . $id),
     );
     $response = new CacheableResponse($xml, 200, ['Content-Type' => 'application/rss+xml; charset=utf-8']);
@@ -87,9 +87,10 @@ final class CampaignController extends ControllerBase {
       ]);
     }
 
-    $name = trim((string) ($row->contact_name ?: 'Campaign #' . $campaignId));
-    $shareUrl = $this->settings->absoluteUrl('/campaigns/' . $campaignId);
-    $shareText = $name . ($country !== '' ? ' (' . $country . ')' : '') . ' · ' . $this->settings->organizationName();
+    $name = $this->presenter->campaignName($row);
+    $shareUrl = $this->settings->localizedUrl('/campaigns/' . $campaignId);
+    $countryName = $this->presenter->placeName($country);
+    $shareText = $name . ($countryName !== '' ? ' (' . $countryName . ')' : '') . ' · ' . $this->settings->organizationName();
 
     return [
       '#theme' => 'bfep_campaign_detail',

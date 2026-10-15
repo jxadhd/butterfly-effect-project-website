@@ -29,8 +29,8 @@
         <h2 id="bfep-instagram-heading">{% trans %}Communication and amplification on Instagram{% endtrans %}</h2>
         <p>{{ official_channel.message }}</p>
       </div>
-      <a class="bfep-instagram-link" href="{{ official_channel.url }}" target="_blank" rel="me noopener noreferrer" aria-label="Follow {{ official_channel.handle }} on Instagram (opens in a new tab)">
-        {% trans %}Follow{% endtrans %} {{ official_channel.handle }}
+      <a class="bfep-instagram-link" href="{{ official_channel.url }}" target="_blank" rel="me noopener noreferrer" aria-label="{% trans %}Follow {{ official_channel.handle }} on Instagram (opens in a new tab){% endtrans %}">
+        {% trans %}Follow {{ official_channel.handle }}{% endtrans %}
         <span aria-hidden="true">↗</span>
       </a>
     </aside>

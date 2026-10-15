@@ -27,7 +27,7 @@
         <label for="bfep-filter-country">{% trans %}Country{% endtrans %}</label>
         <select id="bfep-filter-country" name="country">
           <option value="">{% trans %}All countries{% endtrans %}</option>
-          {% for value in options.countries %}<option value="{{ value }}"{% if filters.country == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+          {% for value, label in options.countries %}<option value="{{ value }}"{% if filters.country == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
       </div>
     {% endif %}
@@ -35,7 +35,7 @@
       <label for="bfep-filter-region">{% trans %}Region{% endtrans %}</label>
       <select id="bfep-filter-region" name="region">
         <option value="">{% trans %}All regions{% endtrans %}</option>
-        {% for value in options.regions %}<option value="{{ value }}"{% if filters.region == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+        {% for value, label in options.regions %}<option value="{{ value }}"{% if filters.region == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
     </div>
     <div class="bfep-filter-field">
@@ -49,7 +49,7 @@
       <label for="bfep-filter-tag">{% trans %}Tag{% endtrans %}</label>
       <select id="bfep-filter-tag" name="tag">
         <option value="">{% trans %}All tags{% endtrans %}</option>
-        {% for value in options.tags %}<option value="{{ value }}"{% if filters.tag == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+        {% for value, label in options.tags %}<option value="{{ value }}"{% if filters.tag == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
     </div>
     <div class="bfep-filter-field">

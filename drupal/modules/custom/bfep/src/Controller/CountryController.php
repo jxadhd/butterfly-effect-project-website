@@ -10,6 +10,7 @@ use Drupal\bfep\Repository\CampaignRepository;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Drupal\bfep\Service\BfepSettings;
 use Drupal\bfep\Service\CampaignListBuilder;
+use Drupal\bfep\Service\CampaignPresenter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +25,7 @@ final class CountryController extends ControllerBase {
     protected CampaignRepository $campaigns,
     protected CampaignListBuilder $listBuilder,
     protected BfepSettings $settings,
+    protected CampaignPresenter $presenter,
   ) {}
 
   public static function create(ContainerInterface $container): static {
@@ -31,6 +33,7 @@ final class CountryController extends ControllerBase {
       $container->get('bfep.campaign_repository'),
       $container->get('bfep.campaign_list_builder'),
       $container->get('bfep.settings'),
+      $container->get('bfep.campaign_presenter'),
     );
   }
 
@@ -38,9 +41,9 @@ final class CountryController extends ControllerBase {
     $countries = [];
     foreach ($this->campaigns->countries() as $row) {
       $countries[] = [
-        'name' => (string) $row->country,
+        'name' => $this->presenter->placeName($row->country),
         'url' => Url::fromRoute('bfep.country_detail', ['country' => (string) $row->country])->toString(),
-        'region' => trim((string) ($row->global_region ?? '')),
+        'region' => $this->presenter->placeName($row->global_region ?? NULL, 'World region'),
         'campaign_count' => (int) $row->campaign_count,
         'featured_count' => (int) $row->featured_count,
         'urgent_count' => (int) $row->urgent_count,

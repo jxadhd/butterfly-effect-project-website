@@ -26,8 +26,10 @@
   <rule ref="Drupal.Files.LineLength"><severity>0</severity></rule>
 
   <!--
-    Admin form labels are passed to t() from arrays of literal strings. The
-    site is English-only, so translation extraction does not matter here.
+    Admin form labels are passed to t() from arrays of literal strings, and
+    bfdb names (countries, regions, tags) are looked up with t() and a context
+    so they can be translated on the site. Neither needs extraction: the
+    Arabic for public text is kept in bfep_i18n/translations/ar.po.
   -->
   <rule ref="Drupal.Semantics.FunctionT.NotLiteralString"><severity>0</severity></rule>
 </ruleset>

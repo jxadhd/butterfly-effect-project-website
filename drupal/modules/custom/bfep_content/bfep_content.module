@@ -46,7 +46,7 @@ function bfep_content_instagram(): array {
 
   $message = trim((string) $config->get('instagram.message'));
   if ($message === '') {
-    $message = 'Instagram is our main official channel for communication, project updates, and campaign amplification.';
+    $message = (string) t('Instagram is our main official channel for communication, project updates, and campaign amplification.');
   }
 
   return ['url' => $url, 'handle' => $handle, 'message' => $message];
@@ -132,17 +132,17 @@ function bfep_content_preprocess_page(array &$variables): void {
     '#attributes' => ['class' => ['bfep-official-channel', 'bfep-official-channel--footer']],
     '#weight' => 1000,
     'copy' => [
-      '#markup' => '<div><p class="bfep-eyebrow">Official communication channel</p><h2>Follow us on Instagram</h2><p>' . $message . '</p></div>',
+      '#markup' => '<div><p class="bfep-eyebrow">' . t('Official communication channel') . '</p><h2>' . t('Follow us on Instagram') . '</h2><p>' . $message . '</p></div>',
     ],
     'link' => [
       '#type' => 'link',
-      '#title' => 'Follow ' . $instagram['handle'],
+      '#title' => t('Follow @handle', ['@handle' => $instagram['handle']]),
       '#url' => Url::fromUri($instagram['url']),
       '#attributes' => [
         'class' => ['bfep-instagram-link'],
         'target' => '_blank',
         'rel' => 'me noopener noreferrer',
-        'aria-label' => 'Follow ' . $instagram['handle'] . ' on Instagram (opens in a new tab)',
+        'aria-label' => (string) t('Follow @handle on Instagram (opens in a new tab)', ['@handle' => $instagram['handle']]),
       ],
     ],
     '#cache' => ['tags' => ['config:bfep_content.settings']],
@@ -170,8 +170,8 @@ function bfep_content_menu_links_discovered_alter(array &$links): void {
 function bfep_content_public_sections(): array {
   return [
     'discover' => [
-      'title' => 'Discover ways to help',
-      'description' => 'Browse the directory by fundraiser, country, or ground initiative.',
+      'title' => t('Discover ways to help'),
+      'description' => t('Browse the directory by fundraiser, country, or ground initiative.'),
       'routes' => [
         'bfep.campaigns',
         'bfep.campaign_detail',
@@ -180,24 +180,24 @@ function bfep_content_public_sections(): array {
         'bfep.initiatives',
       ],
       'links' => [
-        ['label' => 'Campaigns', 'route' => 'bfep.campaigns'],
-        ['label' => 'Countries', 'route' => 'bfep.countries'],
-        ['label' => 'Ground initiatives', 'route' => 'bfep.initiatives'],
+        ['label' => t('Campaigns'), 'route' => 'bfep.campaigns'],
+        ['label' => t('Countries'), 'route' => 'bfep.countries'],
+        ['label' => t('Ground initiatives'), 'route' => 'bfep.initiatives'],
       ],
     ],
     'action' => [
-      'title' => 'Take action',
-      'description' => 'Refer a fundraiser, volunteer with BFEP, or request an information update.',
+      'title' => t('Take action'),
+      'description' => t('Refer a fundraiser, volunteer with BFEP, or request an information update.'),
       'routes' => ['bfep.refer', 'bfep.volunteer', 'bfep.change_request'],
       'links' => [
-        ['label' => 'Submit a referral', 'route' => 'bfep.refer'],
-        ['label' => 'Volunteer with us', 'route' => 'bfep.volunteer'],
-        ['label' => 'Request an update', 'route' => 'bfep.change_request'],
+        ['label' => t('Submit a referral'), 'route' => 'bfep.refer'],
+        ['label' => t('Volunteer with us'), 'route' => 'bfep.volunteer'],
+        ['label' => t('Request an update'), 'route' => 'bfep.change_request'],
       ],
     ],
     'trust' => [
-      'title' => 'About, trust, and policy',
-      'description' => 'Understand the project, its verification standard, and its public policies.',
+      'title' => t('About, trust, and policy'),
+      'description' => t('Understand the project, its verification standard, and its public policies.'),
       'routes' => [
         'bfep.about',
         'bfep.trust_transparency',
@@ -209,14 +209,14 @@ function bfep_content_public_sections(): array {
         'bfep.trust_contact_us',
       ],
       'links' => [
-        ['label' => 'About the project', 'route' => 'bfep.about'],
-        ['label' => 'Transparency', 'route' => 'bfep.trust_transparency'],
-        ['label' => 'How we verify', 'route' => 'bfep.trust_how_we_verify'],
-        ['label' => 'Our team', 'route' => 'bfep.trust_team'],
-        ['label' => 'Editorial policy', 'route' => 'bfep.trust_editorial_policy'],
-        ['label' => 'Privacy notice', 'route' => 'bfep.trust_privacy'],
-        ['label' => 'Safeguarding', 'route' => 'bfep.trust_safeguarding'],
-        ['label' => 'Contact', 'route' => 'bfep.trust_contact_us'],
+        ['label' => t('About the project'), 'route' => 'bfep.about'],
+        ['label' => t('Transparency'), 'route' => 'bfep.trust_transparency'],
+        ['label' => t('How we verify'), 'route' => 'bfep.trust_how_we_verify'],
+        ['label' => t('Our team'), 'route' => 'bfep.trust_team'],
+        ['label' => t('Editorial policy'), 'route' => 'bfep.trust_editorial_policy'],
+        ['label' => t('Privacy notice'), 'route' => 'bfep.trust_privacy'],
+        ['label' => t('Safeguarding'), 'route' => 'bfep.trust_safeguarding'],
+        ['label' => t('Contact'), 'route' => 'bfep.trust_contact_us'],
       ],
     ],
   ];
@@ -242,13 +242,13 @@ function bfep_content_add_section_navigation(array &$variables): void {
       ],
       '#weight' => 900,
       'eyebrow' => [
-        '#markup' => '<p class="bfep-eyebrow">Explore this section</p>',
+        '#markup' => '<p class="bfep-eyebrow">' . t('Explore this section') . '</p>',
       ],
       'heading' => [
-        '#markup' => '<h2 id="' . $headingId . '">' . Html::escape($section['title']) . '</h2>',
+        '#markup' => '<h2 id="' . $headingId . '">' . Html::escape((string) $section['title']) . '</h2>',
       ],
       'description' => [
-        '#markup' => '<p class="bfep-section-nav__description">' . Html::escape($section['description']) . '</p>',
+        '#markup' => '<p class="bfep-section-nav__description">' . Html::escape((string) $section['description']) . '</p>',
       ],
       'links' => [
         '#type' => 'container',

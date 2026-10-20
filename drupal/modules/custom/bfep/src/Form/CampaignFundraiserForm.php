@@ -152,6 +152,19 @@ final class CampaignFundraiserForm extends FormBase {
       '#default_value' => $this->fundraiser->donated_amount ?? '',
     ];
 
+    if ($editing && trim((string) ($this->fundraiser->sync_status ?? '')) === 'hidden_totals') {
+      // The platform shows only a percentage, so staff work raised out from it.
+      $form['progress_percent'] = [
+        '#type' => 'number',
+        '#title' => $this->t('Or: percentage shown on the fundraiser page'),
+        '#min' => 0,
+        '#max' => 1000,
+        '#step' => '0.1',
+        '#field_suffix' => '%',
+        '#description' => $this->t('This platform hides the amounts and shows only how far along the goal it is. Enter that percentage and the raised amount is set to that share of the goal above.'),
+      ];
+    }
+
     if ($editing) {
       $form['is_active'] = [
         '#type' => 'checkbox',
@@ -433,6 +446,16 @@ final class CampaignFundraiserForm extends FormBase {
     );
     foreach ($errors as $name => $message) {
       $form_state->setErrorByName($name, $this->t($message));
+    }
+    $percent = $form_state->getValue('progress_percent');
+    if (!AdminFormat::isBlank($percent)) {
+      $goal = $form_state->getValue('goal_amount');
+      if (AdminFormat::isBlank($goal) || (float) $goal <= 0) {
+        $form_state->setErrorByName('goal_amount', $this->t('Enter the goal, so the percentage can be turned into an amount.'));
+      }
+      else {
+        $form_state->setValue('donated_amount', number_format((float) $goal * (float) $percent / 100, 2, '.', ''));
+      }
     }
     $platformId = (int) $form_state->getValue('platform_id');
     if ($platformId > 0 && !(int) $this->database->query('SELECT CASE WHEN EXISTS (SELECT 1 FROM fundraising_platforms WHERE id = :id) THEN 1 ELSE 0 END', [':id' => $platformId])->fetchField()) {

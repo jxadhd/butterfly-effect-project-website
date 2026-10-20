@@ -25,7 +25,7 @@ final class SyncStatusTest extends UnitTestCase {
     [$meaning, $todo] = SyncStatus::explain('http_503');
     $this->assertStringContainsString('http_503', $meaning);
     $this->assertNotSame('', $todo);
-    foreach (['suspicious_drop', 'currency_mismatch', 'currency_unknown', 'parse_error', 'not_found', 'not_found_pending', 'invalid_url', 'not_configured'] as $status) {
+    foreach (['suspicious_drop', 'currency_mismatch', 'hidden_totals', 'currency_unknown', 'parse_error', 'not_found', 'not_found_pending', 'invalid_url', 'not_configured'] as $status) {
       [$meaning, $todo] = SyncStatus::explain($status);
       $this->assertNotSame('', $meaning, $status);
       $this->assertNotSame('', $todo, $status);

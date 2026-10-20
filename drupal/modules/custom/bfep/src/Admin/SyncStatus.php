@@ -47,6 +47,11 @@ final class SyncStatus {
       'The page was not found 3 nights in a row, so the sync stopped updating it.',
       'Fix the link, add the new fundraiser if the campaign moved, or end this one.',
     ],
+    'hidden_totals' => [
+      'Totals hidden',
+      'The platform hides this fundraiser’s figures (its page shows only a percentage), so the sync leaves the amounts here alone.',
+      'Now and then, enter the percentage shown on the page below the amounts; raised is worked out from the goal. The sync takes over again if the figures come back.',
+    ],
     'not_found_pending' => [
       'Not found (retrying)',
       'The page was not found, but fewer than 3 nights in a row.',

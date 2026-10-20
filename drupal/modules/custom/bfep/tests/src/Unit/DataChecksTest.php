@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\bfep\Unit;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Admin\DataChecks;
 
 /**
@@ -69,6 +70,18 @@ final class DataChecksTest extends UnitTestCase {
     $this->assertStringContainsString("CAST(f.sync_status AS TEXT) = 'not_found'", $sql);
     // The sync turns auto_sync off for dead links, and they must still be listed.
     $this->assertStringNotContainsString('auto_sync', $sql);
+  }
+
+  /**
+   * @covers ::all
+   */
+  public function testSharedUrlKeysEachLinkOnce(): void {
+    // Comparing every pair of links timed out the campaign list, so each
+    // link's key is computed once and campaigns are grouped by it.
+    $sql = DataChecks::get('shared_url')['sql'];
+    $this->assertSame(1, substr_count($sql, AdminFormat::urlKeySql('f.url')));
+    $this->assertStringContainsString('PARTITION BY', $sql);
+    $this->assertStringNotContainsString('<> campaigns.id', $sql);
   }
 
   /**

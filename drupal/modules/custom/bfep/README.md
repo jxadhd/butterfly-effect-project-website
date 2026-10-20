@@ -97,6 +97,17 @@ form requires Drupal's `administer site configuration` permission.
   since it has no psql); until then the form hides photos and links and
   says so. If `ground_initiatives` has `updated_at` (the script adds it), a
   save is refused when someone else saved first.
+- **Campaign contact links.** The campaign edit form has a **Contact and
+  social media** box listing the campaign's `campaign_social_media` rows
+  (platform, handle or link, active) with an **Open** button for each, plus
+  two empty rows for new links; clearing a field removes the link. Handles
+  become profile links (`SocialLinks::url()`: `@name` on Instagram opens
+  instagram.com/name/, an email opens a new email, a WhatsApp number opens a
+  chat). These links are staff-only and never shown publicly. `bfep_app`
+  could only INSERT into the table, so `sql/campaign-contact-links.sql`, run
+  once as the schema owner, gives the table an `id` and grants SELECT,
+  UPDATE and DELETE; until then the box says so (and shows links read-only if
+  only SELECT is granted).
 - **Saving returns to the list.** After a successful save, every staff form
   goes back to the list it was opened from, with the same search, filters,
   sort and page, and shows the confirmation there, naming the record with a

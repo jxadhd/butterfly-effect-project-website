@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Admin\SyncPlatforms;
+use Drupal\bfep\Admin\SyncStatus;
 use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -308,8 +309,8 @@ final class CampaignEditForm extends FormBase {
         $cells[] = !SyncPlatforms::supports($row->url ?? NULL)
           ? $this->t('By hand')
           : (AdminFormat::truthy($row->auto_sync ?? NULL)
-            ? (trim((string) ($row->sync_status ?? '')) ?: $this->t('Not checked yet'))
-            : $this->t('Off (@status)', ['@status' => trim((string) ($row->sync_status ?? '')) ?: $this->t('by hand')]));
+            ? SyncStatus::label($row->sync_status ?? NULL)
+            : $this->t('Off (@status)', ['@status' => trim((string) ($row->sync_status ?? '')) === '' ? $this->t('by hand') : SyncStatus::label($row->sync_status)]));
       }
       $cells[] = [
         'data' => [

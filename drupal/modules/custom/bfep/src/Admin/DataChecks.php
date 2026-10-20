@@ -50,6 +50,11 @@ final class DataChecks {
         // The sync turns auto_sync off for these rows, so it is not part of the check.
         'sql' => "EXISTS ({$active} AND CAST(f.sync_status AS TEXT) = 'not_found')",
       ],
+      'held_figure' => [
+        'label' => 'Sync is holding a new figure',
+        'help' => 'The platform shows a raised amount more than 20% lower (or a different currency), so the nightly sync did not save it. Open the fundraiser to compare the figures and use the platform’s if they are right.',
+        'sql' => "EXISTS ({$active} AND f.auto_sync AND CAST(f.sync_status AS TEXT) IN ('suspicious_drop', 'currency_mismatch'))",
+      ],
       'several_fundraisers' => [
         'label' => 'More than one active fundraiser',
         'help' => 'The public page adds these fundraisers up (or lists them side by side when currencies differ). Check that each one belongs to this campaign and is still running, and end any the campaign has moved away from.',

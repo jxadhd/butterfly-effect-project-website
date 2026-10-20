@@ -12,6 +12,7 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
 use Drupal\bfep\Admin\SyncPlatforms;
+use Drupal\bfep\Admin\SyncStatus;
 use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -49,6 +50,14 @@ final class CampaignFundraiserForm extends FormBase {
    * Whether bfdb has the sync service columns.
    */
   protected bool $hasSyncColumns = FALSE;
+
+  /**
+   * What the platform last showed for the fundraiser being edited.
+   *
+   * The sync writes these even when it holds the figures back (see
+   * bfep-sync deploy/sync-details.sql). NULL without those columns.
+   */
+  protected ?object $platform = NULL;
 
   public function __construct(
     protected Connection $database,
@@ -210,19 +219,123 @@ final class CampaignFundraiserForm extends FormBase {
         : $this->t('The fundraiser sync service refreshes these figures from the platform each night, on the platforms listed above. Untick to keep manually entered amounts.'),
     ];
     if ($editing) {
+      $this->buildSyncState($form, $status);
+    }
+  }
+
+  /**
+   * Says what the last sync did and what to do about it.
+   *
+   * For a held figure it also shows what the platform showed, with a button
+   * to use it.
+   */
+  private function buildSyncState(array &$form, string $status): void {
+    if ($status === '') {
       $form['sync_state'] = [
         '#type' => 'item',
         '#title' => $this->t('Last sync'),
-        '#markup' => $status === ''
-          ? $this->t('Not checked yet.')
-          : $this->t('@status · checked @checked · last success @success · @failures consecutive failures', [
-            '@status' => $status,
-            '@checked' => $this->syncDate($this->fundraiser->last_checked_at ?? NULL),
-            '@success' => $this->syncDate($this->fundraiser->last_success_at ?? NULL),
-            '@failures' => (int) ($this->fundraiser->consecutive_failures ?? 0),
-          ]),
+        '#markup' => $this->t('Not checked yet.'),
       ];
+      return;
     }
+    [$meaning, $todo] = SyncStatus::explain($status);
+    $f = $this->fundraiser;
+    $form['sync_state'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Last sync'),
+      '#markup' => '<strong>' . Html::escape(SyncStatus::label($status)) . '</strong>: ' . Html::escape($meaning)
+      . ($status !== 'ok' && $todo !== '' ? ' ' . Html::escape($todo) : '')
+      . '<br><small>' . $this->t('Checked @checked · last updated @success · @failures failures in a row', [
+        '@checked' => $this->syncDate($f->last_checked_at ?? NULL),
+        '@success' => $this->syncDate($f->last_success_at ?? NULL),
+        '@failures' => (int) ($f->consecutive_failures ?? 0),
+      ]) . '</small>',
+    ];
+    $platform = $this->platform;
+    $seen = $platform !== NULL && !AdminFormat::isBlank($platform->platform_raised ?? NULL);
+    $detail = trim((string) ($platform->sync_detail ?? ''));
+    if (!SyncStatus::isHeld($status)) {
+      if ($status !== 'ok' && $detail !== '') {
+        $form['sync_state']['#description'] = $this->t('Reason given by the sync: @detail', ['@detail' => $detail]);
+      }
+      return;
+    }
+    if (!$seen) {
+      // The sync's database update has not been run, so only the page can say.
+      $form['sync_state']['#description'] = $this->t('Open the fundraiser link to see the current figure, and enter it above if it is right.');
+      return;
+    }
+    $currency = trim((string) ($f->currency_code ?? ''));
+    $platformCurrency = trim((string) ($platform->platform_currency ?? '')) ?: $currency;
+    $shown = SyncStatus::figures($platform->platform_raised, $platform->platform_goal ?? NULL, $platformCurrency)
+      . (AdminFormat::isBlank($platform->platform_donations ?? NULL) ? '' : ' · ' . $this->t('@count donations', ['@count' => (int) $platform->platform_donations]))
+      . ' · ' . $this->syncDate($platform->platform_checked_at ?? NULL);
+    $rows = [
+      [$this->t('The platform showed'), $shown],
+      [$this->t('Saved on this site'), SyncStatus::figures($f->donated_amount ?? NULL, $f->goal_amount ?? NULL, $currency)],
+    ];
+    $form['sync_held'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Figures held by the sync'),
+      'table' => [
+        '#type' => 'table',
+        '#rows' => $rows,
+        '#attributes' => ['class' => ['bfep-sync-held']],
+      ],
+      'note' => [
+        '#markup' => '<p>' . $this->t('Some platforms (some Chuffed pages, for example) show only a percentage: compare the percentages. If the platform’s figures are right, use them; any changes typed above are not saved by this button.') . '</p>',
+      ],
+      // The check whose figures are shown here, compared again on submit.
+      'platform_checked_at' => [
+        '#type' => 'hidden',
+        '#value' => (string) ($platform->platform_checked_at ?? ''),
+      ],
+      'use_platform_figures' => [
+        '#type' => 'submit',
+        '#value' => $this->t('Use the platform’s figures'),
+        '#submit' => ['::usePlatformFigures'],
+        '#limit_validation_errors' => [],
+        '#name' => 'use_platform_figures',
+      ],
+    ];
+  }
+
+  /**
+   * Saves the figures the sync held back, as the sync would have.
+   *
+   * Only while the row still holds the figures that were shown, so a newer
+   * check is never overwritten with older figures.
+   */
+  public function usePlatformFigures(array &$form, FormStateInterface $form_state): void {
+    $fundraiserId = (int) ($this->fundraiser->id ?? 0);
+    // From the request: the rebuilt form already holds the latest check.
+    $checkedAt = (string) ($form_state->getUserInput()['platform_checked_at'] ?? '');
+    try {
+      $updated = (int) $this->database->update('campaign_fundraisers')
+        ->expression('donated_amount', 'platform_raised')
+        ->expression('goal_amount', 'COALESCE(platform_goal, goal_amount)')
+        ->expression('currency_code', 'COALESCE(platform_currency, currency_code)')
+        ->fields(['sync_status' => 'ok', 'consecutive_failures' => 0, 'sync_detail' => NULL])
+        ->condition('id', $fundraiserId)
+        ->condition('campaign_id', $this->campaignId)
+        ->isNotNull('platform_raised')
+        ->where('platform_checked_at = CAST(:checked AS TIMESTAMPTZ)', [':checked' => $checkedAt])
+        ->where("CAST(sync_status AS TEXT) IN ('suspicious_drop', 'currency_mismatch')")
+        ->execute();
+    }
+    catch (\Throwable $exception) {
+      $this->reportSaveFailure($form_state, $exception, 'platform figures for fundraiser ' . $fundraiserId);
+      return;
+    }
+    if (!$updated) {
+      $this->messenger()->addWarning($this->t('The sync has checked this fundraiser again since the page was opened. Have a look at the new figures.'));
+      $form_state->setRedirectUrl(Url::fromRoute('<current>', [], ['query' => $this->getRequest()->query->all()]));
+      return;
+    }
+    $this->auditLogger->record('updated', 'campaign', $this->campaignId, ['fundraiser ' . $fundraiserId . ' (used the figures held by the sync)']);
+    $this->cacheInvalidator->invalidateCampaign($this->campaignId);
+    $this->messenger()->addStatus($this->t('Saved the platform’s figures. The sync updates this fundraiser normally again from tonight.'));
+    $form_state->setRedirectUrl($this->campaignUrl());
   }
 
   /**
@@ -238,6 +351,7 @@ final class CampaignFundraiserForm extends FormBase {
     $rows = self::fundraiserRows($this->database, $campaignId, $this->hasSyncColumns);
     if ($fundraiserId !== NULL) {
       $this->fundraiser = $rows[$fundraiserId] ?? throw new NotFoundHttpException();
+      $this->platform = $this->hasSyncColumns ? self::platformFigures($this->database, $fundraiserId) : NULL;
     }
     $this->otherActive = array_filter(
       $rows,
@@ -280,6 +394,25 @@ final class CampaignFundraiserForm extends FormBase {
       $hasSyncColumns = FALSE;
     }
     return $rows;
+  }
+
+  /**
+   * What the platform last showed for a fundraiser.
+   *
+   * NULL when bfdb does not have the columns from bfep-sync's
+   * deploy/sync-details.sql.
+   */
+  public static function platformFigures(Connection $database, int $fundraiserId): ?object {
+    try {
+      return $database->query('
+        SELECT platform_raised, platform_goal, platform_currency, platform_donations,
+          platform_checked_at, sync_detail
+        FROM campaign_fundraisers WHERE id = :id
+      ', [':id' => $fundraiserId])->fetchObject() ?: NULL;
+    }
+    catch (\Throwable) {
+      return NULL;
+    }
   }
 
   /**

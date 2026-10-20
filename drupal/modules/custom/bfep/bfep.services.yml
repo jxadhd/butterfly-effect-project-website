@@ -89,3 +89,7 @@ services:
     arguments: ['@http_kernel', '@logger.channel.bfep']
     tags:
       - { name: event_subscriber }
+
+  bfep.referral_intake:
+    class: Drupal\bfep\Service\ReferralIntake
+    arguments: ['@config.factory', '@string_translation']

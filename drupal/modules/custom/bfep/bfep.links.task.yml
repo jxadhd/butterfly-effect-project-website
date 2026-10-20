@@ -16,6 +16,18 @@ bfep.admin_referrals_tab:
   base_route: bfep.admin
   weight: 1
 
+bfep.admin_referrals_list_tab:
+  route_name: bfep.admin_referrals
+  title: 'Submissions'
+  parent_id: bfep.admin_referrals_tab
+  weight: 0
+
+bfep.referral_pause_tab:
+  route_name: bfep.referral_pause
+  title: 'Pause referrals'
+  parent_id: bfep.admin_referrals_tab
+  weight: 1
+
 bfep.admin_volunteers_tab:
   route_name: bfep.admin_volunteers
   title: 'Volunteers'

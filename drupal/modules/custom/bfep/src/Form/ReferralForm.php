@@ -5,19 +5,40 @@ declare(strict_types=1);
 namespace Drupal\bfep\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Service\ReferralIntake;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Public fundraiser-referral form.
  */
 final class ReferralForm extends ProtectedExternalFormBase {
 
+  protected ReferralIntake $intake;
+
+  protected LanguageManagerInterface $languageManager;
+
+  public static function create(ContainerInterface $container): static {
+    $form = parent::create($container);
+    $form->intake = $container->get('bfep.referral_intake');
+    $form->languageManager = $container->get('language_manager');
+    return $form;
+  }
+
   public function getFormId(): string {
     return 'bfep_referral_form';
   }
 
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    // Pausing or reopening referrals must reach pages already cached.
+    $form['#cache']['tags'][] = ReferralIntake::CACHE_TAG;
+    if ($this->intake->isPaused()) {
+      $form['paused'] = $this->intake->notice($this->languageManager->getCurrentLanguage()->getId());
+      return $form;
+    }
+
     $form['full_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t("Campaign recipient's full name"),
@@ -155,6 +176,11 @@ final class ReferralForm extends ProtectedExternalFormBase {
   }
 
   public function validateForm(array &$form, FormStateInterface $form_state): void {
+    // A form opened before referrals were paused cannot be sent after.
+    if ($this->intake->isPaused()) {
+      $form_state->setErrorByName('', $this->t('Sorry, we have paused new referrals, so this referral was not sent.'));
+      return;
+    }
     parent::validateForm($form, $form_state);
     if ($form_state->getValue('fundraiser_setup_by') === 'other' && $this->clean($form_state->getValue('fundraiser_setup_by_other')) === '') {
       $form_state->setErrorByName('fundraiser_setup_by_other', $this->t('Please describe who set up the fundraiser.'));

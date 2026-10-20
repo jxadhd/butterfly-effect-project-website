@@ -2428,6 +2428,40 @@ msgstr[3] "حُمّلت @count حملات سابقة."
 msgstr[4] "حُمّلت @count حملة سابقة."
 msgstr[5] "حُمّلت @count حملة سابقة."
 
+# Campaign edit form: contact and social media links (staff only).
+msgid "Contact and social media"
+msgstr "التواصل ووسائل التواصل الاجتماعي"
+
+msgid "Ways for volunteers to reach the campaign. Enter a full link or just the handle, such as @name. Open uses the saved value, so save first after a change. Clear a field to remove that link."
+msgstr "طرق تتيح للمتطوعين التواصل مع الحملة. أدخل رابطًا كاملًا أو اسم المستخدم فقط، مثل ‎@name. يستخدم زر «فتح» القيمة المحفوظة، لذا احفظ أولًا بعد أي تغيير. امسح الحقل لحذف ذلك الرابط."
+
+msgid "Contact links cannot be shown yet: the site is not allowed to read them in the database. Run sql/campaign-contact-links.sql once as the database owner."
+msgstr "لا يمكن عرض روابط التواصل بعد: لا يُسمح للموقع بقراءتها من قاعدة البيانات. شغّل sql/campaign-contact-links.sql مرة واحدة بصفة مالك قاعدة البيانات."
+
+msgid "Contact links can be opened but not changed here yet. Run sql/campaign-contact-links.sql once as the database owner."
+msgstr "يمكن فتح روابط التواصل لكن لا يمكن تغييرها هنا بعد. شغّل sql/campaign-contact-links.sql مرة واحدة بصفة مالك قاعدة البيانات."
+
+msgid "Handle or link"
+msgstr "اسم المستخدم أو الرابط"
+
+msgid "Active"
+msgstr "نشط"
+
+msgid "Open"
+msgstr "فتح"
+
+msgid "No contact links yet."
+msgstr "لا توجد روابط تواصل بعد."
+
+msgid "No link"
+msgstr "لا يوجد رابط"
+
+msgid "Open @platform: @value (opens in a new tab)"
+msgstr "فتح @platform: ‏@value (يُفتح في تبويب جديد)"
+
+msgid "Enter a complete link starting with https://, or just the handle."
+msgstr "أدخل رابطًا كاملًا يبدأ بـ https://‎، أو اسم المستخدم فقط."
+
 # The "Branded footer" custom block on the live site. Custom block text is
 # translated one sentence or link at a time (context "Site block text", then
 # the same English without a context, which covers its links), so the pieces

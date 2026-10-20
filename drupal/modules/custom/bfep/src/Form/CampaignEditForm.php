@@ -9,8 +9,10 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\bfep\Admin\AdminFormat;
+use Drupal\bfep\Admin\SocialLinks;
 use Drupal\bfep\Admin\SyncPlatforms;
 use Drupal\bfep\Admin\SyncStatus;
+use Drupal\bfep\Repository\CampaignContacts;
 use Drupal\bfep\Service\AuditLogger;
 use Drupal\bfep\Service\BfepCacheInvalidator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -33,6 +35,25 @@ final class CampaignEditForm extends FormBase {
    * @var int[]
    */
   protected array $tagIds = [];
+
+  /**
+   * Blank rows offered for adding contact links.
+   */
+  private const NEW_CONTACT_ROWS = 2;
+
+  /**
+   * What the site may do with contact links (CampaignContacts::access()).
+   *
+   * @var array{read: bool, write: bool}
+   */
+  protected array $contactAccess = ['read' => FALSE, 'write' => FALSE];
+
+  /**
+   * The campaign's contact links when the form was built, keyed by id.
+   *
+   * @var object[]
+   */
+  protected array $contacts = [];
 
   public function __construct(
     protected Connection $database,
@@ -136,6 +157,7 @@ final class CampaignEditForm extends FormBase {
     ];
 
     $form['fundraisers'] = $this->fundraisersSection();
+    $form['contacts'] = $this->contactsSection();
 
     $form['tags_section'] = ['#type' => 'details', '#title' => $this->t('Tags'), '#open' => FALSE];
     $form['tags_section']['tag_ids'] = [
@@ -221,6 +243,12 @@ final class CampaignEditForm extends FormBase {
     if ($countryId < 1 || !(int) $this->database->query('SELECT CASE WHEN EXISTS (SELECT 1 FROM countries WHERE id = :id) THEN 1 ELSE 0 END', [':id' => $countryId])->fetchField()) {
       $form_state->setErrorByName('country_id', $this->t('Select a valid country.'));
     }
+    foreach ($form_state->getValue(['contacts', 'links']) ?? [] as $key => $link) {
+      $value = trim((string) ($link['value'] ?? ''));
+      if (str_contains($value, '://') && SocialLinks::url((string) ($link['platform'] ?? ''), $value) === NULL) {
+        $form_state->setErrorByName('contacts][links][' . $key . '][value', $this->t('Enter a complete link starting with https://, or just the handle.'));
+      }
+    }
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
@@ -249,6 +277,15 @@ final class CampaignEditForm extends FormBase {
     try {
       $this->database->update('campaigns')->fields($fields)->condition('id', $this->campaignId)->execute();
       $changed = [...$changed, ...$this->saveTags($values)];
+      if ($this->contactAccess['write'] && CampaignContacts::save(
+        $this->database,
+        $this->campaignId,
+        $this->contacts,
+        $this->contactValues($values['contacts']['links'] ?? [], 'existing'),
+        $this->contactValues($values['contacts']['links'] ?? [], 'new'),
+      )) {
+        $changed[] = 'contact links';
+      }
     }
     catch (\Throwable $exception) {
       $transaction->rollBack();
@@ -334,6 +371,121 @@ final class CampaignEditForm extends FormBase {
       '#attributes' => ['class' => ['button', 'button--small']],
     ];
     return $section;
+  }
+
+  /**
+   * Contact and social media links, each with a button that opens it.
+   */
+  private function contactsSection(): array {
+    $this->contactAccess = CampaignContacts::access($this->database);
+    $section = [
+      '#type' => 'details',
+      '#title' => $this->t('Contact and social media'),
+      '#open' => TRUE,
+      '#tree' => TRUE,
+      '#description' => $this->t('Ways for volunteers to reach the campaign. Enter a full link or just the handle, such as @name. Open uses the saved value, so save first after a change. Clear a field to remove that link.'),
+    ];
+    if (!$this->contactAccess['read']) {
+      $section['unavailable'] = [
+        '#markup' => '<p class="bfep-admin-notice">' . $this->t('Contact links cannot be shown yet: the site is not allowed to read them in the database. Run sql/campaign-contact-links.sql once as the database owner.') . '</p>',
+      ];
+      return $section;
+    }
+    $this->contacts = CampaignContacts::rows($this->database, $this->campaignId, $this->contactAccess['write']);
+    $platforms = CampaignContacts::platforms($this->database);
+    $editable = $this->contactAccess['write'];
+    if (!$editable) {
+      $section['readonly'] = [
+        '#markup' => '<p class="bfep-admin-notice">' . $this->t('Contact links can be opened but not changed here yet. Run sql/campaign-contact-links.sql once as the database owner.') . '</p>',
+      ];
+    }
+    $section['links'] = [
+      '#type' => 'table',
+      '#header' => [$this->t('Platform'), $this->t('Handle or link'), $this->t('Active'), $this->t('Open')],
+      '#empty' => $this->t('No contact links yet.'),
+      '#attributes' => ['class' => ['bfep-contact-links']],
+    ];
+    $rowKey = 0;
+    foreach ($this->contacts as $row) {
+      $platform = (string) $row->platform;
+      $key = $editable ? 'existing-' . (int) $row->id : 'row-' . $rowKey++;
+      $section['links'][$key] = $this->contactRow($platforms, $platform, (string) $row->handle_or_url, AdminFormat::truthy($row->is_active), !$editable);
+    }
+    if ($editable) {
+      for ($i = 0; $i < self::NEW_CONTACT_ROWS; $i++) {
+        $section['links']['new-' . $i] = $this->contactRow($platforms, '', '', TRUE, FALSE);
+      }
+    }
+    return $section;
+  }
+
+  /**
+   * One row of the contact links table.
+   */
+  private function contactRow(array $platforms, string $platform, string $value, bool $active, bool $readOnly): array {
+    $url = $platform !== '' ? SocialLinks::url($platform, $value) : NULL;
+    $label = $platforms[$platform] ?? SocialLinks::label($platform);
+    $row = [
+      'platform' => [
+        '#type' => 'select',
+        '#title' => $this->t('Platform'),
+        '#title_display' => 'invisible',
+        '#options' => $platform !== '' && !isset($platforms[$platform]) ? [$platform => $label] + $platforms : $platforms,
+        '#default_value' => $platform !== '' ? $platform : (isset($platforms['instagram']) ? 'instagram' : array_key_first($platforms)),
+        '#disabled' => $readOnly,
+      ],
+      'value' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Handle or link'),
+        '#title_display' => 'invisible',
+        '#default_value' => $value,
+        '#maxlength' => 2000,
+        '#size' => 40,
+        '#disabled' => $readOnly,
+      ],
+      'active' => [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Active'),
+        '#title_display' => 'invisible',
+        '#default_value' => $active,
+        '#disabled' => $readOnly,
+      ],
+      'open' => $url !== NULL
+        ? [
+          '#type' => 'link',
+          '#title' => $this->t('Open'),
+          '#url' => Url::fromUri($url),
+          '#attributes' => [
+            'class' => ['button', 'button--small'],
+            'target' => '_blank',
+            'rel' => 'noopener noreferrer',
+            'aria-label' => $this->t('Open @platform: @value (opens in a new tab)', ['@platform' => $label, '@value' => $value]),
+          ],
+        ]
+        : ['#markup' => $value !== '' ? '<span class="bfep-muted">' . $this->t('No link') . '</span>' : ''],
+    ];
+    return $row;
+  }
+
+  /**
+   * Submitted contact rows of one kind ('existing' or 'new').
+   *
+   * @return array<int, array{platform: string, value: string, active: bool}>
+   *   Rows keyed by link id (existing) or position (new).
+   */
+  private function contactValues(array $links, string $kind): array {
+    $rows = [];
+    foreach ($links as $key => $link) {
+      if (!preg_match('/^' . $kind . '-(\d+)$/', (string) $key, $match)) {
+        continue;
+      }
+      $rows[(int) $match[1]] = [
+        'platform' => (string) ($link['platform'] ?? ''),
+        'value' => trim((string) ($link['value'] ?? '')),
+        'active' => !empty($link['active']),
+      ];
+    }
+    return $rows;
   }
 
   /**

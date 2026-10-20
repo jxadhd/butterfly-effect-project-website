@@ -36,3 +36,9 @@
 /* Campaign edit: the fundraisers table. Ended fundraisers are history. */
 #edit-fundraisers td { overflow-wrap: anywhere; }
 #edit-fundraisers .bfep-fundraiser-ended { opacity: .65; }
+
+/* Campaign edit: contact and social media links. */
+.bfep-contact-links td { vertical-align: middle; }
+.bfep-contact-links .form-item { margin: 0; }
+.bfep-contact-links input.form-text { width: 100%; min-width: 12rem; }
+.bfep-muted { color: #5c5c5c; font-size: .9rem; }

@@ -118,3 +118,6 @@ form.bfep-public-form .bfep-form-notice .form-type-radio label { margin: 0; }
 .bfep-initiative-photos img { flex: 0 0 100%; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; scroll-snap-align: start; }
 .bfep-initiative-description { line-height: 1.55; margin: 0; }
 .bfep-initiative-card .bfep-card-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: auto; }
+.bfep-referrals-paused { max-width: 46rem; }
+.bfep-referrals-paused h2 { margin: 0 0 .5rem; font-size: 1.2rem; }
+.bfep-referrals-paused p:last-child { margin-bottom: 0; }

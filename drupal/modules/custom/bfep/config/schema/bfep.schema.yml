@@ -35,3 +35,12 @@ search.plugin.bfep_database:
   type: mapping
   label: 'BFEP database search configuration'
   mapping: { }
+
+bfep.referrals:
+  type: config_object
+  label: 'BFEP referral intake'
+  mapping:
+    paused: { type: boolean, label: 'Referrals paused' }
+    paused_at: { type: integer, label: 'When referrals were last paused' }
+    notice: { type: text, label: 'Pause notice (English)' }
+    notice_ar: { type: text, label: 'Pause notice (Arabic)' }

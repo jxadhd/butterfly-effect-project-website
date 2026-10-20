@@ -49,6 +49,9 @@ Custom Drupal 11 module backed by the external `bfdb` PostgreSQL connection.
 - `/admin/bfep` — workflow dashboard
 - `/admin/bfep/campaigns` — campaign administration
 - `/admin/bfep/referrals` — referral review
+- `/admin/bfep/referrals/pause` — pause referrals: closes the public referral
+  form and shows a notice (standard wording, or staff-written English and
+  Arabic) until staff reopen it. Stored in `bfep.referrals` config.
 - `/admin/bfep/volunteers` — volunteer workflow
 - `/admin/bfep/change-requests` — update/privacy/safety requests
 - `/admin/bfep/checks` — data checks: campaigns with missing or conflicting

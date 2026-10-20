@@ -693,6 +693,22 @@ msgstr "شكرًا لتحققك. صفحة التبرع هذه مُدرجة با�
 msgid "Thank you. Your referral has been submitted for review."
 msgstr "شكرًا لك. تم إرسال ترشيحك للمراجعة."
 
+# Shown on the referral page while staff have paused referrals.
+msgid "We are not taking new referrals right now"
+msgstr "لا نستقبل ترشيحات جديدة في الوقت الحالي"
+
+msgid "Thank you for wanting to help someone get support. Our volunteer team is small at the moment, so we have paused new referrals while we catch up on the ones we already have."
+msgstr "شكرًا لرغبتك في مساعدة شخص ما على الحصول على الدعم. فريق المتطوعين لدينا صغير في الوقت الحالي، لذلك أوقفنا استقبال الترشيحات الجديدة مؤقتًا ريثما ننتهي من مراجعة الترشيحات التي وصلتنا."
+
+msgid "If you have already sent a referral, there is no need to send it again. It is still with us and will be reviewed."
+msgstr "إذا كنت قد أرسلت ترشيحًا من قبل، فلا داعي لإرساله مرة أخرى؛ فهو لا يزال لدينا وستتم مراجعته."
+
+msgid "Please check back soon. In the meantime, you can still <a href=\":campaigns\">browse campaigns</a> and share them with others, or <a href=\":volunteer\">volunteer with us</a>."
+msgstr "يُرجى العودة إلينا قريبًا. وفي هذه الأثناء، لا يزال بإمكانك <a href=\":campaigns\">تصفّح الحملات</a> ومشاركتها مع الآخرين، أو <a href=\":volunteer\">التطوّع معنا</a>."
+
+msgid "Sorry, we have paused new referrals, so this referral was not sent."
+msgstr "عذرًا، لقد أوقفنا استقبال الترشيحات الجديدة مؤقتًا، لذلك لم يتم إرسال هذا الترشيح."
+
 msgid "Campaign @id"
 msgstr "الحملة @id"
 

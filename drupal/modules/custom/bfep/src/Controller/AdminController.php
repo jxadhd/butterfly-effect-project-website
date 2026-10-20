@@ -13,6 +13,7 @@ use Drupal\bfep\Admin\DataChecks;
 use Drupal\bfep\Admin\ListReturn;
 use Drupal\bfep\OptionalBfdb;
 use Drupal\bfep\Service\HealthCheck;
+use Drupal\bfep\Service\ReferralIntake;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,7 @@ final class AdminController extends ControllerBase {
     protected ?Connection $database,
     protected DateFormatterInterface $dateFormatter,
     protected HealthCheck $healthCheck,
+    protected ReferralIntake $referralIntake,
   ) {}
 
   public static function create(ContainerInterface $container): static {
@@ -39,6 +41,7 @@ final class AdminController extends ControllerBase {
       OptionalBfdb::get($container),
       $container->get('date.formatter'),
       $container->get('bfep.health_check'),
+      $container->get('bfep.referral_intake'),
     );
   }
 
@@ -229,6 +232,7 @@ final class AdminController extends ControllerBase {
 
     return [
       '#attached' => ['library' => ['bfep/admin']],
+      'referrals_paused' => $this->referralsPausedNotice(),
       'sync_warning' => $sync_warning,
       'intro' => [
         '#markup' => '<p class="bfep-admin-lead">Manage BFEP campaign data and staff review queues from one place. New here? Read the <a href="' . Url::fromRoute('bfep.admin_help')->toString() . '">staff guide</a>.</p>',
@@ -700,7 +704,9 @@ final class AdminController extends ControllerBase {
       ];
     }
 
-    return $this->adminListBuild(
+    return [
+      'referrals_paused' => $this->referralsPausedNotice(),
+    ] + $this->adminListBuild(
       $request,
       'referrals',
       'bfep.admin_referrals',
@@ -937,6 +943,19 @@ final class AdminController extends ControllerBase {
     catch (\Throwable) {
       return 'Count unavailable';
     }
+  }
+
+  /**
+   * A reminder that the public referral form is closed, while it is.
+   */
+  protected function referralsPausedNotice(): array {
+    $build = ['#cache' => ['tags' => [ReferralIntake::CACHE_TAG]]];
+    if ($this->referralIntake->isPaused()) {
+      $build['#markup'] = '<div class="bfep-admin-notice bfep-admin-notice--warning" role="status"><strong>' . $this->t('Referrals are paused.') . '</strong> ' . $this->t('The public referral form is closed. <a href=":url">Reopen referrals or change the notice</a>.', [
+        ':url' => Url::fromRoute('bfep.referral_pause')->toString(),
+      ]) . '</div>';
+    }
+    return $build;
   }
 
   protected function adminListBuild(Request $request, string $section, string $route, int $total, array $header, array $rows, string $empty): array {

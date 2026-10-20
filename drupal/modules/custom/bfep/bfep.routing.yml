@@ -302,6 +302,16 @@ bfep.admin_referrals:
   options:
     _admin_route: TRUE
 
+bfep.referral_pause:
+  path: '/admin/bfep/referrals/pause'
+  defaults:
+    _form: '\Drupal\bfep\Form\ReferralPauseForm'
+    _title: 'Pause referrals'
+  requirements:
+    _permission: 'administer bfep external data'
+  options:
+    _admin_route: TRUE
+
 bfep.admin_referral_review:
   path: '/admin/bfep/referral/{referral_id}'
   defaults:

@@ -17,6 +17,13 @@ bfep.admin_referrals:
   parent: bfep.admin
   weight: 1
 
+bfep.referral_pause:
+  title: 'Pause referrals'
+  description: 'Close the public referral form when the team cannot take new referrals'
+  route_name: bfep.referral_pause
+  parent: bfep.admin_referrals
+  weight: 0
+
 bfep.admin_volunteers:
   title: 'Volunteers'
   route_name: bfep.admin_volunteers

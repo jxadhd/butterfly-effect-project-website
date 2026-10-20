@@ -100,7 +100,7 @@ final class SyncStatus {
   }
 
   /**
-   * "USD 1,200.00 of 10,000.00 (12%)", or "USD 1,200.00" without a goal.
+   * Figures as "USD 1,200.00 of 10,000.00 (12%)", or without a goal "USD 1,200.00".
    */
   public static function figures(mixed $raised, mixed $goal, ?string $currency): string {
     $currency = trim((string) $currency);

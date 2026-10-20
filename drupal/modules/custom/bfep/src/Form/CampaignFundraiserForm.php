@@ -224,8 +224,10 @@ final class CampaignFundraiserForm extends FormBase {
   }
 
   /**
-   * Says what the last sync did and what to do about it, and for a held
-   * figure shows what the platform showed with a button to use it.
+   * Says what the last sync did and what to do about it.
+   *
+   * For a held figure it also shows what the platform showed, with a button
+   * to use it.
    */
   private function buildSyncState(array &$form, string $status): void {
     if ($status === '') {
@@ -265,10 +267,11 @@ final class CampaignFundraiserForm extends FormBase {
     }
     $currency = trim((string) ($f->currency_code ?? ''));
     $platformCurrency = trim((string) ($platform->platform_currency ?? '')) ?: $currency;
+    $shown = SyncStatus::figures($platform->platform_raised, $platform->platform_goal ?? NULL, $platformCurrency)
+      . (AdminFormat::isBlank($platform->platform_donations ?? NULL) ? '' : ' · ' . $this->t('@count donations', ['@count' => (int) $platform->platform_donations]))
+      . ' · ' . $this->syncDate($platform->platform_checked_at ?? NULL);
     $rows = [
-      [$this->t('The platform showed'), SyncStatus::figures($platform->platform_raised, $platform->platform_goal ?? NULL, $platformCurrency)
-        . (AdminFormat::isBlank($platform->platform_donations ?? NULL) ? '' : ' · ' . $this->t('@count donations', ['@count' => (int) $platform->platform_donations]))
-        . ' · ' . $this->syncDate($platform->platform_checked_at ?? NULL)],
+      [$this->t('The platform showed'), $shown],
       [$this->t('Saved on this site'), SyncStatus::figures($f->donated_amount ?? NULL, $f->goal_amount ?? NULL, $currency)],
     ];
     $form['sync_held'] = [
@@ -394,8 +397,10 @@ final class CampaignFundraiserForm extends FormBase {
   }
 
   /**
-   * What the platform last showed for a fundraiser, or NULL when bfdb does
-   * not have the columns from bfep-sync's deploy/sync-details.sql.
+   * What the platform last showed for a fundraiser.
+   *
+   * NULL when bfdb does not have the columns from bfep-sync's
+   * deploy/sync-details.sql.
    */
   public static function platformFigures(Connection $database, int $fundraiserId): ?object {
     try {

@@ -123,13 +123,17 @@ final class ReferralIntake {
       ];
       return $build;
     }
+    $links = [
+      ':campaigns' => Url::fromRoute('bfep.campaigns')->toString(),
+      ':volunteer' => Url::fromRoute('bfep.volunteer')->toString(),
+    ];
+    $paragraphs = [
+      $this->t('Thank you for wanting to help someone get support. Our volunteer team is small at the moment, so we have paused new referrals while we catch up on the ones we already have.', [], $options),
+      $this->t('If you have already sent a referral, there is no need to send it again. It is still with us and will be reviewed.', [], $options),
+      $this->t('Please check back soon. In the meantime, you can still <a href=":campaigns">browse campaigns</a> and share them with others, or <a href=":volunteer">volunteer with us</a>.', $links, $options),
+    ];
     $build['text'] = [
-      '#markup' => '<p>' . $this->t('Thank you for wanting to help someone get support. Our volunteer team is small at the moment, so we have paused new referrals while we catch up on the ones we already have.', [], $options) . '</p>'
-        . '<p>' . $this->t('If you have already sent a referral, there is no need to send it again. It is still with us and will be reviewed.', [], $options) . '</p>'
-        . '<p>' . $this->t('Please check back soon. In the meantime, you can still <a href=":campaigns">browse campaigns</a> and share them with others, or <a href=":volunteer">volunteer with us</a>.', [
-          ':campaigns' => Url::fromRoute('bfep.campaigns')->toString(),
-          ':volunteer' => Url::fromRoute('bfep.volunteer')->toString(),
-        ], $options) . '</p>',
+      '#markup' => '<p>' . implode('</p><p>', $paragraphs) . '</p>',
     ];
     return $build;
   }

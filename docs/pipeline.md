@@ -460,12 +460,14 @@ folder in the BFEP project's shared files. Ask Josh for access.
    command runs only when something changed.
 
 **What the statuses mean.** These also show in the admin, on the campaign edit
-form under "Last sync" and in the **Sync problems** filter on the campaign list:
+form and the fundraiser edit form under "Last sync" (in plain words), in the
+**Sync problems** filter on the campaign list, and held figures in the
+**Sync is holding a new figure** data check:
 
 | Status | Meaning | What to do |
 |---|---|---|
 | `ok` | Figures read and saved, or already up to date. | Nothing. |
-| `suspicious_drop` | Raised fell by more than 20%, so it was **not** saved. | Check the fundraiser page. If the drop is real, update the amount by hand. |
+| `suspicious_drop` | Raised fell by more than 20%, so it was **not** saved. | Open the fundraiser (its edit page shows "Figures held by the sync": what the platform showed next to what is saved, with percentages for pages that show only a percentage). If the platform's figures are right, press **Use the platform's figures**; otherwise leave it held. On the server, `bfep sync problems` lists every held row and `bfep sync accept ID` does the same as the button. The figures box needs bfep-sync's `deploy/sync-details.sql`; before that, update the amount by hand. |
 | `currency_unknown` | The fundraiser has a raised amount but no currency stored, so nothing was saved. | Set the currency on the campaign edit form. |
 | `currency_mismatch` | The platform reports a different currency and a different goal, so nothing was saved. (If only the currency label differs and the goal matches, the sync corrects the label itself.) | Check the fundraiser and fix the currency on the campaign. |
 | `not_found_pending` | The page returned "not found", but fewer than 3 times in a row. A dry run prints `not_found` for these. | Usually nothing yet. After 3 failures in a row it becomes `not_found`. |

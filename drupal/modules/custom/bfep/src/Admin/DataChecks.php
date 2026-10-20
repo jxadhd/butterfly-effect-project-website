@@ -22,7 +22,9 @@ final class DataChecks {
    */
   public static function all(): array {
     $active = 'SELECT 1 FROM campaign_fundraisers f WHERE f.campaign_id = campaigns.id AND f.is_active';
-    $sameUrl = AdminFormat::urlKeySql('g.url') . ' = ' . AdminFormat::urlKeySql('f.url');
+    // Each link's key is worked out once, then campaigns are grouped by key.
+    // Comparing every pair of links instead took over a minute.
+    $urlKey = AdminFormat::urlKeySql('f.url');
     // Text that is not a web address is left to bad_url.
     $address = "COALESCE(TRIM(f.url), '') <> '' AND TRIM(f.url) !~ '\\s' AND POSITION('.' IN TRIM(f.url)) > 0";
 
@@ -35,9 +37,11 @@ final class DataChecks {
       'shared_url' => [
         'label' => 'Fundraiser shared with another campaign',
         'help' => 'Two campaigns point at the same fundraiser, which usually means one is a duplicate.',
-        'sql' => "EXISTS ({$active} AND {$address} AND EXISTS ("
-        . 'SELECT 1 FROM campaign_fundraisers g JOIN campaigns c2 ON c2.id = g.campaign_id AND c2.deleted_at IS NULL '
-        . "WHERE g.is_active AND g.campaign_id <> campaigns.id AND {$sameUrl}))",
+        'sql' => 'campaigns.id IN (SELECT k.campaign_id FROM ('
+        . 'SELECT f.campaign_id, MIN(f.campaign_id) OVER w AS first_id, MAX(f.campaign_id) OVER w AS last_id '
+        . 'FROM campaign_fundraisers f JOIN campaigns c2 ON c2.id = f.campaign_id AND c2.deleted_at IS NULL '
+        . "WHERE f.is_active AND {$address} WINDOW w AS (PARTITION BY {$urlKey})"
+        . ') k WHERE k.first_id <> k.last_id)',
       ],
       'bad_url' => [
         'label' => 'Fundraiser link is not a web address',
